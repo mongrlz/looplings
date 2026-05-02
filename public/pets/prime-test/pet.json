@@ -1,0 +1,6 @@
+{
+  "id": "prime-test",
+  "displayName": "Prime Test",
+  "description": "L01 Prime with a glowing loop antenna, built as a Codex-compatible Loopling pet test.",
+  "spritesheetPath": "spritesheet.webp"
+}

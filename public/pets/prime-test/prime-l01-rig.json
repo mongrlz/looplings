@@ -1,0 +1,31 @@
+{
+  "id": "prime-l01",
+  "version": "prime-l01-rig.v1",
+  "cell": {
+    "width": 192,
+    "height": 208,
+    "frameCount": 8
+  },
+  "identityLocks": [
+    "pearl-white naked/default body with no clothes or props",
+    "round chibi head larger than the body",
+    "large dark glassy eyes with blue highlights",
+    "tiny arms and stubby feet",
+    "single glowing loop antenna attached to top of head",
+    "small reserved forehead mark centered below antenna",
+    "slightly melancholic protected-creature expression"
+  ],
+  "anchors": {
+    "headCenter": { "x": 96, "y": 83, "radius": 48 },
+    "bodyCenter": { "x": 96, "y": 143, "width": 68, "height": 64 },
+    "antennaBase": { "x": 96, "y": 37, "radius": 4 },
+    "antennaTop": { "x": 96, "y": 17, "radius": 15 },
+    "leftEye": { "x": 73, "y": 91, "width": 18, "height": 25 },
+    "rightEye": { "x": 119, "y": 91, "width": 18, "height": 25 },
+    "mouth": { "x": 96, "y": 116, "width": 16, "height": 8 },
+    "leftArm": { "x": 53, "y": 137, "width": 18, "height": 30 },
+    "rightArm": { "x": 139, "y": 137, "width": 18, "height": 30 },
+    "leftFoot": { "x": 79, "y": 176, "width": 18, "height": 18 },
+    "rightFoot": { "x": 113, "y": 176, "width": 18, "height": 18 }
+  }
+}

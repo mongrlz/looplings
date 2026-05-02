@@ -1,0 +1,178 @@
+{
+  "id": "prime-l01-state-pack",
+  "version": "prime-l01-state-pack.v1",
+  "status": "draft_state_pack",
+  "statusReason": "Prime L01 idle and thinking are visually approved. All remaining states now have generated draft rows awaiting review.",
+  "rig": "/pets/prime-test/prime-l01-rig.json",
+  "prototypeAtlas": "/pets/prime-test/state-atlas.png",
+  "productionAtlas": null,
+  "cell": {
+    "width": 192,
+    "height": 208,
+    "columns": 8,
+    "defaultFrameCount": 8
+  },
+  "rules": [
+    "Each production state row must be generated independently from the Prime L01 rig reference.",
+    "A row cannot be approved if it only changes tint, speed, frame order, offset, squash/stretch, or rotation.",
+    "The dead state may be a one-frame hold, but it must be a generated collapsed or grounded pose.",
+    "Prediction Win remains hidden until prediction-market skills exist; it may share Trade Win internally."
+  ],
+  "traitAxesV1": [
+    "body_palette",
+    "eye_style",
+    "antenna_style",
+    "forehead_mark",
+    "expression_set"
+  ],
+  "deferredTraitAxes": [
+    "clothes",
+    "accessories"
+  ],
+  "states": [
+    {
+      "id": "idle",
+      "label": "Idle breathing",
+      "row": 0,
+      "frameCount": 8,
+      "fps": 5,
+      "loop": "loop",
+      "status": "approved",
+      "sourceType": "generated_state_row",
+      "productionRequirement": "User approved Prime L01 idle as the canonical base visual row.",
+      "currentAsset": "/pets/prime-test/state-atlas.png"
+    },
+    {
+      "id": "thinking",
+      "label": "Thinking focus",
+      "row": 1,
+      "frameCount": 8,
+      "fps": 5,
+      "loop": "loop",
+      "status": "approved",
+      "sourceType": "generated_state_row",
+      "productionRequirement": "User approved the generated Prime L01 thinking row.",
+      "currentAsset": "/pets/prime-test/rows/thinking-row-v1.png"
+    },
+    {
+      "id": "acting",
+      "label": "Tool action",
+      "row": 2,
+      "frameCount": 8,
+      "fps": 8,
+      "loop": "loop",
+      "status": "draft",
+      "sourceType": "generated_state_row",
+      "productionRequirement": "Draft generated tool action row; review before approval.",
+      "currentAsset": "/pets/prime-test/rows/acting-row-v1.png"
+    },
+    {
+      "id": "trading",
+      "label": "Market scan",
+      "row": 3,
+      "frameCount": 8,
+      "fps": 9,
+      "loop": "loop",
+      "status": "draft",
+      "sourceType": "generated_state_row",
+      "productionRequirement": "Draft generated market scan row; review before approval.",
+      "currentAsset": "/pets/prime-test/rows/trading-row-v1.png"
+    },
+    {
+      "id": "trade_win",
+      "label": "Trade win bounce",
+      "row": 4,
+      "frameCount": 8,
+      "fps": 8,
+      "loop": "once",
+      "status": "draft",
+      "sourceType": "generated_state_row",
+      "productionRequirement": "Draft generated trade win bounce row; review before approval.",
+      "currentAsset": "/pets/prime-test/rows/trade-win-row-v1.png"
+    },
+    {
+      "id": "trade_loss",
+      "label": "Trade loss slump",
+      "row": 5,
+      "frameCount": 8,
+      "fps": 5,
+      "loop": "once",
+      "status": "draft",
+      "sourceType": "generated_state_row",
+      "productionRequirement": "Draft generated trade loss slump row; review before approval.",
+      "currentAsset": "/pets/prime-test/rows/trade-loss-row-v1.png"
+    },
+    {
+      "id": "posting",
+      "label": "Posting send",
+      "row": 6,
+      "frameCount": 8,
+      "fps": 6,
+      "loop": "once",
+      "status": "draft",
+      "sourceType": "generated_state_row",
+      "productionRequirement": "Draft generated posting send row; review before approval.",
+      "currentAsset": "/pets/prime-test/rows/posting-row-v1.png"
+    },
+    {
+      "id": "receiving",
+      "label": "Receiving listen",
+      "row": 7,
+      "frameCount": 8,
+      "fps": 6,
+      "loop": "once",
+      "status": "draft",
+      "sourceType": "generated_state_row",
+      "productionRequirement": "Draft generated receiving listen row; review before approval.",
+      "currentAsset": "/pets/prime-test/rows/receiving-row-v1.png"
+    },
+    {
+      "id": "sleeping",
+      "label": "Sleeping breath",
+      "row": 8,
+      "frameCount": 8,
+      "fps": 2,
+      "loop": "loop",
+      "status": "draft",
+      "sourceType": "generated_state_row",
+      "productionRequirement": "Draft generated sleeping breath row; review before approval.",
+      "currentAsset": "/pets/prime-test/rows/sleeping-row-v1.png"
+    },
+    {
+      "id": "low_compute",
+      "label": "Low compute conserve",
+      "row": 9,
+      "frameCount": 8,
+      "fps": 3,
+      "loop": "loop",
+      "status": "draft",
+      "sourceType": "generated_state_row",
+      "productionRequirement": "Draft generated low compute conserve row; review before approval.",
+      "currentAsset": "/pets/prime-test/rows/low-compute-row-v1.png"
+    },
+    {
+      "id": "critical",
+      "label": "Critical distress",
+      "row": 10,
+      "frameCount": 8,
+      "fps": 8,
+      "loop": "loop",
+      "status": "draft",
+      "sourceType": "generated_state_row",
+      "productionRequirement": "Draft generated critical distress row; review before approval.",
+      "currentAsset": "/pets/prime-test/rows/critical-row-v1.png"
+    },
+    {
+      "id": "dead",
+      "label": "Dead grounded",
+      "row": 11,
+      "frameCount": 8,
+      "fps": 0,
+      "loop": "hold",
+      "status": "draft",
+      "sourceType": "generated_state_row",
+      "productionRequirement": "Draft generated dead grounded row; review before approval.",
+      "currentAsset": "/pets/prime-test/rows/dead-row-v1.png"
+    }
+  ]
+}
