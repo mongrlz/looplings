@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "generate:prime-variations": "node scripts/generate-prime-variation-atlases.mjs",
     "validate:prime-assets": "node scripts/validate-prime-state-pack.mjs",
     "preview": "vite preview",
     "lint": "eslint ."

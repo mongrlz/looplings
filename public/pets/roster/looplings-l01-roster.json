@@ -1,0 +1,138 @@
+{
+  "id": "looplings-l01-roster",
+  "version": "2026-05-02.v1",
+  "status": "concept_roster_with_scaffold_drafts",
+  "approvedConcept": "/pets/roster/concepts/looplings-l01-top-12-elemental-v2.png",
+  "notes": [
+    "Prime, Pink, and Blue are already canon character packs.",
+    "The approved elemental sheet replaces the duplicate Pink and Blue slots with Verdant and Storm.",
+    "The generated folders for the approved batch are scaffold drafts only until each character receives independent Pipeflow-style state-row generations."
+  ],
+  "canonicalLive": [
+    {
+      "id": "prime",
+      "displayName": "Prime",
+      "status": "live",
+      "body": "moon-white",
+      "eyes": "deep blue",
+      "antenna": "simple circular blue loop"
+    },
+    {
+      "id": "pink",
+      "displayName": "Pink",
+      "status": "draft_state_pack",
+      "body": "soft rose pink",
+      "eyes": "magenta rose",
+      "antenna": "heart loop"
+    },
+    {
+      "id": "blue",
+      "displayName": "Blue",
+      "status": "draft_state_pack",
+      "body": "powder blue",
+      "eyes": "icy deep blue",
+      "antenna": "stacked double loop"
+    }
+  ],
+  "approvedBatch": [
+    {
+      "id": "graphite",
+      "displayName": "Graphite",
+      "status": "scaffold_only",
+      "body": "graphite gray",
+      "eyes": "steel blue",
+      "antenna": "polished blue circular loop",
+      "personality": "quiet, durable, watchful"
+    },
+    {
+      "id": "verdant",
+      "displayName": "Verdant",
+      "status": "scaffold_only",
+      "body": "fresh leaf green",
+      "eyes": "emerald",
+      "antenna": "leaf loop with attached leaf-glow pixels",
+      "personality": "curious, restorative, gentle"
+    },
+    {
+      "id": "mint",
+      "displayName": "Mint",
+      "status": "scaffold_only",
+      "body": "mint aqua",
+      "eyes": "teal",
+      "antenna": "flat horizontal halo loop",
+      "personality": "clean, composed, precise"
+    },
+    {
+      "id": "storm",
+      "displayName": "Storm",
+      "status": "scaffold_only",
+      "body": "pale storm-lilac",
+      "eyes": "deep electric blue",
+      "antenna": "cloud swirl with attached static arcs",
+      "personality": "focused, volatile, fast"
+    },
+    {
+      "id": "violet",
+      "displayName": "Violet",
+      "status": "scaffold_only",
+      "body": "soft lavender",
+      "eyes": "violet",
+      "antenna": "infinity bow loop",
+      "personality": "clever, elegant, dreamy"
+    },
+    {
+      "id": "ember",
+      "displayName": "Ember",
+      "status": "scaffold_only",
+      "body": "warm coral red",
+      "eyes": "red orange",
+      "antenna": "fire diamond loop with attached flame pixels",
+      "personality": "bold, reactive, competitive"
+    },
+    {
+      "id": "aqua",
+      "displayName": "Aqua",
+      "status": "scaffold_only",
+      "body": "turquoise",
+      "eyes": "sea green",
+      "antenna": "water droplet loop with attached droplets",
+      "personality": "fluid, social, calm"
+    },
+    {
+      "id": "spark",
+      "displayName": "Spark",
+      "status": "draft_state_pack",
+      "body": "electric yellow",
+      "eyes": "cyan gold",
+      "antenna": "circular loop with attached lightning arcs",
+      "personality": "energetic, twitchy, optimistic"
+    },
+    {
+      "id": "frost",
+      "displayName": "Frost",
+      "status": "scaffold_only",
+      "body": "icy pale blue",
+      "eyes": "blue cyan",
+      "antenna": "crystalline loop with attached ice glints",
+      "personality": "patient, analytical, cool"
+    },
+    {
+      "id": "solar",
+      "displayName": "Solar",
+      "status": "scaffold_only",
+      "body": "warm cream gold",
+      "eyes": "amber",
+      "antenna": "crescent sun loop with attached rays",
+      "personality": "bright, confident, generous"
+    },
+    {
+      "id": "plum",
+      "displayName": "Plum",
+      "status": "scaffold_only",
+      "body": "muted plum",
+      "eyes": "magenta",
+      "antenna": "omega loop with magenta edge pixels",
+      "personality": "mysterious, reserved, stylish"
+    }
+  ]
+}

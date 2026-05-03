@@ -1,0 +1,156 @@
+{
+  "id": "aqua-l01-state-pack",
+  "version": "aqua-l01-state-pack.v1",
+  "status": "scaffold_only",
+  "statusReason": "Aqua L01 is a first-pass roster-derived elemental Loopling using the shared 12-state contract.",
+  "rig": "/pets/aqua/aqua-l01-rig.json",
+  "prototypeAtlas": "/pets/aqua/state-atlas.png",
+  "productionAtlas": null,
+  "cell": {
+    "width": 192,
+    "height": 208,
+    "columns": 8,
+    "defaultFrameCount": 8
+  },
+  "rules": [
+    "Each state row should preserve Aqua's water droplet loop antenna, turquoise water body, and sea-glass eyes.",
+    "Rows are first-pass roster-derived drafts and need artist or model regeneration before production approval.",
+    "Rows cannot be accepted if they drift back to Blue's double-loop antenna silhouette.",
+    "Posting may use one tiny in-hand phone for the send/read action.",
+    "The dead state may be an 8-frame compatibility hold, but it must remain a grounded Aqua pose."
+  ],
+  "states": [
+    {
+      "id": "idle",
+      "label": "Idle breathing",
+      "row": 0,
+      "frameCount": 8,
+      "fps": 5,
+      "loop": "loop",
+      "status": "scaffold_only",
+      "sourceType": "roster_derived_state_row",
+      "currentAsset": "/pets/aqua/rows/idle-row-v1.png"
+    },
+    {
+      "id": "thinking",
+      "label": "Thinking focus",
+      "row": 1,
+      "frameCount": 8,
+      "fps": 5,
+      "loop": "loop",
+      "status": "scaffold_only",
+      "sourceType": "roster_derived_state_row",
+      "currentAsset": "/pets/aqua/rows/thinking-row-v1.png"
+    },
+    {
+      "id": "acting",
+      "label": "Tool action",
+      "row": 2,
+      "frameCount": 8,
+      "fps": 8,
+      "loop": "loop",
+      "status": "scaffold_only",
+      "sourceType": "roster_derived_state_row",
+      "currentAsset": "/pets/aqua/rows/acting-row-v1.png"
+    },
+    {
+      "id": "trading",
+      "label": "Market scan",
+      "row": 3,
+      "frameCount": 8,
+      "fps": 9,
+      "loop": "loop",
+      "status": "scaffold_only",
+      "sourceType": "roster_derived_state_row",
+      "currentAsset": "/pets/aqua/rows/trading-row-v1.png"
+    },
+    {
+      "id": "trade_win",
+      "label": "Trade win bounce",
+      "row": 4,
+      "frameCount": 8,
+      "fps": 8,
+      "loop": "once",
+      "status": "scaffold_only",
+      "sourceType": "roster_derived_state_row",
+      "currentAsset": "/pets/aqua/rows/trade-win-row-v1.png"
+    },
+    {
+      "id": "trade_loss",
+      "label": "Trade loss slump",
+      "row": 5,
+      "frameCount": 8,
+      "fps": 5,
+      "loop": "once",
+      "status": "scaffold_only",
+      "sourceType": "roster_derived_state_row",
+      "currentAsset": "/pets/aqua/rows/trade-loss-row-v1.png"
+    },
+    {
+      "id": "posting",
+      "label": "Posting send",
+      "row": 6,
+      "frameCount": 8,
+      "fps": 6,
+      "loop": "once",
+      "status": "scaffold_only",
+      "sourceType": "roster_derived_state_row",
+      "currentAsset": "/pets/aqua/rows/posting-row-v1.png"
+    },
+    {
+      "id": "receiving",
+      "label": "Receiving listen",
+      "row": 7,
+      "frameCount": 8,
+      "fps": 6,
+      "loop": "once",
+      "status": "scaffold_only",
+      "sourceType": "roster_derived_state_row",
+      "currentAsset": "/pets/aqua/rows/receiving-row-v1.png"
+    },
+    {
+      "id": "sleeping",
+      "label": "Sleeping breath",
+      "row": 8,
+      "frameCount": 8,
+      "fps": 2,
+      "loop": "loop",
+      "status": "scaffold_only",
+      "sourceType": "roster_derived_state_row",
+      "currentAsset": "/pets/aqua/rows/sleeping-row-v1.png"
+    },
+    {
+      "id": "low_compute",
+      "label": "Low compute conserve",
+      "row": 9,
+      "frameCount": 8,
+      "fps": 3,
+      "loop": "loop",
+      "status": "scaffold_only",
+      "sourceType": "roster_derived_state_row",
+      "currentAsset": "/pets/aqua/rows/low-compute-row-v1.png"
+    },
+    {
+      "id": "critical",
+      "label": "Critical distress",
+      "row": 10,
+      "frameCount": 8,
+      "fps": 8,
+      "loop": "loop",
+      "status": "scaffold_only",
+      "sourceType": "roster_derived_state_row",
+      "currentAsset": "/pets/aqua/rows/critical-row-v1.png"
+    },
+    {
+      "id": "dead",
+      "label": "Dead grounded",
+      "row": 11,
+      "frameCount": 8,
+      "fps": 0,
+      "loop": "hold",
+      "status": "scaffold_only",
+      "sourceType": "roster_derived_state_row",
+      "currentAsset": "/pets/aqua/rows/dead-row-v1.png"
+    }
+  ]
+}

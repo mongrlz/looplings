@@ -1,0 +1,172 @@
+{
+  "id": "spark-l01-state-pack",
+  "version": "spark-l01-state-pack.v1",
+  "status": "draft_state_pack",
+  "statusReason": "Spark L01 now uses independent image-generated state rows for the full 12-state contract; rows are draft review quality and include exported GIF previews.",
+  "rig": "/pets/spark/spark-l01-rig.json",
+  "prototypeAtlas": "/pets/spark/state-atlas.png",
+  "productionAtlas": null,
+  "cell": {
+    "width": 192,
+    "height": 208,
+    "columns": 8,
+    "defaultFrameCount": 8
+  },
+  "rules": [
+    "Each state row should preserve Spark's golden body, circular loop antenna, attached lightning arcs, teal eyes, and quick electric identity.",
+    "Lightning and spark details must remain attached to the antenna stem or loop, not floating as separate elements.",
+    "Rows cannot be accepted if they are only a recolor of Blue.",
+    "The dead state may be an 8-frame compatibility hold, but it must be a grounded Spark pose."
+  ],
+  "states": [
+    {
+      "id": "idle",
+      "label": "Idle breathing",
+      "row": 0,
+      "frameCount": 8,
+      "fps": 5,
+      "loop": "loop",
+      "status": "draft",
+      "sourceType": "imagegen_state_row",
+      "currentAsset": "/pets/spark/rows/idle-row-v1.png"
+    },
+    {
+      "id": "thinking",
+      "label": "Thinking focus",
+      "row": 1,
+      "frameCount": 8,
+      "fps": 5,
+      "loop": "loop",
+      "status": "draft",
+      "sourceType": "imagegen_state_row",
+      "currentAsset": "/pets/spark/rows/thinking-row-v1.png"
+    },
+    {
+      "id": "acting",
+      "label": "Tool action",
+      "row": 2,
+      "frameCount": 8,
+      "fps": 8,
+      "loop": "loop",
+      "status": "draft",
+      "sourceType": "imagegen_state_row",
+      "currentAsset": "/pets/spark/rows/acting-row-v1.png"
+    },
+    {
+      "id": "trading",
+      "label": "Market scan",
+      "row": 3,
+      "frameCount": 8,
+      "fps": 9,
+      "loop": "loop",
+      "status": "draft",
+      "sourceType": "imagegen_state_row",
+      "currentAsset": "/pets/spark/rows/trading-row-v1.png"
+    },
+    {
+      "id": "trade_win",
+      "label": "Trade win bounce",
+      "row": 4,
+      "frameCount": 8,
+      "fps": 8,
+      "loop": "once",
+      "status": "draft",
+      "sourceType": "imagegen_state_row",
+      "currentAsset": "/pets/spark/rows/trade-win-row-v1.png"
+    },
+    {
+      "id": "trade_loss",
+      "label": "Trade loss slump",
+      "row": 5,
+      "frameCount": 8,
+      "fps": 5,
+      "loop": "once",
+      "status": "draft",
+      "sourceType": "imagegen_state_row",
+      "currentAsset": "/pets/spark/rows/trade-loss-row-v1.png"
+    },
+    {
+      "id": "posting",
+      "label": "Posting send",
+      "row": 6,
+      "frameCount": 8,
+      "fps": 6,
+      "loop": "once",
+      "status": "draft",
+      "sourceType": "imagegen_state_row",
+      "currentAsset": "/pets/spark/rows/posting-row-v1.png"
+    },
+    {
+      "id": "receiving",
+      "label": "Receiving listen",
+      "row": 7,
+      "frameCount": 8,
+      "fps": 6,
+      "loop": "once",
+      "status": "draft",
+      "sourceType": "imagegen_state_row",
+      "currentAsset": "/pets/spark/rows/receiving-row-v1.png"
+    },
+    {
+      "id": "sleeping",
+      "label": "Sleeping breath",
+      "row": 8,
+      "frameCount": 8,
+      "fps": 2,
+      "loop": "loop",
+      "status": "draft",
+      "sourceType": "imagegen_state_row",
+      "currentAsset": "/pets/spark/rows/sleeping-row-v1.png"
+    },
+    {
+      "id": "low_compute",
+      "label": "Low compute conserve",
+      "row": 9,
+      "frameCount": 8,
+      "fps": 3,
+      "loop": "loop",
+      "status": "draft",
+      "sourceType": "imagegen_state_row",
+      "currentAsset": "/pets/spark/rows/low-compute-row-v1.png"
+    },
+    {
+      "id": "critical",
+      "label": "Critical distress",
+      "row": 10,
+      "frameCount": 8,
+      "fps": 8,
+      "loop": "loop",
+      "status": "draft",
+      "sourceType": "imagegen_state_row",
+      "currentAsset": "/pets/spark/rows/critical-row-v1.png"
+    },
+    {
+      "id": "dead",
+      "label": "Dead grounded",
+      "row": 11,
+      "frameCount": 8,
+      "fps": 0,
+      "loop": "hold",
+      "status": "draft",
+      "sourceType": "imagegen_state_row",
+      "currentAsset": "/pets/spark/rows/dead-row-v1.png"
+    }
+  ],
+  "previewAssets": {
+    "contactSheet": "/pets/spark/previews/contact-sheet.png",
+    "gifs": {
+      "idle": "/pets/spark/previews/idle.gif",
+      "thinking": "/pets/spark/previews/thinking.gif",
+      "acting": "/pets/spark/previews/acting.gif",
+      "trading": "/pets/spark/previews/trading.gif",
+      "trade_win": "/pets/spark/previews/trade_win.gif",
+      "trade_loss": "/pets/spark/previews/trade_loss.gif",
+      "posting": "/pets/spark/previews/posting.gif",
+      "receiving": "/pets/spark/previews/receiving.gif",
+      "sleeping": "/pets/spark/previews/sleeping.gif",
+      "low_compute": "/pets/spark/previews/low_compute.gif",
+      "critical": "/pets/spark/previews/critical.gif",
+      "dead": "/pets/spark/previews/dead.gif"
+    }
+  }
+}

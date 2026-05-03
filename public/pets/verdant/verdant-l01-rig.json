@@ -1,0 +1,24 @@
+{
+  "id": "verdant-l01-rig",
+  "displayName": "Verdant",
+  "lineage": "prime-family",
+  "status": "concept_ready",
+  "canonicalReference": "/pets/verdant/concepts/verdant-reference-v1.png",
+  "identityLocks": [
+    "fresh leaf green body drawn as native pixel art, not a tint overlay.",
+    "leaf loop with attached leaf-glow pixels.",
+    "emerald eyes with character-specific highlights.",
+    "Prime-family rounded body silhouette and tiny neutral mouth.",
+    "No clothes, hats, accessories, props, or detached effects unless the state contract explicitly allows a tiny in-hand posting prop."
+  ],
+  "personalityNotes": [
+    "curious, restorative, gentle",
+    "Same state meanings as Prime.",
+    "Readable at thumbnail size."
+  ],
+  "cell": {
+    "width": 192,
+    "height": 208,
+    "columns": 8
+  }
+}

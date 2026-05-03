@@ -30,10 +30,28 @@ const PET_OPTIONS = {
   primeTest: {
     label: 'Prime Test L01',
     spritesheet: '/pets/prime-test/spritesheet.webp',
+    stateAtlas: 'primeTest',
+  },
+  pink: {
+    label: 'Pink L01',
+    spritesheet: '/pets/pink/spritesheet.webp',
+    stateAtlas: 'pink',
+  },
+  blue: {
+    label: 'Blue L01',
+    spritesheet: '/pets/blue/spritesheet.webp',
+    stateAtlas: 'blue',
+  },
+  spark: {
+    label: 'Spark L01',
+    spritesheet: '/pets/spark/spritesheet.webp',
+    stateAtlas: 'spark',
   },
 } as const;
 
 type PetOptionId = keyof typeof PET_OPTIONS;
+type StateAtlasPetOptionId = Exclude<PetOptionId, 'prime'>;
+type LooplingStateAtlasId = Exclude<(typeof PET_OPTIONS)[StateAtlasPetOptionId]['stateAtlas'], 'primeTest'>;
 
 const CODEX_PET_COLS = 8;
 const CODEX_PET_ROWS = 9;
@@ -52,27 +70,50 @@ const CODEX_PET_ROW_META = {
 type CodexPetRowId = keyof typeof CODEX_PET_ROW_META;
 type VisibleLooplingVisualStateId = Exclude<LooplingVisualStateId, 'prediction_win'>;
 
-const PRIME_STATE_ATLAS_VERSION = 'prime-frame-scale-v2';
+const LOOPLING_STATE_ATLAS_VERSION = 'loopling-state-atlas-2026-05-02';
 
-const PRIME_TEST_STATE_ATLAS = {
-  spritesheet: `/pets/prime-test/state-atlas.png?v=${PRIME_STATE_ATLAS_VERSION}`,
+const LOOPLING_STATE_ATLAS_STATES = {
+  idle: { row: 0, label: 'Idle breathing', frameCount: 8, fps: 5 },
+  thinking: { row: 1, label: 'Thinking focus', frameCount: 8, fps: 5 },
+  acting: { row: 2, label: 'Tool action', frameCount: 8, fps: 8 },
+  trading: { row: 3, label: 'Market scan', frameCount: 8, fps: 9 },
+  trade_win: { row: 4, label: 'Trade win bounce', frameCount: 8, fps: 8 },
+  trade_loss: { row: 5, label: 'Trade loss slump', frameCount: 8, fps: 5 },
+  posting: { row: 6, label: 'Posting send', frameCount: 8, fps: 6 },
+  receiving: { row: 7, label: 'Receiving listen', frameCount: 8, fps: 6 },
+  sleeping: { row: 8, label: 'Sleeping breath', frameCount: 8, fps: 2 },
+  low_compute: { row: 9, label: 'Low compute conserve', frameCount: 8, fps: 3 },
+  critical: { row: 10, label: 'Critical distress', frameCount: 8, fps: 8 },
+  dead: { row: 11, label: 'Dead grounded', frameCount: 8, fps: 0 },
+} satisfies Partial<Record<VisibleLooplingVisualStateId, { row: number; label: string; frameCount: number; fps: number }>>;
+
+const LOOPLING_STATE_ATLASES = {
+  primeTest: {
+    spritesheet: `/pets/prime-test/state-atlas.png?v=${LOOPLING_STATE_ATLAS_VERSION}`,
+    states: LOOPLING_STATE_ATLAS_STATES,
+  },
+  pink: {
+    spritesheet: `/pets/pink/state-atlas.png?v=${LOOPLING_STATE_ATLAS_VERSION}`,
+    states: LOOPLING_STATE_ATLAS_STATES,
+  },
+  blue: {
+    spritesheet: `/pets/blue/state-atlas.png?v=${LOOPLING_STATE_ATLAS_VERSION}`,
+    states: LOOPLING_STATE_ATLAS_STATES,
+  },
+  spark: {
+    spritesheet: `/pets/spark/state-atlas.png?v=${LOOPLING_STATE_ATLAS_VERSION}`,
+    states: LOOPLING_STATE_ATLAS_STATES,
+  },
+} as const;
+
+const LOOPLING_STATE_ATLAS_META = {
   cols: 8,
   rows: 12,
-  states: {
-    idle: { row: 0, label: 'Idle breathing', frameCount: 8, fps: 5 },
-    thinking: { row: 1, label: 'Thinking focus', frameCount: 8, fps: 5 },
-    acting: { row: 2, label: 'Tool action', frameCount: 8, fps: 8 },
-    trading: { row: 3, label: 'Market scan', frameCount: 8, fps: 9 },
-    trade_win: { row: 4, label: 'Trade win bounce', frameCount: 8, fps: 8 },
-    trade_loss: { row: 5, label: 'Trade loss slump', frameCount: 8, fps: 5 },
-    posting: { row: 6, label: 'Posting send', frameCount: 8, fps: 6 },
-    receiving: { row: 7, label: 'Receiving listen', frameCount: 8, fps: 6 },
-    sleeping: { row: 8, label: 'Sleeping breath', frameCount: 8, fps: 2 },
-    low_compute: { row: 9, label: 'Low compute conserve', frameCount: 8, fps: 3 },
-    critical: { row: 10, label: 'Critical distress', frameCount: 8, fps: 8 },
-    dead: { row: 11, label: 'Dead grounded', frameCount: 8, fps: 0 },
-  } satisfies Partial<Record<VisibleLooplingVisualStateId, { row: number; label: string; frameCount: number; fps: number }>>,
 } as const;
+
+function isGeneratedLooplingPet(petId: PetOptionId): petId is LooplingStateAtlasId {
+  return petId !== 'prime' && petId !== 'primeTest';
+}
 
 interface StateRenderMeta {
   rowId: CodexPetRowId;
@@ -333,9 +374,13 @@ function TraitPill({ label, value }: { label: string; value: string }) {
 function StateStatusPill({ stateId }: { stateId: LooplingVisualStateId }) {
   const contract = getPrimeStateContract(stateId);
   const approved = isPrimeStateProductionApproved(stateId);
+  return <StatusPill status={contract.status} label={approved ? 'production ready' : statusLabel(contract.status)} />;
+}
+
+function StatusPill({ status, label }: { status: string; label: string }) {
   return (
-    <span className={`sprite-lab-status-pill is-${contract.status}`}>
-      {approved ? 'production ready' : statusLabel(contract.status)}
+    <span className={`sprite-lab-status-pill is-${status}`}>
+      {label}
     </span>
   );
 }
@@ -436,26 +481,32 @@ export default function SpriteLabPage() {
   const previewFrames = getPreviewFrames(stateId);
   const stateRender = STATE_RENDER_META[stateId];
   const stateContract = getPrimeStateContract(stateId);
+  const pet = PET_OPTIONS[petId];
+  const isDraftLoopling = isGeneratedLooplingPet(petId);
+  const activeStateStatus = isDraftLoopling ? 'draft' : stateContract.status;
+  const activeStateStatusLabel = isDraftLoopling ? 'draft' : isPrimeStateProductionApproved(stateId) ? 'production ready' : statusLabel(stateContract.status);
+  const activeStateNote = isDraftLoopling
+    ? `Draft generated ${pet.label} ${visualState.label.toLowerCase()} row; review identity, antenna attachment, and expression readability before approval.`
+    : stateContract.productionRequirement;
   const stateApprovalChecklist = [
     ...QA_ITEMS,
-    ...(stateContract.rejectionReason ? [stateContract.rejectionReason] : []),
+    ...(!isDraftLoopling && stateContract.rejectionReason ? [stateContract.rejectionReason] : []),
   ];
   const codexPetRowId = stateRender.rowId;
   const codexPetRow = CODEX_PET_ROW_META[codexPetRowId];
-  const pet = PET_OPTIONS[petId];
-  const primeTestStates: Partial<Record<VisibleLooplingVisualStateId, { row: number; label: string; frameCount: number; fps: number }>> = PRIME_TEST_STATE_ATLAS.states;
-  const primeTestState = stateId === 'prediction_win' ? undefined : primeTestStates[stateId];
+  const stateAtlasId = 'stateAtlas' in pet ? pet.stateAtlas : null;
+  const looplingStateAtlas = stateAtlasId ? LOOPLING_STATE_ATLASES[stateAtlasId] : null;
+  const looplingState = stateId === 'prediction_win' ? undefined : looplingStateAtlas?.states[stateId];
   const activeAtlas = (() => {
-    if (petId === 'primeTest') {
-      if (!stateContract.currentAsset || !primeTestState) return null;
+    if (looplingStateAtlas && looplingState) {
       return {
-        spritesheet: PRIME_TEST_STATE_ATLAS.spritesheet,
-        cols: PRIME_TEST_STATE_ATLAS.cols,
-        rows: PRIME_TEST_STATE_ATLAS.rows,
-        row: primeTestState.row,
-        label: primeTestState.label,
-        fps: primeTestState.fps,
-        frameSequence: Array.from({ length: primeTestState.frameCount }, (_, index) => index),
+        spritesheet: looplingStateAtlas.spritesheet,
+        cols: LOOPLING_STATE_ATLAS_META.cols,
+        rows: LOOPLING_STATE_ATLAS_META.rows,
+        row: looplingState.row,
+        label: looplingState.label,
+        fps: looplingState.fps,
+        frameSequence: Array.from({ length: looplingState.frameCount }, (_, index) => index),
         usesGeneratedStates: true,
       };
     }
@@ -478,9 +529,9 @@ export default function SpriteLabPage() {
         <header className="sprite-lab-header">
           <div>
             <p>Looplings Sprite Lab</p>
-            <h1>Prime rig approval bench</h1>
+            <h1>Loopling rig approval bench</h1>
             <div className="sprite-lab-prototype-warning">
-              Current Prime Test atlas is a prototype reference. Production rows must be generated independently.
+              Current atlases are draft review sheets. Production rows must stay independently generated and visually approved.
             </div>
           </div>
           <div className="sprite-lab-header-actions">
@@ -524,7 +575,7 @@ export default function SpriteLabPage() {
                   ? `${activeAtlas.label} / row ${activeAtlas.row + 1} / ${activeAtlas.frameSequence.length} frames / ${activeAtlas.fps} fps`
                   : 'generation job / no sprite row yet'}
               </strong>
-              <StateStatusPill stateId={stateId} />
+              <StatusPill status={activeStateStatus} label={activeStateStatusLabel} />
             </div>
             <div className="sprite-lab-preview-row">
               <div className="sprite-lab-preview-card">
@@ -606,13 +657,13 @@ export default function SpriteLabPage() {
           <aside className="sprite-lab-panel sprite-lab-panel--qa">
             <h2><BadgeCheck size={16} /> Approval</h2>
             <div className="sprite-lab-approval-summary">
-              <StateStatusPill stateId={stateId} />
+              <StatusPill status={activeStateStatus} label={activeStateStatusLabel} />
               <strong>{stateContract.sourceType.replace(/_/g, ' ')}</strong>
             </div>
             <div className="sprite-lab-qa-list">
               {stateApprovalChecklist.map((item) => (
                 <label key={item}>
-                  <input type="checkbox" disabled={!isPrimeStateProductionApproved(stateId)} />
+                  <input type="checkbox" disabled={isDraftLoopling || !isPrimeStateProductionApproved(stateId)} />
                   {item}
                 </label>
               ))}
@@ -621,13 +672,13 @@ export default function SpriteLabPage() {
               <h3><Sparkles size={14} /> State cues</h3>
               {animation.cues.map((cue) => <span key={cue}>{cue}</span>)}
             </div>
-            <p className="sprite-lab-state-note">{stateContract.productionRequirement}</p>
+            <p className="sprite-lab-state-note">{activeStateNote}</p>
           </aside>
         </section>
 
         <section className="sprite-lab-bottom">
           <div className="sprite-lab-panel sprite-lab-panel--factory">
-            <h2><BadgeCheck size={16} /> Prime L01 rig contract</h2>
+            <h2><BadgeCheck size={16} /> {isDraftLoopling ? pet.label : 'Prime L01'} rig contract</h2>
             <div className="sprite-lab-factory-grid">
               <TraitPill label="Version" value={PRIME_RIG_CONTRACT.version} />
               <TraitPill label="Cell" value={`${PRIME_RIG_CONTRACT.cell.width}x${PRIME_RIG_CONTRACT.cell.height}`} />

@@ -1,0 +1,359 @@
+{
+  "schemaVersion": "prime-generated-atlas-pack.v1",
+  "seed": "prime-genesis",
+  "count": 24,
+  "sourcePack": "public/pets/prime-test/source-pack/prime-l01-source-pack.v1.json",
+  "baseAtlas": "public/pets/prime-test/state-atlas.png",
+  "cell": {
+    "width": 192,
+    "height": 208,
+    "columns": 8,
+    "rows": 12
+  },
+  "visualCoverage": {
+    "bodyPalette": "baked",
+    "antennaColor": "baked",
+    "eyeStyle": "metadata_pending_layer_art",
+    "antennaShape": "origin_loop_only_baked_non_origin_shapes_pending_artist_layers",
+    "foreheadMark": "baked_from_frame_anchored_glyph",
+    "expressionSet": "metadata_pending_layer_art"
+  },
+  "tokens": [
+    {
+      "tokenId": "L01-00001",
+      "serial": 0,
+      "atlas": "public/pets/prime-test/generated/prime-genesis/L01-00001/state-atlas.png",
+      "metadata": "public/pets/prime-test/generated/prime-genesis/L01-00001/metadata.json",
+      "traits": {
+        "bodyPalette": "moon-milk",
+        "eyeStyle": "glassy-round",
+        "antennaShape": "teardrop-loop",
+        "antennaColor": "mint-pulse",
+        "foreheadMark": "vertical-reserve",
+        "expressionSet": "protected-melancholy"
+      }
+    },
+    {
+      "tokenId": "L01-00002",
+      "serial": 1,
+      "atlas": "public/pets/prime-test/generated/prime-genesis/L01-00002/state-atlas.png",
+      "metadata": "public/pets/prime-test/generated/prime-genesis/L01-00002/metadata.json",
+      "traits": {
+        "bodyPalette": "soft-blush",
+        "eyeStyle": "glassy-round",
+        "antennaShape": "origin-loop",
+        "antennaColor": "signal-blue",
+        "foreheadMark": "reserved-dot",
+        "expressionSet": "quiet-oracle"
+      }
+    },
+    {
+      "tokenId": "L01-00003",
+      "serial": 2,
+      "atlas": "public/pets/prime-test/generated/prime-genesis/L01-00003/state-atlas.png",
+      "metadata": "public/pets/prime-test/generated/prime-genesis/L01-00003/metadata.json",
+      "traits": {
+        "bodyPalette": "moon-milk",
+        "eyeStyle": "sleepy-lids",
+        "antennaShape": "origin-loop",
+        "antennaColor": "signal-blue",
+        "foreheadMark": "reserved-dot",
+        "expressionSet": "curious-survivor"
+      }
+    },
+    {
+      "tokenId": "L01-00004",
+      "serial": 3,
+      "atlas": "public/pets/prime-test/generated/prime-genesis/L01-00004/state-atlas.png",
+      "metadata": "public/pets/prime-test/generated/prime-genesis/L01-00004/metadata.json",
+      "traits": {
+        "bodyPalette": "soft-blush",
+        "eyeStyle": "star-cache",
+        "antennaShape": "origin-loop",
+        "antennaColor": "signal-blue",
+        "foreheadMark": "reserved-dot",
+        "expressionSet": "protected-melancholy"
+      }
+    },
+    {
+      "tokenId": "L01-00005",
+      "serial": 4,
+      "atlas": "public/pets/prime-test/generated/prime-genesis/L01-00005/state-atlas.png",
+      "metadata": "public/pets/prime-test/generated/prime-genesis/L01-00005/metadata.json",
+      "traits": {
+        "bodyPalette": "moon-milk",
+        "eyeStyle": "glassy-round",
+        "antennaShape": "teardrop-loop",
+        "antennaColor": "mint-pulse",
+        "foreheadMark": "twin-reserve",
+        "expressionSet": "protected-melancholy"
+      }
+    },
+    {
+      "tokenId": "L01-00006",
+      "serial": 5,
+      "atlas": "public/pets/prime-test/generated/prime-genesis/L01-00006/state-atlas.png",
+      "metadata": "public/pets/prime-test/generated/prime-genesis/L01-00006/metadata.json",
+      "traits": {
+        "bodyPalette": "genesis-glow",
+        "eyeStyle": "glassy-round",
+        "antennaShape": "halo-loop",
+        "antennaColor": "signal-blue",
+        "foreheadMark": "reserved-dot",
+        "expressionSet": "curious-survivor"
+      }
+    },
+    {
+      "tokenId": "L01-00007",
+      "serial": 6,
+      "atlas": "public/pets/prime-test/generated/prime-genesis/L01-00007/state-atlas.png",
+      "metadata": "public/pets/prime-test/generated/prime-genesis/L01-00007/metadata.json",
+      "traits": {
+        "bodyPalette": "moon-milk",
+        "eyeStyle": "glassy-round",
+        "antennaShape": "halo-loop",
+        "antennaColor": "signal-blue",
+        "foreheadMark": "diamond-cache",
+        "expressionSet": "curious-survivor"
+      }
+    },
+    {
+      "tokenId": "L01-00008",
+      "serial": 7,
+      "atlas": "public/pets/prime-test/generated/prime-genesis/L01-00008/state-atlas.png",
+      "metadata": "public/pets/prime-test/generated/prime-genesis/L01-00008/metadata.json",
+      "traits": {
+        "bodyPalette": "origin-pearl",
+        "eyeStyle": "glassy-round",
+        "antennaShape": "origin-loop",
+        "antennaColor": "mint-pulse",
+        "foreheadMark": "reserved-dot",
+        "expressionSet": "curious-survivor"
+      }
+    },
+    {
+      "tokenId": "L01-00009",
+      "serial": 8,
+      "atlas": "public/pets/prime-test/generated/prime-genesis/L01-00009/state-atlas.png",
+      "metadata": "public/pets/prime-test/generated/prime-genesis/L01-00009/metadata.json",
+      "traits": {
+        "bodyPalette": "moon-milk",
+        "eyeStyle": "glassy-round",
+        "antennaShape": "origin-loop",
+        "antennaColor": "signal-blue",
+        "foreheadMark": "reserved-dot",
+        "expressionSet": "protected-melancholy"
+      }
+    },
+    {
+      "tokenId": "L01-00010",
+      "serial": 9,
+      "atlas": "public/pets/prime-test/generated/prime-genesis/L01-00010/state-atlas.png",
+      "metadata": "public/pets/prime-test/generated/prime-genesis/L01-00010/metadata.json",
+      "traits": {
+        "bodyPalette": "origin-pearl",
+        "eyeStyle": "glassy-round",
+        "antennaShape": "origin-loop",
+        "antennaColor": "mint-pulse",
+        "foreheadMark": "reserved-dot",
+        "expressionSet": "curious-survivor"
+      }
+    },
+    {
+      "tokenId": "L01-00011",
+      "serial": 10,
+      "atlas": "public/pets/prime-test/generated/prime-genesis/L01-00011/state-atlas.png",
+      "metadata": "public/pets/prime-test/generated/prime-genesis/L01-00011/metadata.json",
+      "traits": {
+        "bodyPalette": "origin-pearl",
+        "eyeStyle": "soft-oval",
+        "antennaShape": "origin-loop",
+        "antennaColor": "mint-pulse",
+        "foreheadMark": "reserved-dot",
+        "expressionSet": "protected-melancholy"
+      }
+    },
+    {
+      "tokenId": "L01-00012",
+      "serial": 11,
+      "atlas": "public/pets/prime-test/generated/prime-genesis/L01-00012/state-atlas.png",
+      "metadata": "public/pets/prime-test/generated/prime-genesis/L01-00012/metadata.json",
+      "traits": {
+        "bodyPalette": "opal-static",
+        "eyeStyle": "sleepy-lids",
+        "antennaShape": "origin-loop",
+        "antennaColor": "mint-pulse",
+        "foreheadMark": "reserved-dot",
+        "expressionSet": "protected-melancholy"
+      }
+    },
+    {
+      "tokenId": "L01-00013",
+      "serial": 12,
+      "atlas": "public/pets/prime-test/generated/prime-genesis/L01-00013/state-atlas.png",
+      "metadata": "public/pets/prime-test/generated/prime-genesis/L01-00013/metadata.json",
+      "traits": {
+        "bodyPalette": "origin-pearl",
+        "eyeStyle": "soft-oval",
+        "antennaShape": "teardrop-loop",
+        "antennaColor": "mint-pulse",
+        "foreheadMark": "reserved-dot",
+        "expressionSet": "protected-melancholy"
+      }
+    },
+    {
+      "tokenId": "L01-00014",
+      "serial": 13,
+      "atlas": "public/pets/prime-test/generated/prime-genesis/L01-00014/state-atlas.png",
+      "metadata": "public/pets/prime-test/generated/prime-genesis/L01-00014/metadata.json",
+      "traits": {
+        "bodyPalette": "opal-static",
+        "eyeStyle": "glassy-round",
+        "antennaShape": "origin-loop",
+        "antennaColor": "violet-thread",
+        "foreheadMark": "reserved-dot",
+        "expressionSet": "protected-melancholy"
+      }
+    },
+    {
+      "tokenId": "L01-00015",
+      "serial": 14,
+      "atlas": "public/pets/prime-test/generated/prime-genesis/L01-00015/state-atlas.png",
+      "metadata": "public/pets/prime-test/generated/prime-genesis/L01-00015/metadata.json",
+      "traits": {
+        "bodyPalette": "origin-pearl",
+        "eyeStyle": "screen-glint",
+        "antennaShape": "origin-loop",
+        "antennaColor": "violet-thread",
+        "foreheadMark": "twin-reserve",
+        "expressionSet": "quiet-oracle"
+      }
+    },
+    {
+      "tokenId": "L01-00016",
+      "serial": 15,
+      "atlas": "public/pets/prime-test/generated/prime-genesis/L01-00016/state-atlas.png",
+      "metadata": "public/pets/prime-test/generated/prime-genesis/L01-00016/metadata.json",
+      "traits": {
+        "bodyPalette": "opal-static",
+        "eyeStyle": "screen-glint",
+        "antennaShape": "halo-loop",
+        "antennaColor": "golden-runway",
+        "foreheadMark": "twin-reserve",
+        "expressionSet": "protected-melancholy"
+      }
+    },
+    {
+      "tokenId": "L01-00017",
+      "serial": 16,
+      "atlas": "public/pets/prime-test/generated/prime-genesis/L01-00017/state-atlas.png",
+      "metadata": "public/pets/prime-test/generated/prime-genesis/L01-00017/metadata.json",
+      "traits": {
+        "bodyPalette": "origin-pearl",
+        "eyeStyle": "glassy-round",
+        "antennaShape": "origin-loop",
+        "antennaColor": "golden-runway",
+        "foreheadMark": "reserved-dot",
+        "expressionSet": "protected-melancholy"
+      }
+    },
+    {
+      "tokenId": "L01-00018",
+      "serial": 17,
+      "atlas": "public/pets/prime-test/generated/prime-genesis/L01-00018/state-atlas.png",
+      "metadata": "public/pets/prime-test/generated/prime-genesis/L01-00018/metadata.json",
+      "traits": {
+        "bodyPalette": "moon-milk",
+        "eyeStyle": "glassy-round",
+        "antennaShape": "teardrop-loop",
+        "antennaColor": "redline-critical",
+        "foreheadMark": "vertical-reserve",
+        "expressionSet": "curious-survivor"
+      }
+    },
+    {
+      "tokenId": "L01-00019",
+      "serial": 18,
+      "atlas": "public/pets/prime-test/generated/prime-genesis/L01-00019/state-atlas.png",
+      "metadata": "public/pets/prime-test/generated/prime-genesis/L01-00019/metadata.json",
+      "traits": {
+        "bodyPalette": "origin-pearl",
+        "eyeStyle": "screen-glint",
+        "antennaShape": "origin-loop",
+        "antennaColor": "signal-blue",
+        "foreheadMark": "reserved-dot",
+        "expressionSet": "curious-survivor"
+      }
+    },
+    {
+      "tokenId": "L01-00020",
+      "serial": 19,
+      "atlas": "public/pets/prime-test/generated/prime-genesis/L01-00020/state-atlas.png",
+      "metadata": "public/pets/prime-test/generated/prime-genesis/L01-00020/metadata.json",
+      "traits": {
+        "bodyPalette": "moon-milk",
+        "eyeStyle": "glassy-round",
+        "antennaShape": "origin-loop",
+        "antennaColor": "signal-blue",
+        "foreheadMark": "twin-reserve",
+        "expressionSet": "curious-survivor"
+      }
+    },
+    {
+      "tokenId": "L01-00021",
+      "serial": 20,
+      "atlas": "public/pets/prime-test/generated/prime-genesis/L01-00021/state-atlas.png",
+      "metadata": "public/pets/prime-test/generated/prime-genesis/L01-00021/metadata.json",
+      "traits": {
+        "bodyPalette": "origin-pearl",
+        "eyeStyle": "soft-oval",
+        "antennaShape": "teardrop-loop",
+        "antennaColor": "mint-pulse",
+        "foreheadMark": "reserved-dot",
+        "expressionSet": "protected-melancholy"
+      }
+    },
+    {
+      "tokenId": "L01-00022",
+      "serial": 21,
+      "atlas": "public/pets/prime-test/generated/prime-genesis/L01-00022/state-atlas.png",
+      "metadata": "public/pets/prime-test/generated/prime-genesis/L01-00022/metadata.json",
+      "traits": {
+        "bodyPalette": "opal-static",
+        "eyeStyle": "star-cache",
+        "antennaShape": "halo-loop",
+        "antennaColor": "signal-blue",
+        "foreheadMark": "reserved-dot",
+        "expressionSet": "protected-melancholy"
+      }
+    },
+    {
+      "tokenId": "L01-00023",
+      "serial": 22,
+      "atlas": "public/pets/prime-test/generated/prime-genesis/L01-00023/state-atlas.png",
+      "metadata": "public/pets/prime-test/generated/prime-genesis/L01-00023/metadata.json",
+      "traits": {
+        "bodyPalette": "origin-pearl",
+        "eyeStyle": "sleepy-lids",
+        "antennaShape": "double-signal",
+        "antennaColor": "signal-blue",
+        "foreheadMark": "vertical-reserve",
+        "expressionSet": "curious-survivor"
+      }
+    },
+    {
+      "tokenId": "L01-00024",
+      "serial": 23,
+      "atlas": "public/pets/prime-test/generated/prime-genesis/L01-00024/state-atlas.png",
+      "metadata": "public/pets/prime-test/generated/prime-genesis/L01-00024/metadata.json",
+      "traits": {
+        "bodyPalette": "opal-static",
+        "eyeStyle": "soft-oval",
+        "antennaShape": "teardrop-loop",
+        "antennaColor": "signal-blue",
+        "foreheadMark": "vertical-reserve",
+        "expressionSet": "protected-melancholy"
+      }
+    }
+  ]
+}

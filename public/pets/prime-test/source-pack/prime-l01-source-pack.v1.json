@@ -1,0 +1,59 @@
+{
+  "schemaVersion": "prime-source-pack.v1",
+  "sprite": "prime-test-l01",
+  "baseAtlas": "public/pets/prime-test/state-atlas.png",
+  "cell": {
+    "width": 192,
+    "height": 208,
+    "columns": 8,
+    "rows": 12
+  },
+  "compositionMode": "offline_finished_atlas_export",
+  "layers": [
+    {
+      "id": "body",
+      "status": "base_atlas_classified",
+      "visualCoverage": [
+        "body_palette"
+      ]
+    },
+    {
+      "id": "antenna-signal",
+      "status": "base_atlas_classified",
+      "visualCoverage": [
+        "antenna_color"
+      ]
+    },
+    {
+      "id": "eyes",
+      "status": "pending_artist_layer_atlas",
+      "visualCoverage": [
+        "eye_style",
+        "expression_set"
+      ]
+    },
+    {
+      "id": "forehead-mark",
+      "status": "frame_anchored_glyph",
+      "visualCoverage": [
+        "forehead_mark"
+      ]
+    },
+    {
+      "id": "antenna-shape",
+      "status": "registered_layer_atlas",
+      "visualCoverage": [
+        "antenna_shape"
+      ]
+    },
+    {
+      "id": "wardrobe",
+      "status": "future_layer_atlas",
+      "visualCoverage": [
+        "clothes",
+        "accessories"
+      ]
+    }
+  ],
+  "note": "This source pack intentionally bakes finished state atlases offline. Runtime sticker overlays are not production-approved."
+}

@@ -53,3 +53,6 @@ apps/runtime/looplings-core/
 apps/runtime/**/node_modules/
 apps/runtime/**/.env
 apps/runtime/**/.env.*
+
+# Local room experiments / cloned prototypes
+3droom1/

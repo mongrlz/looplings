@@ -1,0 +1,25 @@
+{
+  "id": "frost-l01-rig",
+  "displayName": "Frost",
+  "lineage": "prime-family",
+  "status": "draft",
+  "canonicalReference": "/pets/frost/concepts/frost-crystal-reference-v1.png",
+  "identityLocks": [
+    "Pale icy-blue body drawn as native pixel art, not a tint overlay.",
+    "Icy crystal loop antenna attached to the head by a short frost-blue stem.",
+    "Tiny hard-edged crystal glints close to the loop are allowed; no glow haze or loose effects.",
+    "Bright blue eyes with frosted highlights.",
+    "Tiny neutral mouth and blue crystal forehead mark.",
+    "No clothes, hats, jewelry, or detached props beyond the posting phone."
+  ],
+  "personalityNotes": [
+    "Same state meanings as Prime.",
+    "Cool, precise, and slightly crystalline while staying simple.",
+    "Readable at thumbnail size."
+  ],
+  "cell": {
+    "width": 192,
+    "height": 208,
+    "columns": 8
+  }
+}

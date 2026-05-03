@@ -16,12 +16,14 @@
     "Each production state row must be generated independently from the Prime L01 rig reference.",
     "A row cannot be approved if it only changes tint, speed, frame order, offset, squash/stretch, or rotation.",
     "The dead state may be a one-frame hold, but it must be a generated collapsed or grounded pose.",
-    "Prediction Win remains hidden until prediction-market skills exist; it may share Trade Win internally."
+    "Prediction Win remains hidden until prediction-market skills exist; it may share Trade Win internally.",
+    "Posting may use one tiny beige fax machine or thermal printer held at belly level for the send action."
   ],
   "traitAxesV1": [
     "body_palette",
     "eye_style",
-    "antenna_style",
+    "antenna_shape",
+    "antenna_color",
     "forehead_mark",
     "expression_set"
   ],
@@ -110,8 +112,8 @@
       "fps": 6,
       "loop": "once",
       "status": "draft",
-      "sourceType": "generated_state_row",
-      "productionRequirement": "Draft generated posting send row; review before approval.",
+      "sourceType": "imagegen_state_row",
+      "productionRequirement": "Draft generated posting send row with a tiny fax/thermal printer; review prop readability, hand count, and antenna attachment before approval.",
       "currentAsset": "/pets/prime-test/rows/posting-row-v1.png"
     },
     {
@@ -174,5 +176,11 @@
       "productionRequirement": "Draft generated dead grounded row; review before approval.",
       "currentAsset": "/pets/prime-test/rows/dead-row-v1.png"
     }
-  ]
+  ],
+  "previewAssets": {
+    "contactSheet": "/pets/prime-test/previews/contact-sheet.png",
+    "gifs": {
+      "posting": "/pets/prime-test/previews/posting.gif"
+    }
+  }
 }

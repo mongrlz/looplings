@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "prime-nft.v1",
+  "seed": "prime-genesis",
+  "tokenId": "L01-00021",
+  "serial": 20,
+  "traits": {
+    "bodyPalette": "origin-pearl",
+    "eyeStyle": "soft-oval",
+    "antennaShape": "teardrop-loop",
+    "antennaColor": "mint-pulse",
+    "foreheadMark": "reserved-dot",
+    "expressionSet": "protected-melancholy"
+  },
+  "visualStatus": {
+    "bodyPalette": "baked_into_finished_atlas",
+    "antennaColor": "baked_into_finished_atlas",
+    "eyeStyle": "metadata_pending_layer_art",
+    "antennaShape": "metadata_pending_artist_layer",
+    "foreheadMark": "baked_from_frame_anchored_glyph",
+    "expressionSet": "metadata_pending_layer_art"
+  }
+}

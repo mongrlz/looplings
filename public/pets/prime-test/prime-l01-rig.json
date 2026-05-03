@@ -7,13 +7,14 @@
     "frameCount": 8
   },
   "identityLocks": [
-    "pearl-white naked/default body with no clothes or props",
+    "pearl-white naked/default body with no clothes or props outside approved state props",
     "round chibi head larger than the body",
     "large dark glassy eyes with blue highlights",
     "tiny arms and stubby feet",
     "single glowing loop antenna attached to top of head",
     "small reserved forehead mark centered below antenna",
-    "slightly melancholic protected-creature expression"
+    "slightly melancholic protected-creature expression",
+    "posting state may include one tiny beige fax machine or thermal printer held at belly level"
   ],
   "anchors": {
     "headCenter": { "x": 96, "y": 83, "radius": 48 },

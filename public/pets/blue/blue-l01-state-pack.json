@@ -1,0 +1,162 @@
+{
+  "id": "blue-l01-state-pack",
+  "version": "blue-l01-state-pack.v1",
+  "status": "draft_state_pack",
+  "statusReason": "Blue L01 is being generated as a first-pass Prime-family Loopling using the 12-state contract.",
+  "rig": "/pets/blue/blue-l01-rig.json",
+  "prototypeAtlas": "/pets/blue/state-atlas.png",
+  "productionAtlas": null,
+  "cell": {
+    "width": 192,
+    "height": 208,
+    "columns": 8,
+    "defaultFrameCount": 8
+  },
+  "rules": [
+    "Each state row should preserve Blue's double-loop antenna, powder-blue body, deep blue eyes, and calm identity.",
+    "Rows cannot be accepted if they are only a recolor of Prime.",
+    "The dead state may be an 8-frame compatibility hold, but it must be a grounded Blue pose.",
+    "Posting may use one tiny blue-gray pager or pocket radio held in-hand for the send action."
+  ],
+  "states": [
+    {
+      "id": "idle",
+      "label": "Idle breathing",
+      "row": 0,
+      "frameCount": 8,
+      "fps": 5,
+      "loop": "loop",
+      "status": "draft",
+      "sourceType": "generated_state_row",
+      "currentAsset": "/pets/blue/rows/idle-row-v1.png"
+    },
+    {
+      "id": "thinking",
+      "label": "Thinking focus",
+      "row": 1,
+      "frameCount": 8,
+      "fps": 5,
+      "loop": "loop",
+      "status": "draft",
+      "sourceType": "generated_state_row",
+      "currentAsset": "/pets/blue/rows/thinking-row-v1.png"
+    },
+    {
+      "id": "acting",
+      "label": "Tool action",
+      "row": 2,
+      "frameCount": 8,
+      "fps": 8,
+      "loop": "loop",
+      "status": "draft",
+      "sourceType": "generated_state_row",
+      "currentAsset": "/pets/blue/rows/acting-row-v1.png"
+    },
+    {
+      "id": "trading",
+      "label": "Market scan",
+      "row": 3,
+      "frameCount": 8,
+      "fps": 9,
+      "loop": "loop",
+      "status": "draft",
+      "sourceType": "generated_state_row",
+      "currentAsset": "/pets/blue/rows/trading-row-v1.png"
+    },
+    {
+      "id": "trade_win",
+      "label": "Trade win bounce",
+      "row": 4,
+      "frameCount": 8,
+      "fps": 8,
+      "loop": "once",
+      "status": "draft",
+      "sourceType": "generated_state_row",
+      "currentAsset": "/pets/blue/rows/trade-win-row-v1.png"
+    },
+    {
+      "id": "trade_loss",
+      "label": "Trade loss slump",
+      "row": 5,
+      "frameCount": 8,
+      "fps": 5,
+      "loop": "once",
+      "status": "draft",
+      "sourceType": "generated_state_row",
+      "currentAsset": "/pets/blue/rows/trade-loss-row-v1.png"
+    },
+    {
+      "id": "posting",
+      "label": "Posting send",
+      "row": 6,
+      "frameCount": 8,
+      "fps": 6,
+      "loop": "once",
+      "status": "draft",
+      "sourceType": "imagegen_state_row",
+      "currentAsset": "/pets/blue/rows/posting-row-v1.png",
+      "productionRequirement": "Draft generated posting send row with a tiny pager/pocket radio; review prop readability, hand count, and antenna attachment before approval."
+    },
+    {
+      "id": "receiving",
+      "label": "Receiving listen",
+      "row": 7,
+      "frameCount": 8,
+      "fps": 6,
+      "loop": "once",
+      "status": "draft",
+      "sourceType": "generated_state_row",
+      "currentAsset": "/pets/blue/rows/receiving-row-v1.png"
+    },
+    {
+      "id": "sleeping",
+      "label": "Sleeping breath",
+      "row": 8,
+      "frameCount": 8,
+      "fps": 2,
+      "loop": "loop",
+      "status": "draft",
+      "sourceType": "generated_state_row",
+      "currentAsset": "/pets/blue/rows/sleeping-row-v1.png"
+    },
+    {
+      "id": "low_compute",
+      "label": "Low compute conserve",
+      "row": 9,
+      "frameCount": 8,
+      "fps": 3,
+      "loop": "loop",
+      "status": "draft",
+      "sourceType": "generated_state_row",
+      "currentAsset": "/pets/blue/rows/low-compute-row-v1.png"
+    },
+    {
+      "id": "critical",
+      "label": "Critical distress",
+      "row": 10,
+      "frameCount": 8,
+      "fps": 8,
+      "loop": "loop",
+      "status": "draft",
+      "sourceType": "generated_state_row",
+      "currentAsset": "/pets/blue/rows/critical-row-v1.png"
+    },
+    {
+      "id": "dead",
+      "label": "Dead grounded",
+      "row": 11,
+      "frameCount": 8,
+      "fps": 0,
+      "loop": "hold",
+      "status": "draft",
+      "sourceType": "generated_state_row",
+      "currentAsset": "/pets/blue/rows/dead-row-v1.png"
+    }
+  ],
+  "previewAssets": {
+    "contactSheet": "/pets/blue/previews/contact-sheet.png",
+    "gifs": {
+      "posting": "/pets/blue/previews/posting.gif"
+    }
+  }
+}

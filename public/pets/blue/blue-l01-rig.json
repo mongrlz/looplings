@@ -1,0 +1,26 @@
+{
+  "id": "blue-l01-rig",
+  "displayName": "Blue",
+  "lineage": "prime-family",
+  "status": "draft",
+  "canonicalReference": "/pets/blue/concepts/blue-double-loop-reference-v1.png",
+  "identityLocks": [
+    "Soft powder-blue body drawn as native pixel art, not a tint overlay.",
+    "Stacked double-loop antenna attached to the head.",
+    "Pale cyan antenna stem and loop rings.",
+    "Glossy deep blue eyes with icy highlights.",
+    "Tiny neutral mouth and signal-blue forehead mark.",
+    "No clothes, hats, accessories, props, or detached effects outside approved state props.",
+    "Posting state may include one tiny blue-gray pager or pocket radio held in-hand."
+  ],
+  "personalityNotes": [
+    "Same state meanings as Prime.",
+    "Calm, observant, slightly techy, and composed.",
+    "Readable at thumbnail size."
+  ],
+  "cell": {
+    "width": 192,
+    "height": 208,
+    "columns": 8
+  }
+}

@@ -1,4 +1,5 @@
 import type { LooplingVisualStateId } from '@/lib/loopling-traits';
+import { PRIME_VARIATION_AXES_V1 } from '@/lib/prime-variation-model';
 
 export type PrimeAssetApprovalStatus = 'draft' | 'needs_art' | 'needs_regen' | 'approved' | 'production_locked';
 export type PrimeAssetSourceType =
@@ -251,13 +252,7 @@ export const PRIME_STATE_CONTRACTS: Record<PrimeVisibleStateId, PrimeStateContra
   },
 };
 
-export const PRIME_FACTORY_TRAIT_AXES_V1 = [
-  'body_palette',
-  'eye_style',
-  'antenna_style',
-  'forehead_mark',
-  'expression_set',
-] as const;
+export const PRIME_FACTORY_TRAIT_AXES_V1 = PRIME_VARIATION_AXES_V1;
 
 export const PRIME_FACTORY_TRAIT_AXES_LATER = [
   'clothes',

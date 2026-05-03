@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "prime-traits.v1",
+  "sprite": "prime-test-l01",
+  "baseAtlas": "public/pets/prime-test/state-atlas.png",
+  "cell": {
+    "width": 192,
+    "height": 208,
+    "columns": 8,
+    "rows": 12
+  },
+  "masks": {
+    "antenna_shape": "public/pets/prime-test/traits/antenna-shape/_base-mask/state-atlas.png"
+  },
+  "layers": {
+    "antenna_shape": [
+      {
+        "id": "origin-loop",
+        "axis": "antenna_shape",
+        "label": "Origin Loop",
+        "silhouette": "single-loop",
+        "atlas": "public/pets/prime-test/traits/antenna-shape/origin-loop/state-atlas.png"
+      }
+    ]
+  }
+}

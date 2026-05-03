@@ -1,0 +1,25 @@
+{
+  "id": "solar-l01-rig",
+  "displayName": "Solar",
+  "lineage": "prime-family",
+  "status": "draft",
+  "canonicalReference": "/pets/solar/concepts/solar-crescent-sun-reference-v1.png",
+  "identityLocks": [
+    "Warm cream-and-gold body drawn as native pixel art, not a tint overlay.",
+    "Crescent sun loop antenna attached to the head by a short golden stem.",
+    "Short attached sun rays may touch the crescent; no halo, glow haze, or floating spark field.",
+    "Amber eyes with bright golden highlights.",
+    "Tiny neutral mouth and orange-gold forehead mark.",
+    "No clothes, hats, jewelry, or detached props beyond the posting phone."
+  ],
+  "personalityNotes": [
+    "Same state meanings as Prime.",
+    "Warm, alert, and quietly radiant while staying compact.",
+    "Readable at thumbnail size."
+  ],
+  "cell": {
+    "width": 192,
+    "height": 208,
+    "columns": 8
+  }
+}

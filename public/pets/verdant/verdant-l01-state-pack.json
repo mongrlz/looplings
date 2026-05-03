@@ -1,0 +1,155 @@
+{
+  "id": "verdant-l01-state-pack",
+  "version": "verdant-l01-state-pack.v1",
+  "status": "scaffold_only",
+  "statusReason": "Verdant currently has roster-derived scaffold rows only; it still needs independent Pipeflow-style generated state rows before lab approval.",
+  "rig": "/pets/verdant/verdant-l01-rig.json",
+  "prototypeAtlas": "/pets/verdant/state-atlas.png",
+  "productionAtlas": null,
+  "cell": {
+    "width": 192,
+    "height": 208,
+    "columns": 8,
+    "defaultFrameCount": 8
+  },
+  "rules": [
+    "Each state row should preserve Verdant's fresh leaf green body, emerald eyes, and leaf loop with attached leaf-glow pixels.",
+    "Rows cannot be accepted if they are only a recolor or overlay of Prime.",
+    "Element effects must stay attached to the antenna loop and cannot become detached floating sprites.",
+    "The dead state may be an 8-frame compatibility hold, but it must be a grounded Verdant pose."
+  ],
+  "states": [
+    {
+      "id": "idle",
+      "label": "Idle breathing",
+      "row": 0,
+      "frameCount": 8,
+      "fps": 5,
+      "loop": "loop",
+      "status": "scaffold_only",
+      "sourceType": "generated_state_row",
+      "currentAsset": "/pets/verdant/rows/idle-row-v1.png"
+    },
+    {
+      "id": "thinking",
+      "label": "Thinking focus",
+      "row": 1,
+      "frameCount": 8,
+      "fps": 5,
+      "loop": "loop",
+      "status": "scaffold_only",
+      "sourceType": "generated_state_row",
+      "currentAsset": "/pets/verdant/rows/thinking-row-v1.png"
+    },
+    {
+      "id": "acting",
+      "label": "Tool action",
+      "row": 2,
+      "frameCount": 8,
+      "fps": 8,
+      "loop": "loop",
+      "status": "scaffold_only",
+      "sourceType": "generated_state_row",
+      "currentAsset": "/pets/verdant/rows/acting-row-v1.png"
+    },
+    {
+      "id": "trading",
+      "label": "Market scan",
+      "row": 3,
+      "frameCount": 8,
+      "fps": 9,
+      "loop": "loop",
+      "status": "scaffold_only",
+      "sourceType": "generated_state_row",
+      "currentAsset": "/pets/verdant/rows/trading-row-v1.png"
+    },
+    {
+      "id": "trade_win",
+      "label": "Trade win bounce",
+      "row": 4,
+      "frameCount": 8,
+      "fps": 8,
+      "loop": "once",
+      "status": "scaffold_only",
+      "sourceType": "generated_state_row",
+      "currentAsset": "/pets/verdant/rows/trade-win-row-v1.png"
+    },
+    {
+      "id": "trade_loss",
+      "label": "Trade loss slump",
+      "row": 5,
+      "frameCount": 8,
+      "fps": 5,
+      "loop": "once",
+      "status": "scaffold_only",
+      "sourceType": "generated_state_row",
+      "currentAsset": "/pets/verdant/rows/trade-loss-row-v1.png"
+    },
+    {
+      "id": "posting",
+      "label": "Posting send",
+      "row": 6,
+      "frameCount": 8,
+      "fps": 6,
+      "loop": "once",
+      "status": "scaffold_only",
+      "sourceType": "generated_state_row",
+      "currentAsset": "/pets/verdant/rows/posting-row-v1.png"
+    },
+    {
+      "id": "receiving",
+      "label": "Receiving listen",
+      "row": 7,
+      "frameCount": 8,
+      "fps": 6,
+      "loop": "once",
+      "status": "scaffold_only",
+      "sourceType": "generated_state_row",
+      "currentAsset": "/pets/verdant/rows/receiving-row-v1.png"
+    },
+    {
+      "id": "sleeping",
+      "label": "Sleeping breath",
+      "row": 8,
+      "frameCount": 8,
+      "fps": 2,
+      "loop": "loop",
+      "status": "scaffold_only",
+      "sourceType": "generated_state_row",
+      "currentAsset": "/pets/verdant/rows/sleeping-row-v1.png"
+    },
+    {
+      "id": "low_compute",
+      "label": "Low compute conserve",
+      "row": 9,
+      "frameCount": 8,
+      "fps": 3,
+      "loop": "loop",
+      "status": "scaffold_only",
+      "sourceType": "generated_state_row",
+      "currentAsset": "/pets/verdant/rows/low-compute-row-v1.png"
+    },
+    {
+      "id": "critical",
+      "label": "Critical distress",
+      "row": 10,
+      "frameCount": 8,
+      "fps": 8,
+      "loop": "loop",
+      "status": "scaffold_only",
+      "sourceType": "generated_state_row",
+      "currentAsset": "/pets/verdant/rows/critical-row-v1.png"
+    },
+    {
+      "id": "dead",
+      "label": "Dead grounded",
+      "row": 11,
+      "frameCount": 8,
+      "fps": 0,
+      "loop": "hold",
+      "status": "scaffold_only",
+      "sourceType": "generated_state_row",
+      "currentAsset": "/pets/verdant/rows/dead-row-v1.png"
+    }
+  ]
+}

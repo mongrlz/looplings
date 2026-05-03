@@ -1,0 +1,26 @@
+{
+  "id": "spark-l01-rig",
+  "displayName": "Spark",
+  "lineage": "prime-family",
+  "status": "draft",
+  "canonicalReference": "/pets/spark/concepts/spark-lightning-reference-v1.png",
+  "rosterReference": "/pets/roster/concepts/looplings-l01-top-12-elemental-v2.png",
+  "identityLocks": [
+    "Warm golden-yellow body drawn as native pixel art, not a tint overlay.",
+    "Single circular loop antenna attached to the head by a short stem.",
+    "Lightning/spark arcs should touch or overlap the loop antenna when active; low-energy states may dim or suppress arcs without changing the loop identity.",
+    "Loop ring uses saturated yellow with small white-hot highlights and dark pixel outline.",
+    "Glossy teal-blue eyes with white highlights and a tiny neutral mouth.",
+    "No clothes, hats, accessories, props, or detached effects."
+  ],
+  "personalityNotes": [
+    "Same state meanings as Prime.",
+    "Alert, reactive, quick, and slightly volatile through bouncier antenna poses.",
+    "Readable at thumbnail size, with the electric identity carried by the attached antenna arcs."
+  ],
+  "cell": {
+    "width": 192,
+    "height": 208,
+    "columns": 8
+  }
+}

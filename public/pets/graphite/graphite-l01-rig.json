@@ -1,0 +1,24 @@
+{
+  "id": "graphite-l01-rig",
+  "displayName": "Graphite",
+  "lineage": "prime-family",
+  "status": "concept_ready",
+  "canonicalReference": "/pets/graphite/concepts/graphite-reference-v1.png",
+  "identityLocks": [
+    "graphite gray body drawn as native pixel art, not a tint overlay.",
+    "polished blue circular loop.",
+    "steel blue eyes with character-specific highlights.",
+    "Prime-family rounded body silhouette and tiny neutral mouth.",
+    "No clothes, hats, accessories, props, or detached effects unless the state contract explicitly allows a tiny in-hand posting prop."
+  ],
+  "personalityNotes": [
+    "quiet, durable, watchful",
+    "Same state meanings as Prime.",
+    "Readable at thumbnail size."
+  ],
+  "cell": {
+    "width": 192,
+    "height": 208,
+    "columns": 8
+  }
+}

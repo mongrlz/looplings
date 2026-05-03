@@ -1,0 +1,26 @@
+{
+  "id": "pink-l01-rig",
+  "displayName": "Pink",
+  "lineage": "prime-family",
+  "status": "draft",
+  "canonicalReference": "/pets/pink/concepts/pink-heart-reference-v1.png",
+  "identityLocks": [
+    "Soft pink body drawn as native pixel art, not a tint overlay.",
+    "Heart-shaped loop antenna attached to the head.",
+    "Neutral or body-toned antenna stem with brighter rose heart ring.",
+    "Glossy cranberry or rose eyes with tiny outer-corner eyelash pixels.",
+    "Tiny calm mouth and rose forehead mark.",
+    "No clothes, bows, jewelry, accessories, or detached effects.",
+    "Posting state may include one tiny phone held in-hand; no other props."
+  ],
+  "personalityNotes": [
+    "Same state meanings as Prime.",
+    "Slightly feminine through softer head tilts, graceful bounces, eyelash reads, and gentle paw poses.",
+    "Cute but still simple enough to read at thumbnail size."
+  ],
+  "cell": {
+    "width": 192,
+    "height": 208,
+    "columns": 8
+  }
+}

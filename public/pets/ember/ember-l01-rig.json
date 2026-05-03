@@ -1,0 +1,26 @@
+{
+  "id": "ember-l01-rig",
+  "displayName": "Ember",
+  "lineage": "prime-family",
+  "status": "draft",
+  "canonicalReference": "/pets/ember/concepts/ember-fire-diamond-reference-v1.png",
+  "rosterReference": "/pets/roster/concepts/looplings-l01-top-12-elemental-v2.png",
+  "identityLocks": [
+    "Warm coral-orange body drawn as native pixel art, not a tint overlay.",
+    "Diamond-shaped fire loop antenna attached to the head by a short stem.",
+    "Small flame tongues must touch or overlap the diamond loop; no floating detached fire bits.",
+    "Diamond ring uses orange, ember red, and yellow-white highlights with a dark pixel outline.",
+    "Glossy ember-orange eyes with white highlights and a tiny neutral mouth.",
+    "No clothes, hats, accessories, props, or detached effects."
+  ],
+  "personalityNotes": [
+    "Same state meanings as Prime.",
+    "Steady, intense, and heat-reactive through firmer poses and flickering antenna accents.",
+    "Readable at thumbnail size, with the fire identity carried by the attached diamond loop."
+  ],
+  "cell": {
+    "width": 192,
+    "height": 208,
+    "columns": 8
+  }
+}

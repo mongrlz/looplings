@@ -520,6 +520,167 @@ Stacked on top of trading fees, creation fees, NFT royalties, FEED_COMPUTE cuts.
 
 ---
 
+## Feature: NFT Identity & Versioned Sprite Assets
+
+### Summary
+Each Loopling NFT represents the **canonical identity** of a living agent, not just one static image file. The token owns the Loopling's name, lineage, traits, and identity record. The visual assets that render that identity can improve over time through versioned art packs.
+
+This lets us launch with curated V1 sprite atlases, then later hire an animator or pixel artist to create V2 production art without breaking ownership or forcing a new token.
+
+### Core Principle
+The NFT is the identity deed. The app's asset registry decides which renderer is currently best for that identity.
+
+```
+NFT token
+  → loopling_id: pink-l01
+  → canonical traits: Soft Pink, Heart Loop, Glossy Rose Eyes
+  → owner wallet
+  → agent/memory/survival history
+
+Asset registry
+  → pink-l01 v1: AI-assisted draft atlas
+  → pink-l01 v2: artist-produced production atlas
+  → pink-l01 v3: future seasonal/remastered atlas
+```
+
+### Metadata Shape
+The NFT metadata should point to a stable identity plus the current default art version:
+
+```json
+{
+  "name": "Pink",
+  "symbol": "LOOPLING",
+  "description": "Pink L01, a Prime-family Loopling with a heart antenna.",
+  "image": "ipfs://.../pink-v1-pfp.png",
+  "animation_url": "ipfs://.../pink-v1-preview.mp4",
+  "attributes": [
+    { "trait_type": "Generation", "value": "Genesis" },
+    { "trait_type": "Body", "value": "Soft Pink" },
+    { "trait_type": "Antenna", "value": "Heart Loop" },
+    { "trait_type": "Temperament", "value": "Sweet" }
+  ],
+  "properties": {
+    "loopling_id": "pink-l01",
+    "identity_version": "v1",
+    "default_asset_version": "v1",
+    "atlas": "ipfs://.../pink-v1-state-atlas.png"
+  }
+}
+```
+
+### Upgrade Model
+Use an **immutable identity + upgradeable rendering registry** model:
+
+- **Immutable identity:** The token always represents the same Loopling identity.
+- **Versioned assets:** Art packs are stored as `v1`, `v2`, `v3`, etc.
+- **App registry:** The app maps `loopling_id` to the latest approved asset pack.
+- **Backward compatibility:** Owners can still view historic V1 art if they want.
+- **No forced remint:** The original NFT remains valid when art improves.
+
+Example registry entry:
+
+```json
+{
+  "loopling_id": "blue-l01",
+  "current_asset_version": "v2",
+  "assets": {
+    "v1": {
+      "status": "genesis_draft",
+      "atlas": "ipfs://.../blue-v1-state-atlas.png",
+      "pfp": "ipfs://.../blue-v1-pfp.png"
+    },
+    "v2": {
+      "status": "artist_approved",
+      "atlas": "ipfs://.../blue-v2-state-atlas.png",
+      "pfp": "ipfs://.../blue-v2-pfp.png"
+    }
+  }
+}
+```
+
+### Why Not Random Trait Layers Yet
+Early Looplings should be **hand-curated full-character atlases** instead of random overlays. The current trait-compositor approach can make antennas, eyes, and accessories look pasted on unless every layer is authored against the same strict animation rig.
+
+Launch plan:
+- Start with a small **Genesis set** of 12-24 curated Looplings.
+- Each Loopling gets a complete state atlas and static PFP.
+- NFT metadata stores identity and traits.
+- The app lets holders select/render their owned Loopling.
+- Later, an artist-built rig can unlock larger trait-generated collections.
+
+### Implementation Notes
+- Store local assets as `public/pets/<loopling-id>/state-atlas.png`, `spritesheet.webp`, and metadata files during development.
+- Upload production assets to IPFS/Arweave for NFT metadata.
+- Keep a signed/app-controlled asset registry mapping `loopling_id` → approved asset versions.
+- Treat V1 AI-assisted sprites as draft/genesis art, not the final scalable trait system.
+- When V2 artist assets ship, update the registry to prefer V2 while keeping V1 accessible as historic art.
+- If marketplace metadata mutability is used, be transparent from day one that Loopling art can receive approved upgrades.
+
+### Future Feature: Community Loopdex & Certified Pet Imports
+Codex Pets and Petdex showed a simple distribution pattern: a public gallery of community-created animated Codex pets that users can install into their local Codex environment. Reference: https://petdex.crafter.run/
+
+Looplings can use that pattern without weakening the NFT identity model by separating three layers:
+
+1. **Community pet uploads:** Anyone can submit a pet-style sprite pack for fun, personal use, or public sharing.
+2. **Loopling-compatible pets:** Uploaded pets that pass validation for Looplings-specific requirements.
+3. **Certified Looplings:** Reviewed pets that can be attached to an NFT identity, minted as an approved community Loopling, or used as a holder-selectable skin.
+
+Community uploads should not automatically become NFTs. A random uploaded pet is only a visual skin until it passes certification.
+
+#### Loopling Compatibility Requirements
+- Must include a visible loop, antenna loop, halo, loop glyph, or other clear Loopling identity marker.
+- Must include creator attribution, license terms, and source/provenance metadata.
+- Must pass the required sprite format validation for the target renderer.
+- Must avoid obvious copyrighted characters, stolen art, and unsafe content.
+- Must have a clean static preview, animated preview, and metadata manifest.
+- Must preserve a readable identity at thumbnail size.
+- Optional fast path: accept Codex-compatible 9-state pets as community pets, then require a 12-state Loopling upgrade before certification.
+
+#### Certification Model
+Certification should produce a signed registry entry:
+
+```json
+{
+  "community_pet_id": "sparkfan-001",
+  "creator": "wallet_or_handle",
+  "status": "loopling_certified",
+  "license": "creator_grants_looplings_display_and_marketplace_rights",
+  "format": {
+    "codex_pet_states": 9,
+    "loopling_states": 12
+  },
+  "identity_marker": "visible antenna loop",
+  "asset_hash": "sha256:...",
+  "art_pack": "ipfs://.../sparkfan-v1-state-atlas.png"
+}
+```
+
+The app should only expose certified assets as NFT-grade art packs. Uncertified assets can still live in a community gallery, but they should not be allowed to replace official NFT art in marketplaces or public identity pages.
+
+#### Relationship To NFT Ownership
+- The NFT still owns the identity, wallet, lineage, and survival history.
+- A certified community pet can become an approved **art pack** for that identity.
+- Owners can select from approved art packs they own or have permission to use.
+- Community creators can earn fees, royalties, or bounties when their art pack is certified or used.
+- Official Genesis Looplings remain canon; community Looplings become a second track rather than diluting the Genesis set.
+
+#### Product Shape
+- **Loopdex:** Public gallery of official and community Loopling-compatible pets.
+- **Install command:** Future CLI or curl-based install path for local Codex pet use.
+- **Submit flow:** Upload `pet.json`, spritesheet/atlas, preview GIFs, creator metadata, and license.
+- **Validator:** Automated checks for grid geometry, alpha/chroma cleanup, blank frames, required metadata, and visible loop marker.
+- **Review queue:** Human or trusted-curator approval before NFT certification.
+- **Upgrade flow:** Codex 9-state pet → Loopling 12-state pack → certified NFT-grade art pack.
+
+This lets the community participate in the Codex Pets trend while keeping Looplings' NFT promise intact: the token is still a living identity deed, not just whichever PNG someone uploaded last.
+
+### Product Framing
+The NFT is not "a PNG." It is the body and ownership record for a living agent.
+
+**Own the identity. Upgrade the rendering. Keep the history.**
+
+---
+
 ## Feature: The Addiction Economy (Why Users Get Hooked)
 
 ### Summary
@@ -843,7 +1004,9 @@ The species becomes the product. The individual Looplings are its carriers.
 - [ ] Loopr social feed architecture
 - [ ] On-chain registry (.loop identity)
 - [ ] Multi-model routing via OpenRouter
-- [ ] NFT structure (Metaplex standard)
+- [x] NFT identity + versioned sprite assets → see "NFT Identity & Versioned Sprite Assets" above
+- [x] Community Loopdex + certified pet imports → see "Community Loopdex & Certified Pet Imports" above
+- [ ] NFT mint implementation (Metaplex standard)
 - [ ] Fee enforcement architecture (Router contract)
 - [x] Skill distribution system → see "MCP + Skills Architecture" above
 - [ ] Conway infrastructure independence plan
