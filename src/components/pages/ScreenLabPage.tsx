@@ -1,4 +1,7 @@
 import type { CSSProperties, ReactNode } from 'react';
+import Anthropic from '@lobehub/icons/es/Anthropic';
+import Claude from '@lobehub/icons/es/Claude';
+import OpenAI from '@lobehub/icons/es/OpenAI';
 import {
   Activity,
   BadgeCheck,
@@ -108,6 +111,131 @@ const priorityLabels: Record<RoomScreenPriority, string> = {
   later: 'Later',
 };
 
+type ModelProvider = 'openai' | 'anthropic' | 'hermes';
+type LobeIconComponent = typeof OpenAI | typeof Anthropic | typeof Claude;
+
+const modelProviders: Record<
+  ModelProvider,
+  {
+    label: string;
+    model: string;
+    Logo?: LobeIconComponent;
+    ModelLogo?: LobeIconComponent;
+  }
+> = {
+  openai: {
+    label: 'OpenAI',
+    model: 'GPT-5.5',
+    Logo: OpenAI,
+    ModelLogo: OpenAI,
+  },
+  anthropic: {
+    label: 'Anthropic',
+    model: 'Claude',
+    Logo: Anthropic,
+    ModelLogo: Claude,
+  },
+  hermes: {
+    label: 'Hermes',
+    model: 'Local policy',
+  },
+};
+
+const screenSlotStories: Record<
+  string,
+  {
+    friendlyRole: string;
+    plainRead: string;
+    pulse: string;
+    meter: number;
+    pet: (typeof looplings)[number]['pet'];
+    row: number;
+    provider?: ModelProvider;
+  }
+> = {
+  'main-habitat': {
+    friendlyRole: "Prime's home window",
+    plainRead: 'Shows if Prime is awake, what mood it is in, and what it is trying next.',
+    pulse: 'awake and watching',
+    meter: 84,
+    pet: 'prime-test',
+    row: 1,
+  },
+  'left-prime-id': {
+    friendlyRole: 'Collar tag',
+    plainRead: 'A tiny passport for name, origin, public wallet tag, and sprite lineage.',
+    pulse: 'identity checked',
+    meter: 76,
+    pet: 'prime-test',
+    row: 0,
+  },
+  'left-companions': {
+    friendlyRole: 'Friend window',
+    plainRead: 'Who is nearby, who is online, and which pets are helping Prime feel less alone.',
+    pulse: '4 pals nearby',
+    meter: 66,
+    pet: 'pink',
+    row: 6,
+  },
+  'left-loopr': {
+    friendlyRole: 'Room chatter',
+    plainRead: 'Short posts, replies, receipts, and little updates Prime can share publicly.',
+    pulse: 'new chirp queued',
+    meter: 58,
+    pet: 'spark',
+    row: 8,
+  },
+  'right-balance': {
+    friendlyRole: 'Snack jar',
+    plainRead: 'The small reserve that keeps Prime fed, thinking, and able to act.',
+    pulse: '$2.47 saved',
+    meter: 48,
+    pet: 'blue',
+    row: 1,
+  },
+  'right-runway': {
+    friendlyRole: 'Energy clock',
+    plainRead: 'How much awake-time Prime has before it needs another compute snack.',
+    pulse: '19h 42m left',
+    meter: 72,
+    pet: 'prime-test',
+    row: 2,
+  },
+  'right-model': {
+    friendlyRole: 'Thinking buddy',
+    plainRead: 'Which AI brain is helping Prime reason through this moment.',
+    pulse: 'model listening',
+    meter: 68,
+    pet: 'blue',
+    row: 3,
+    provider: 'openai',
+  },
+  'right-donate-split': {
+    friendlyRole: 'Care split',
+    plainRead: 'A plain view of how help turns into Prime time, upkeep, and reserve.',
+    pulse: '70% to Prime',
+    meter: 70,
+    pet: 'pink',
+    row: 4,
+  },
+  'desk-donate-terminal': {
+    friendlyRole: 'Feed station',
+    plainRead: 'The quickest place to add a little time and get a printed thank-you.',
+    pulse: '+10m ready',
+    meter: 55,
+    pet: 'prime-test',
+    row: 5,
+  },
+  'desk-command-modules': {
+    friendlyRole: 'Toy shelf',
+    plainRead: 'Mode buttons for research, trading, posting, memory, and media tricks.',
+    pulse: 'research selected',
+    meter: 61,
+    pet: 'spark',
+    row: 8,
+  },
+};
+
 function PixelPet({
   pet = 'prime-test',
   row = 0,
@@ -142,6 +270,24 @@ function PriorityPill({ priority }: { priority: RoomScreenPriority }) {
   return <span className={`screen-lab-priority is-${priority}`}>{priorityLabels[priority]}</span>;
 }
 
+function ModelProviderBadge({ provider }: { provider: ModelProvider }) {
+  const providerMeta = modelProviders[provider];
+  const ActiveLogo = providerMeta.ModelLogo ?? providerMeta.Logo;
+
+  return (
+    <span className={`screen-lab-provider-badge is-${provider}`}>
+      <span className="screen-lab-provider-mark" aria-hidden="true">
+        {ActiveLogo ? <ActiveLogo size={22} /> : <BrainCircuit size={20} />}
+        <b>{providerMeta.label.slice(0, 2)}</b>
+      </span>
+      <span>
+        <strong>{providerMeta.label}</strong>
+        <em>{providerMeta.model}</em>
+      </span>
+    </span>
+  );
+}
+
 function ScreenLabNav() {
   return (
     <nav className="screen-lab-nav" aria-label="Screen lab navigation">
@@ -151,6 +297,9 @@ function ScreenLabNav() {
       </a>
       <span className="screen-lab-nav-line">floating survival screens for Prime</span>
       <div className="screen-lab-nav-actions" aria-label="Screen lab actions">
+        <a className="screen-lab-nav-button" href="/lab/logos">
+          Logo Lab
+        </a>
         <button type="button">
           <Plus size={18} />
           Add Surface
@@ -731,17 +880,41 @@ function SignalMatrix() {
 function SlotRack() {
   return (
     <section className="screen-lab-slot-rack" aria-label="Physical room screen inventory">
-      {roomScreenSlots.map((slot, index) => (
-        <article key={slot.id} style={{ '--screen-accent': slot.accent, '--slot-index': index } as CSSProperties}>
-          <div>
-            <span>{slot.roomLocation}</span>
-            <PriorityPill priority={slot.priority} />
-          </div>
-          <strong>{slot.label}</strong>
-          <p>{slot.roomRole}</p>
-          <em>{slot.stateSource}</em>
-        </article>
-      ))}
+      {roomScreenSlots.map((slot, index) => {
+        const story = screenSlotStories[slot.id] ?? {
+          friendlyRole: slot.roomRole,
+          plainRead: slot.primaryQuestion,
+          pulse: slot.priority === 'ship' ? 'ready for MVP' : 'needs polish',
+          meter: slot.priority === 'ship' ? 72 : 42,
+          pet: 'prime-test',
+          row: 1,
+        };
+
+        return (
+          <article key={slot.id} style={{ '--screen-accent': slot.accent, '--slot-index': index } as CSSProperties}>
+            <div className="screen-lab-slot-head">
+              <span>{slot.roomLocation}</span>
+              <PriorityPill priority={slot.priority} />
+            </div>
+            <div className="screen-lab-slot-title">
+              <PixelPet pet={story.pet} row={story.row} frame={index} size={46} />
+              <div>
+                <strong>{slot.label}</strong>
+                <p>{story.friendlyRole}</p>
+              </div>
+            </div>
+            <em>{story.plainRead}</em>
+            <div className="screen-lab-slot-footer">
+              <span className="screen-lab-slot-pulse">
+                <i aria-hidden="true" />
+                {story.pulse}
+              </span>
+              <span className="screen-lab-slot-meter" aria-hidden="true" style={{ '--slot-meter': `${story.meter}%` } as CSSProperties} />
+            </div>
+            {story.provider ? <ModelProviderBadge provider={story.provider} /> : null}
+          </article>
+        );
+      })}
     </section>
   );
 }

@@ -1,6 +1,6 @@
-# Room Model Licenses
+# Room and UI Asset Licenses
 
-Third-party model assets used in the Prime room prototype. Preserve source, author, and license notes when adding or replacing room assets.
+Third-party model and UI assets used in the Prime room prototype. Preserve source, author, and license notes when adding or replacing room assets.
 
 ## industrial_pipe_lamp
 
@@ -68,3 +68,12 @@ Third-party model assets used in the Prime room prototype. Preserve source, auth
 - License: Project-owned asset
 - Local files:
   - `looplings_desk_mat/looplings_desk_mat.glb`
+
+## lobe_icons
+
+- Title: Lobe Icons
+- Source: https://github.com/lobehub/lobe-icons
+- Docs: https://lobehub.com/icons/skill.md
+- Author: LobeHub
+- License: MIT
+- Usage: AI model and provider logo components in `/lab/screens` and `/lab/logos`

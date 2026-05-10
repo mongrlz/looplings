@@ -1,6 +1,7 @@
 import { PrivyProvider } from '@privy-io/react-auth';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { PRIVY_APP_ID, privyConfig } from '@/lib/privy-config';
+import LogoLabPage from '@/components/pages/LogoLabPage';
 import PrimePage from '@/components/pages/PrimePage';
 import ScreenLabPage from '@/components/pages/ScreenLabPage';
 import SpriteLabPage from '@/components/pages/SpriteLabPage';
@@ -22,6 +23,7 @@ function Home() {
         <Link to="/lab/sprites">Sprite Lab</Link>
         <Link to="/lab/variations">Variation Lab</Link>
         <Link to="/lab/screens">Screen Lab</Link>
+        <Link to="/lab/logos">Logo Lab</Link>
       </nav>
     </div>
   );
@@ -37,6 +39,7 @@ function AppRoutes() {
         <Route path="/lab/sprites" element={<SpriteLabPage />} />
         <Route path="/lab/variations" element={<VariationsLabPage />} />
         <Route path="/lab/screens" element={<ScreenLabPage />} />
+        <Route path="/lab/logos" element={<LogoLabPage />} />
       </Routes>
     </BrowserRouter>
   );
