@@ -85,6 +85,9 @@ const RECEIPT_REST_ARCH = 0.008;
 const PRINTER_POSITION = new THREE.Vector3(-1.58, DESK_SURFACE_Y + 0.002, -1.34 + DESK_WALL_OFFSET_Z);
 const PRINTER_ROTATION_Y = Math.PI - 0.68;
 const WORLD_UP = new THREE.Vector3(0, 1, 0);
+const DESK_KEYBOARD_MODEL_PATH = '/models/room/looplings_keyboard/looplings_keyboard.glb';
+const DESK_MOUSE_MODEL_PATH = '/models/room/looplings_mouse/looplings_mouse.glb';
+const DESK_MAT_MODEL_PATH = '/models/room/looplings_desk_mat/looplings_desk_mat.glb';
 let receiptDragActive = false;
 
 type PrimeReceiptEvent = {
@@ -1858,24 +1861,143 @@ function Casing() {
   );
 }
 
+function usePreparedDeskAsset(scene: THREE.Group) {
+  return useMemo(() => {
+    const clone = scene.clone(true);
+    clone.traverse((object) => {
+      if (!(object instanceof THREE.Mesh)) return;
+
+      object.castShadow = true;
+      object.receiveShadow = true;
+      object.userData.restY = object.position.y;
+      if (Array.isArray(object.material)) {
+        object.material = object.material.map((material) => material.clone());
+      } else {
+        object.material = object.material.clone();
+      }
+    });
+    return clone;
+  }, [scene]);
+}
+
+function DeskMatAsset() {
+  const { scene } = useGLTF(DESK_MAT_MODEL_PATH);
+  const mat = usePreparedDeskAsset(scene);
+
+  return (
+    <primitive
+      object={mat}
+      position={[0.46, DESK_SURFACE_Y + 0.004, -0.78 + DESK_WALL_OFFSET_Z]}
+      rotation={[0, -0.01, 0]}
+      scale={[0.88, 0.88, 0.88]}
+    />
+  );
+}
+
+function DeskMouseAsset() {
+  const { scene } = useGLTF(DESK_MOUSE_MODEL_PATH);
+  const mouse = usePreparedDeskAsset(scene);
+  const [isPressed, setIsPressed] = useState(false);
+
+  useEffect(() => {
+    if (!isPressed) return undefined;
+    const timeout = window.setTimeout(() => setIsPressed(false), 160);
+    return () => window.clearTimeout(timeout);
+  }, [isPressed]);
+
+  useEffect(() => {
+    mouse.traverse((object) => {
+      if (!(object instanceof THREE.Mesh)) return;
+      const material = object.material;
+      if (material instanceof THREE.MeshStandardMaterial && object.name.includes('PrimeGlyph')) {
+        material.emissiveIntensity = isPressed ? 1.6 : 0.7;
+      }
+      const restY = object.userData.restY as number | undefined;
+      if (typeof restY === 'number') object.position.y = restY - (isPressed ? 0.01 : 0);
+    });
+  }, [isPressed, mouse]);
+
+  return (
+    <primitive
+      object={mouse}
+      position={[1.34, DESK_SURFACE_Y + 0.018, -0.71 + DESK_WALL_OFFSET_Z]}
+      rotation={[0, -0.18, 0]}
+      scale={[0.72, 0.72, 0.72]}
+      onPointerDown={(event: ThreeEvent<PointerEvent>) => {
+        event.stopPropagation();
+        setIsPressed(true);
+      }}
+      onPointerOver={(event: ThreeEvent<PointerEvent>) => {
+        event.stopPropagation();
+        document.body.style.cursor = 'pointer';
+      }}
+      onPointerOut={() => {
+        document.body.style.cursor = '';
+      }}
+    />
+  );
+}
+
+function DeskKeyboardAsset() {
+  const { scene } = useGLTF(DESK_KEYBOARD_MODEL_PATH);
+  const keyboard = usePreparedDeskAsset(scene);
+  const [pressedKey, setPressedKey] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!pressedKey) return undefined;
+    const timeout = window.setTimeout(() => setPressedKey(null), 170);
+    return () => window.clearTimeout(timeout);
+  }, [pressedKey]);
+
+  useEffect(() => {
+    keyboard.traverse((object) => {
+      if (!(object instanceof THREE.Mesh) || !object.name.startsWith('Key_')) return;
+
+      const isActive = object.name === pressedKey;
+      const restY = object.userData.restY as number | undefined;
+      if (typeof restY === 'number') object.position.y = restY - (isActive ? 0.018 : 0);
+
+      const material = object.material;
+      if (material instanceof THREE.MeshStandardMaterial) {
+        material.emissive.set(isActive ? '#8cffae' : '#000000');
+        material.emissiveIntensity = isActive ? 0.85 : 0;
+      }
+    });
+  }, [keyboard, pressedKey]);
+
+  const handlePointer = (event: ThreeEvent<PointerEvent>) => {
+    const target = event.object;
+    if (!target.name.startsWith('Key_')) return;
+    event.stopPropagation();
+    setPressedKey(target.name);
+  };
+
+  return (
+    <primitive
+      object={keyboard}
+      position={[0.15, DESK_SURFACE_Y + 0.018, -0.69 + DESK_WALL_OFFSET_Z]}
+      rotation={[0, 0.02, 0]}
+      scale={[0.48, 0.48, 0.48]}
+      onPointerDown={handlePointer}
+      onPointerOver={(event: ThreeEvent<PointerEvent>) => {
+        if (!event.object.name.startsWith('Key_')) return;
+        event.stopPropagation();
+        document.body.style.cursor = 'pointer';
+      }}
+      onPointerOut={() => {
+        document.body.style.cursor = '';
+      }}
+    />
+  );
+}
+
 function Desk() {
   return (
     <group>
       <AntiqueWoodenDesk />
-      <Box position={[0.36, DESK_SURFACE_Y + 0.045, -0.68 + DESK_WALL_OFFSET_Z]} scale={[1.28, 0.08, 0.28]} color="#17171b" roughness={0.38} />
-      {Array.from({ length: 18 }, (_, index) => (
-        <Box
-          key={index}
-          position={[-0.2 + (index % 9) * 0.14, DESK_SURFACE_Y + 0.101, -0.69 - Math.floor(index / 9) * 0.082 + DESK_WALL_OFFSET_Z]}
-          scale={[0.094, 0.03, 0.046]}
-          color={index % 4 === 0 ? '#2a2b34' : '#1d1e24'}
-          roughness={0.45}
-        />
-      ))}
-      <mesh position={[1.52, DESK_SURFACE_Y + 0.012, -0.83 + DESK_WALL_OFFSET_Z]} castShadow receiveShadow>
-        <sphereGeometry args={[0.145, 32, 16, 0, Math.PI * 2, 0, Math.PI * 0.52]} />
-        <meshStandardMaterial color="#111215" roughness={0.34} metalness={0.08} />
-      </mesh>
+      <DeskMatAsset />
+      <DeskKeyboardAsset />
+      <DeskMouseAsset />
     </group>
   );
 }
@@ -3272,3 +3394,6 @@ export default function StarterRoomScene({
 useGLTF.preload('/models/room/industrial_pipe_lamp/industrial_pipe_lamp_1k.gltf');
 useGLTF.preload('/models/room/antique_wooden_desk/antique_wooden_desk.glb');
 useGLTF.preload('/models/room/label_printer/label_printer.glb');
+useGLTF.preload(DESK_KEYBOARD_MODEL_PATH);
+useGLTF.preload(DESK_MOUSE_MODEL_PATH);
+useGLTF.preload(DESK_MAT_MODEL_PATH);

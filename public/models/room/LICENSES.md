@@ -34,3 +34,18 @@ Third-party model assets used in the Prime room prototype. Preserve source, auth
 - License: Royalty Free License
 - Local files:
   - `label_printer/label_printer.glb`
+
+## looplings_desk_peripherals
+
+- Title: Looplings keyboard, mouse, and green desk mat
+- Source: Procedurally modeled in Blender for this repository after reviewing lightweight CC Attribution keyboard/mouse references.
+- Author: Looplings project
+- License: Project-owned asset
+- Research references:
+  - Filer mechanical keyboard 60, CC Attribution: https://www.filer.dev/en/3d-model/mechanical-keyboard-60.glb
+  - Sketchfab Standard QWERTY keyboard by ChoboiAssets, CC Attribution: https://sketchfab.com/3d-models/standard-qwerty-keyboard-d9d8e80c36cf40f29ef36f48125a0294
+  - Sketchfab Computer Mouse low-poly by LagzDesign, CC Attribution: https://sketchfab.com/3d-models/computer-mouse-low-poly-95eb7d0363bb4db79bd50168280ea1c7
+- Local files:
+  - `looplings_keyboard/looplings_keyboard.glb`
+  - `looplings_mouse/looplings_mouse.glb`
+  - `looplings_desk_mat/looplings_desk_mat.glb`
