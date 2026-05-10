@@ -2191,6 +2191,28 @@ a:hover {
   image-rendering: pixelated;
 }
 
+.screen-lab-pixel-pet.is-animated img {
+  animation: screen-lab-pet-cycle 1.05s steps(7) infinite;
+  animation-delay: var(--pet-delay, 0s);
+  will-change: transform;
+}
+
+@keyframes screen-lab-pet-cycle {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-87.5%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .screen-lab-pixel-pet.is-animated img {
+    animation: none;
+  }
+}
+
 .screen-lab-compute,
 .screen-lab-wallet,
 .screen-lab-market,
@@ -4484,21 +4506,9 @@ body.looplings-room-locked > div:not(#root)[style*="transform-style: preserve-3d
   overflow: hidden;
   border: 3px solid #244017;
   background:
-    radial-gradient(circle at 18% 78%, #87bb5b 0 0.5rem, transparent 0.55rem),
-    radial-gradient(circle at 24% 72%, #f5e28c 0 0.16rem, transparent 0.2rem),
-    radial-gradient(circle at 84% 24%, #f278a6 0 1.7rem, transparent 1.75rem),
-    radial-gradient(circle at 85% 25%, #df5c94 0 2.6rem, transparent 2.65rem),
-    linear-gradient(rgba(50, 101, 37, 0.12) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(50, 101, 37, 0.1) 1px, transparent 1px),
-    linear-gradient(145deg, #9dd36e, #5fb45a 52%, #8dcc65);
-  background-size:
-    auto,
-    auto,
-    auto,
-    auto,
-    24px 24px,
-    24px 24px,
-    auto;
+    linear-gradient(rgba(25, 56, 18, 0.12), rgba(25, 56, 18, 0.04)),
+    url('/assets/lab/looplings-habitat-bg-v1.png') center / cover no-repeat,
+    #5fb45a;
 }
 
 .screen-lab-garden-scene::before {
@@ -4509,56 +4519,10 @@ body.looplings-room-locked > div:not(#root)[style*="transform-style: preserve-3d
   pointer-events: none;
 }
 
-.screen-lab-pixel-cloud {
-  position: absolute;
-  width: 74px;
-  height: 22px;
-  background: rgba(255, 248, 223, 0.82);
-  box-shadow:
-    18px -10px 0 rgba(255, 248, 223, 0.82),
-    36px 0 0 rgba(255, 248, 223, 0.82),
-    54px -7px 0 rgba(255, 248, 223, 0.82);
-}
-
-.screen-lab-pixel-cloud.is-left {
-  top: 34px;
-  left: 48px;
-}
-
-.screen-lab-pixel-cloud.is-right {
-  top: 58px;
-  right: 100px;
-  transform: scale(0.82);
-}
-
-.screen-lab-pixel-tree {
-  position: absolute;
-  bottom: 42px;
-  width: 38px;
-  height: 56px;
-  background:
-    linear-gradient(#7e5030, #7e5030) 15px 22px / 10px 38px no-repeat,
-    radial-gradient(circle, #2f7837 0 22px, transparent 23px);
-}
-
-.screen-lab-pixel-tree.is-left {
-  left: 44px;
-}
-
-.screen-lab-pixel-tree.is-right {
-  right: 50px;
-  transform: scale(1.2);
-}
-
+.screen-lab-pixel-cloud,
+.screen-lab-pixel-tree,
 .screen-lab-garden-path {
-  position: absolute;
-  inset: auto -30px 0 26%;
-  height: 118px;
-  background:
-    repeating-linear-gradient(90deg, rgba(138, 94, 55, 0.26) 0 20px, rgba(229, 180, 111, 0.26) 20px 36px),
-    #d9b16f;
-  clip-path: polygon(30% 0, 55% 0, 100% 100%, 0 100%);
-  opacity: 0.86;
+  display: none;
 }
 
 .screen-lab-garden-pet {
@@ -4586,24 +4550,24 @@ body.looplings-room-locked > div:not(#root)[style*="transform-style: preserve-3d
 }
 
 .screen-lab-garden-pet.is-pet-1 {
-  left: 45%;
-  top: 43%;
+  left: 48%;
+  top: 39%;
   transform: translate(-50%, -50%);
 }
 
 .screen-lab-garden-pet.is-pet-2 {
-  left: 22%;
-  top: 52%;
+  left: 26%;
+  top: 51%;
 }
 
 .screen-lab-garden-pet.is-pet-3 {
-  right: 22%;
-  top: 37%;
+  right: 23%;
+  top: 46%;
 }
 
 .screen-lab-garden-pet.is-pet-4 {
-  right: 34%;
-  bottom: 22px;
+  right: 35%;
+  bottom: 26px;
 }
 
 .screen-lab-garden-caption {

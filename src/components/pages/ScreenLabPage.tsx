@@ -108,15 +108,28 @@ const priorityLabels: Record<RoomScreenPriority, string> = {
   later: 'Later',
 };
 
-function PixelPet({ pet = 'prime-test', row = 0, frame = 0, size = 72 }: { pet?: string; row?: number; frame?: number; size?: number }) {
+function PixelPet({
+  pet = 'prime-test',
+  row = 0,
+  frame = 0,
+  size = 72,
+  animated = true,
+}: {
+  pet?: string;
+  row?: number;
+  frame?: number;
+  size?: number;
+  animated?: boolean;
+}) {
   return (
     <div
-      className="screen-lab-pixel-pet"
+      className={`screen-lab-pixel-pet${animated ? ' is-animated' : ''}`}
       style={{
         width: size,
         ['--atlas-cols' as string]: 8,
         ['--atlas-rows' as string]: 12,
-        ['--pet-frame' as string]: frame,
+        ['--pet-delay' as string]: `${frame * -0.16}s`,
+        ['--pet-frame' as string]: animated ? 0 : frame,
         ['--pet-row' as string]: row,
       }}
     >
