@@ -3561,3 +3561,690 @@ body.looplings-room-locked > div:not(#root)[style*="transform-style: preserve-3d
     justify-items: start;
   }
 }
+
+/* Codex Pets direction for the dedicated room screen workbench. */
+.screen-lab-page {
+  min-height: 100dvh;
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(255, 246, 214, 0.58), transparent 20rem),
+    radial-gradient(circle at 88% 18%, rgba(126, 172, 106, 0.24), transparent 24rem),
+    linear-gradient(rgba(42, 85, 54, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(42, 85, 54, 0.08) 1px, transparent 1px),
+    #dce9cf;
+  background-size: auto, auto, 32px 32px, 32px 32px, auto;
+  color: #182116;
+  font-family: 'JetBrains Mono', 'Courier New', ui-monospace, SFMono-Regular, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.screen-lab-page::before {
+  background:
+    radial-gradient(circle, rgba(255, 255, 245, 0.72) 0 1px, transparent 2px),
+    radial-gradient(circle, rgba(107, 149, 91, 0.14) 0 2px, transparent 3px);
+  background-position:
+    0 0,
+    18px 22px;
+  background-size:
+    44px 44px,
+    64px 64px;
+  opacity: 0.9;
+}
+
+.screen-lab-shell {
+  position: relative;
+  width: min(1680px, calc(100% - 52px));
+  margin: 0 auto;
+  padding: 28px 0 88px;
+}
+
+.screen-lab-hero,
+.screen-lab-role-map article,
+.screen-lab-slot-rack article,
+.screen-lab-signal-matrix,
+.screen-lab-signal-matrix article,
+.screen-lab-panel {
+  border: 3px solid #10170f;
+  border-radius: 0;
+  background:
+    linear-gradient(180deg, rgba(255, 252, 232, 0.94), rgba(246, 235, 196, 0.94)),
+    #f6ebc6;
+  box-shadow:
+    0 0 0 4px #fff7d8,
+    7px 7px 0 #0d3f20,
+    inset 0 0 0 2px rgba(75, 92, 44, 0.18);
+}
+
+.screen-lab-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(380px, 0.8fr);
+  gap: 28px;
+  align-items: center;
+  min-height: auto;
+  margin-bottom: 30px;
+  padding: 22px 24px;
+  border-bottom-width: 3px;
+}
+
+.screen-lab-kicker,
+.screen-lab-hero aside span,
+.screen-lab-map span,
+.screen-lab-panel > header span,
+.screen-lab-topline span,
+.screen-lab-role-map span,
+.screen-lab-slot-rack span,
+.screen-lab-signal-matrix span,
+.screen-lab-frame-meta dt,
+.screen-lab-screen-brief strong,
+.screen-lab-priority {
+  color: #2e6840;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.screen-lab-kicker {
+  display: inline-grid;
+  min-height: 30px;
+  place-items: center;
+  padding: 0 14px;
+  border: 2px solid #10170f;
+  background: #4f8c4e;
+  color: #fff5ce;
+  box-shadow: 4px 4px 0 #0d3f20;
+}
+
+.screen-lab-hero h1 {
+  max-width: 860px;
+  margin: 16px 0 0;
+  color: #141911;
+  font-size: clamp(34px, 4.8vw, 66px);
+  font-weight: 900;
+  line-height: 0.98;
+  text-shadow:
+    3px 3px 0 #fff7d8,
+    -2px 2px 0 rgba(45, 103, 61, 0.3);
+  text-wrap: balance;
+}
+
+.screen-lab-intro {
+  max-width: 780px;
+  margin: 18px 0 0;
+  color: #334331;
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.screen-lab-hero aside {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.screen-lab-hero aside article {
+  min-height: 112px;
+  padding: 14px;
+  border: 2px solid #162014;
+  border-radius: 0;
+  background:
+    linear-gradient(180deg, rgba(222, 239, 199, 0.68), rgba(255, 246, 213, 0.94)),
+    #fff1c8;
+  box-shadow: inset 0 0 0 2px rgba(79, 140, 78, 0.14);
+}
+
+.screen-lab-hero aside strong {
+  display: block;
+  margin-top: 10px;
+  color: #172116;
+  font-size: 20px;
+  line-height: 1.1;
+}
+
+.screen-lab-hero aside p,
+.screen-lab-map strong,
+.screen-lab-role-map p,
+.screen-lab-slot-rack p,
+.screen-lab-slot-rack em,
+.screen-lab-signal-matrix p,
+.screen-lab-frame-meta p,
+.screen-lab-frame-meta dd,
+.screen-lab-screen-brief p {
+  color: #4a5843;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.screen-lab-role-map,
+.screen-lab-slot-rack,
+.screen-lab-signal-matrix {
+  margin: 22px 0;
+}
+
+.screen-lab-role-map,
+.screen-lab-slot-rack {
+  gap: 16px;
+}
+
+.screen-lab-role-map article,
+.screen-lab-slot-rack article,
+.screen-lab-signal-matrix article {
+  min-height: 132px;
+  padding: 14px;
+}
+
+.screen-lab-role-map svg,
+.screen-lab-map svg {
+  color: #2e6840;
+}
+
+.screen-lab-signal-matrix {
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 18px;
+  padding: 18px;
+}
+
+.screen-lab-signal-matrix header strong,
+.screen-lab-slot-rack strong {
+  color: #141911;
+}
+
+.screen-lab-signal-matrix > div {
+  gap: 12px;
+}
+
+.screen-lab-slot-rack article {
+  min-height: 148px;
+  overflow: visible;
+  border-color: #10170f;
+}
+
+.screen-lab-slot-rack article::before {
+  inset: auto 12px 12px auto;
+  width: 36px;
+  height: 36px;
+  background:
+    linear-gradient(90deg, var(--screen-accent), var(--screen-accent)) 0 0 / 100% 7px no-repeat,
+    linear-gradient(90deg, var(--screen-accent), var(--screen-accent)) 0 14px / 80% 7px no-repeat,
+    linear-gradient(90deg, var(--screen-accent), var(--screen-accent)) 0 28px / 55% 7px no-repeat;
+  opacity: 0.55;
+}
+
+.screen-lab-slot-rack strong {
+  margin-top: 18px;
+  font-size: 17px;
+}
+
+.screen-lab-priority {
+  min-width: 54px;
+  min-height: 24px;
+  border: 2px solid #10170f;
+  border-radius: 0;
+  background: #fff7d8;
+  color: #2e6840;
+  box-shadow: 3px 3px 0 color-mix(in srgb, var(--screen-accent, #4f8c4e) 55%, #0d3f20);
+}
+
+.screen-lab-priority.is-ship,
+.screen-lab-priority.is-next,
+.screen-lab-priority.is-later {
+  border-color: #10170f;
+}
+
+.screen-lab-board {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 26px;
+  align-items: stretch;
+  margin-top: 30px;
+}
+
+.screen-lab-panel {
+  position: relative;
+  display: flex;
+  grid-column: span 6;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 0;
+  padding: 18px;
+}
+
+.screen-lab-panel.is-wide {
+  grid-column: 1 / -1;
+}
+
+.screen-lab-panel.is-tall {
+  grid-column: span 4;
+  min-height: 0;
+}
+
+.screen-lab-panel.is-mini {
+  grid-column: span 4;
+}
+
+.screen-lab-panel::before,
+.screen-lab-panel::after {
+  content: "";
+  position: absolute;
+  width: 38px;
+  height: 38px;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, #2e6840 0 10px, transparent 10px) 0 0 / 20px 10px no-repeat,
+    linear-gradient(#2e6840 0 10px, transparent 10px) 0 0 / 10px 20px no-repeat;
+}
+
+.screen-lab-panel::before {
+  top: -7px;
+  left: -7px;
+}
+
+.screen-lab-panel::after {
+  right: -7px;
+  bottom: -7px;
+  transform: rotate(180deg);
+}
+
+.screen-lab-panel > header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, auto);
+  gap: 16px;
+  align-items: start;
+  padding: 0 0 12px;
+  border-bottom: 2px solid rgba(28, 38, 21, 0.18);
+}
+
+.screen-lab-panel > header h2 {
+  max-width: none;
+  margin: 6px 0 0;
+  color: #141911;
+  font-size: clamp(24px, 2.4vw, 38px);
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: 2px 2px 0 #fff7d8;
+}
+
+.screen-lab-frame-meta {
+  display: grid;
+  justify-items: end;
+  gap: 9px;
+  text-align: right;
+}
+
+.screen-lab-frame-meta p {
+  max-width: 36ch;
+  margin-top: 0;
+}
+
+.screen-lab-frame-meta dl {
+  display: none;
+}
+
+.screen-lab-panel > div {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
+.screen-lab-screen-brief {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.screen-lab-screen-brief div {
+  min-height: 72px;
+  padding: 11px 12px;
+  border: 2px solid rgba(22, 32, 20, 0.34);
+  background: rgba(255, 248, 220, 0.66);
+}
+
+.screen-lab-monitor,
+.screen-lab-phone-shell {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  border: 4px solid #10170f;
+  border-radius: 0;
+  background:
+    linear-gradient(rgba(62, 96, 49, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(62, 96, 49, 0.04) 1px, transparent 1px),
+    linear-gradient(180deg, #fff3cf, #f4e1ae);
+  background-size: 18px 18px, 18px 18px, auto;
+  color: #182116;
+  box-shadow:
+    inset 0 0 0 3px #fff8da,
+    inset 0 0 0 5px rgba(36, 55, 27, 0.28),
+    5px 5px 0 color-mix(in srgb, var(--screen-accent, #4f8c4e) 42%, #0d3f20);
+}
+
+.screen-lab-monitor::after,
+.screen-lab-phone-shell::after {
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(20, 25, 17, 0.05) 0,
+      rgba(20, 25, 17, 0.05) 1px,
+      transparent 1px,
+      transparent 4px
+    );
+  opacity: 0.42;
+  mix-blend-mode: multiply;
+}
+
+.screen-lab-monitor > *,
+.screen-lab-phone-shell > * {
+  position: relative;
+  z-index: 1;
+}
+
+.screen-lab-topline {
+  min-height: 28px;
+  padding-bottom: 9px;
+  border-bottom: 2px solid rgba(28, 38, 21, 0.22);
+  color: #2e6840;
+}
+
+.screen-lab-topline strong,
+.screen-lab-topline svg {
+  color: #2e6840;
+}
+
+.screen-lab-monitor--habitat {
+  min-height: 480px;
+  padding: 22px;
+}
+
+.screen-lab-monitor--thought,
+.screen-lab-monitor--compute,
+.screen-lab-monitor--wallet,
+.screen-lab-monitor--market,
+.screen-lab-monitor--trade,
+.screen-lab-monitor--policy,
+.screen-lab-monitor--memory,
+.screen-lab-monitor--lifecycle,
+.screen-lab-monitor--inbox,
+.screen-lab-monitor--skills,
+.screen-lab-monitor--identity,
+.screen-lab-monitor--companions,
+.screen-lab-monitor--loopr,
+.screen-lab-monitor--split,
+.screen-lab-monitor--terminal,
+.screen-lab-monitor--command {
+  min-height: 320px;
+  padding: 18px;
+}
+
+.screen-lab-habitat-grid {
+  grid-template-columns: minmax(240px, 0.82fr) minmax(0, 1fr);
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.screen-lab-prime-card,
+.screen-lab-current-task,
+.screen-lab-habitat-stats div,
+.screen-lab-roster div,
+.screen-lab-passport-body,
+.screen-lab-companion-list article,
+.screen-lab-thought-list article,
+.screen-lab-keyval div,
+.screen-lab-monitor--policy article,
+.screen-lab-monitor--memory article,
+.screen-lab-monitor--inbox article,
+.screen-lab-monitor--lifecycle article,
+.screen-lab-market-table article,
+.screen-lab-positions article,
+.screen-lab-monitor--loopr article,
+.screen-lab-donate-split article,
+.screen-lab-command-grid article,
+.screen-lab-skill-loop article {
+  border: 2px solid rgba(28, 38, 21, 0.26);
+  background: rgba(255, 249, 224, 0.58);
+}
+
+.screen-lab-prime-card {
+  grid-template-columns: 104px minmax(0, 1fr);
+}
+
+.screen-lab-prime-card span,
+.screen-lab-current-task span,
+.screen-lab-habitat-stats span,
+.screen-lab-roster span,
+.screen-lab-keyval dt,
+.screen-lab-market-table span,
+.screen-lab-market-table em,
+.screen-lab-positions span,
+.screen-lab-positions em,
+.screen-lab-monitor--policy span,
+.screen-lab-monitor--memory span,
+.screen-lab-monitor--inbox span,
+.screen-lab-monitor--skills span,
+.screen-lab-monitor--lifecycle span,
+.screen-lab-monitor--lifecycle em,
+.screen-lab-companion-list span,
+.screen-lab-companion-list em,
+.screen-lab-monitor--loopr span,
+.screen-lab-monitor--loopr em,
+.screen-lab-phone-shell span,
+.screen-lab-phone-shell em {
+  color: #3f6f47;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.screen-lab-prime-card strong,
+.screen-lab-current-task strong,
+.screen-lab-habitat-stats strong,
+.screen-lab-passport-body strong,
+.screen-lab-companion-list strong,
+.screen-lab-monitor--loopr strong,
+.screen-lab-command-grid strong,
+.screen-lab-market-table strong,
+.screen-lab-positions strong,
+.screen-lab-monitor--policy strong,
+.screen-lab-monitor--lifecycle strong,
+.screen-lab-phone-shell strong {
+  color: #182116;
+}
+
+.screen-lab-prime-card strong,
+.screen-lab-current-task strong {
+  color: #2e6840;
+}
+
+.screen-lab-prime-card p,
+.screen-lab-current-task p,
+.screen-lab-market-table p,
+.screen-lab-positions p,
+.screen-lab-monitor--policy p,
+.screen-lab-monitor--memory p,
+.screen-lab-monitor--inbox p,
+.screen-lab-monitor--skills p,
+.screen-lab-monitor--wallet p,
+.screen-lab-passport-body p,
+.screen-lab-monitor--split p,
+.screen-lab-monitor--terminal p,
+.screen-lab-command-grid p,
+.screen-lab-thought-list p,
+.screen-lab-monitor--loopr p,
+.screen-lab-monitor--lifecycle article p,
+.screen-lab-phone-shell p {
+  color: #3f4c39;
+}
+
+.screen-lab-habitat-stats {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.screen-lab-roster {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.screen-lab-roster div {
+  box-shadow: inset 0 0 20px color-mix(in srgb, var(--pet-accent) 16%, transparent);
+}
+
+.screen-lab-pixel-pet {
+  filter: drop-shadow(0 5px 0 rgba(28, 38, 21, 0.15));
+}
+
+.screen-lab-thought-list article {
+  grid-template-columns: 56px 82px minmax(0, 1fr);
+  border-top: 0;
+}
+
+.screen-lab-thought-list time,
+.screen-lab-thought-list span {
+  color: #2e6840;
+}
+
+.screen-lab-compute-stack > strong,
+.screen-lab-money,
+.screen-lab-donate-split strong,
+.screen-lab-monitor--terminal > strong {
+  color: #182116;
+}
+
+.screen-lab-compute-stack > div {
+  gap: 3px;
+}
+
+.screen-lab-compute-stack span {
+  height: 36px;
+  border: 2px solid rgba(28, 38, 21, 0.26);
+  background: rgba(51, 86, 44, 0.12);
+}
+
+.screen-lab-compute-stack span.is-active {
+  background: linear-gradient(180deg, #6ca660, #315f36);
+}
+
+.screen-lab-keyval div,
+.screen-lab-market-table article,
+.screen-lab-positions article,
+.screen-lab-monitor--policy article,
+.screen-lab-monitor--memory article,
+.screen-lab-monitor--inbox article,
+.screen-lab-monitor--lifecycle article,
+.screen-lab-monitor--loopr article {
+  padding: 10px;
+  border-top: 2px solid rgba(28, 38, 21, 0.26);
+}
+
+.screen-lab-keyval dd {
+  color: #182116;
+}
+
+.screen-lab-split-grid div,
+.screen-lab-donate-buttons button {
+  border: 2px solid #10170f;
+  background: #fff7d8;
+  color: #182116;
+  box-shadow: 3px 3px 0 #315f36;
+}
+
+.screen-lab-donate-buttons button {
+  cursor: pointer;
+  font: 900 12px 'JetBrains Mono', 'Courier New', ui-monospace, monospace;
+  transition:
+    transform 150ms ease,
+    box-shadow 150ms ease,
+    background-color 150ms ease;
+}
+
+.screen-lab-donate-buttons button:hover {
+  background: #dcebbd;
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 #315f36;
+}
+
+.screen-lab-donate-buttons button:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 #315f36;
+}
+
+.screen-lab-market-table i {
+  border: 2px solid rgba(28, 38, 21, 0.22);
+  background: rgba(49, 95, 54, 0.12);
+}
+
+.screen-lab-market-table i::before {
+  background: #4f8c4e;
+}
+
+.screen-lab-phone-shell {
+  width: min(300px, 100%);
+  border-width: 6px;
+  background:
+    linear-gradient(rgba(62, 96, 49, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(62, 96, 49, 0.04) 1px, transparent 1px),
+    linear-gradient(180deg, #fff3cf, #f4e1ae);
+  background-size: 18px 18px, 18px 18px, auto;
+}
+
+@media (max-width: 1280px) {
+  .screen-lab-hero,
+  .screen-lab-signal-matrix {
+    grid-template-columns: 1fr;
+  }
+
+  .screen-lab-panel,
+  .screen-lab-panel.is-tall,
+  .screen-lab-panel.is-mini {
+    grid-column: 1 / -1;
+  }
+
+  .screen-lab-role-map,
+  .screen-lab-slot-rack,
+  .screen-lab-signal-matrix > div {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 780px) {
+  .screen-lab-shell {
+    width: min(100% - 24px, 1680px);
+    padding-top: 18px;
+  }
+
+  .screen-lab-hero,
+  .screen-lab-panel,
+  .screen-lab-monitor--habitat {
+    padding: 14px;
+  }
+
+  .screen-lab-hero h1 {
+    font-size: 34px;
+  }
+
+  .screen-lab-hero aside,
+  .screen-lab-panel > header,
+  .screen-lab-screen-brief,
+  .screen-lab-role-map,
+  .screen-lab-slot-rack,
+  .screen-lab-signal-matrix > div,
+  .screen-lab-habitat-grid,
+  .screen-lab-habitat-stats,
+  .screen-lab-roster,
+  .screen-lab-skill-loop,
+  .screen-lab-donate-split,
+  .screen-lab-donate-buttons,
+  .screen-lab-market-table article,
+  .screen-lab-positions article,
+  .screen-lab-monitor--lifecycle article,
+  .screen-lab-thought-list article {
+    grid-template-columns: 1fr;
+  }
+
+  .screen-lab-frame-meta {
+    justify-items: start;
+    text-align: left;
+  }
+}
