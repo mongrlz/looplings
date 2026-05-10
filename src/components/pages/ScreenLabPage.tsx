@@ -297,6 +297,9 @@ function ScreenLabNav() {
       </a>
       <span className="screen-lab-nav-line">floating survival screens for Prime</span>
       <div className="screen-lab-nav-actions" aria-label="Screen lab actions">
+        <a className="screen-lab-nav-button" href="/lab/screen-deck">
+          Frame Deck
+        </a>
         <a className="screen-lab-nav-button" href="/lab/logos">
           Logo Lab
         </a>
