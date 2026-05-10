@@ -685,7 +685,6 @@ function BendyReceipt({
   receipt: PrintedReceipt;
   index: number;
 }) {
-  const { camera, gl } = useThree();
   const groupRef = useRef<THREE.Group>(null);
   const geometry = useMemo(() => createReceiptStripGeometry(), []);
   const texture = useMemo(() => makeReceiptTexture(receipt.event), [receipt.event]);
@@ -695,9 +694,6 @@ function BendyReceipt({
   const dragTargetRef = useRef(new THREE.Vector3(-RECEIPT_STRIP_LENGTH / 2, 0.18, 0));
   const rayPoint = useMemo(() => new THREE.Vector3(), []);
   const localPoint = useMemo(() => new THREE.Vector3(), []);
-  const pointerNdc = useMemo(() => new THREE.Vector2(), []);
-  const raycaster = useMemo(() => new THREE.Raycaster(), []);
-  const projectedHome = useMemo(() => new THREE.Vector3(), []);
   const dragPlane = useMemo(() => new THREE.Plane(WORLD_UP, -RECEIPT_DRAG_PLANE_Y), []);
   const draggingRef = useRef(false);
   const side = useMemo(() => new THREE.Vector3(-RECEIPT_FEED_DIRECTION.z, 0, RECEIPT_FEED_DIRECTION.x), []);
@@ -857,74 +853,6 @@ function BendyReceipt({
     target?.releasePointerCapture(event.pointerId);
   };
 
-  useEffect(() => {
-    if (index !== 0) return undefined;
-
-    const canvas = gl.domElement;
-    const isInsideReceiptZone = (event: PointerEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      projectedHome.copy(homePosition).add(new THREE.Vector3(0, 0.08, 0)).project(camera);
-      const screenX = rect.left + (projectedHome.x * 0.5 + 0.5) * rect.width;
-      const screenY = rect.top + (-projectedHome.y * 0.5 + 0.5) * rect.height;
-      return Math.abs(event.clientX - screenX) < 150 && Math.abs(event.clientY - screenY) < 100;
-    };
-
-    const updateFromPointer = (event: PointerEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      pointerNdc.set(
-        ((event.clientX - rect.left) / rect.width) * 2 - 1,
-        -(((event.clientY - rect.top) / rect.height) * 2 - 1),
-      );
-      raycaster.setFromCamera(pointerNdc, camera);
-      updateDragTargetFromRay(raycaster.ray);
-    };
-
-    const beginDrag = (event: PointerEvent) => {
-      if (event.button !== 0 || !isInsideReceiptZone(event)) return;
-      receiptDragActive = true;
-      draggingRef.current = true;
-      updateFromPointer(event);
-      canvas.style.cursor = 'grabbing';
-      document.body.style.cursor = 'grabbing';
-      event.preventDefault();
-      event.stopPropagation();
-    };
-
-    const moveDrag = (event: PointerEvent) => {
-      if (!draggingRef.current) return;
-      updateFromPointer(event);
-      event.preventDefault();
-      event.stopPropagation();
-    };
-
-    const endDrag = (event: PointerEvent) => {
-      if (!draggingRef.current) return;
-      draggingRef.current = false;
-      receiptDragActive = false;
-      velocityRef.current.forEach((velocity) => velocity.multiplyScalar(0.16));
-      canvas.style.cursor = 'grab';
-      document.body.style.cursor = '';
-      event.preventDefault();
-      event.stopPropagation();
-    };
-
-    window.addEventListener('pointerdown', beginDrag, true);
-    window.addEventListener('pointermove', moveDrag, true);
-    window.addEventListener('pointerup', endDrag, true);
-    window.addEventListener('pointercancel', endDrag, true);
-
-    return () => {
-      window.removeEventListener('pointerdown', beginDrag, true);
-      window.removeEventListener('pointermove', moveDrag, true);
-      window.removeEventListener('pointerup', endDrag, true);
-      window.removeEventListener('pointercancel', endDrag, true);
-      if (draggingRef.current) {
-        draggingRef.current = false;
-        receiptDragActive = false;
-      }
-    };
-  }, [camera, gl, homePosition, index, pointerNdc, projectedHome, raycaster]);
-
   return (
     <group ref={groupRef} position={homePosition} rotation={[0, yaw, 0]}>
       <mesh
@@ -939,13 +867,13 @@ function BendyReceipt({
         <meshBasicMaterial map={texture} side={THREE.DoubleSide} toneMapped={false} transparent opacity={opacity} />
       </mesh>
       <mesh
-        position={[0, 0.16, 0]}
+        position={[0, 0.04, 0]}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
       >
-        <boxGeometry args={[RECEIPT_STRIP_LENGTH * 4, 0.42, RECEIPT_STRIP_WIDTH * 5.4]} />
+        <boxGeometry args={[RECEIPT_STRIP_LENGTH * 1.05, 0.075, RECEIPT_STRIP_WIDTH * 1.18]} />
         <meshBasicMaterial transparent opacity={0} depthWrite={false} />
       </mesh>
     </group>
@@ -3074,8 +3002,6 @@ function DeskClutter() {
   return (
     <group>
       <PrimeHabitatDome />
-      <AgentHandbook />
-      <PrimeIdCard />
       <ModeDock />
       <DonateTerminal />
       <WalletPuck />
