@@ -35,17 +35,35 @@ Third-party model assets used in the Prime room prototype. Preserve source, auth
 - Local files:
   - `label_printer/label_printer.glb`
 
-## looplings_desk_peripherals
+## mechanical_keyboard_aesthetic
 
-- Title: Looplings keyboard, mouse, and green desk mat
-- Source: Procedurally modeled in Blender for this repository after reviewing lightweight CC Attribution keyboard/mouse references.
+- Title: Mechanical Keyboard - Aesthetic
+- Source: https://sketchfab.com/3d-models/mechanical-keyboard-aesthetic-44bb12d306864e2cb4256a61d4168942
+- Author: M.Reslan
+- Author profile: https://sketchfab.com/mreslan
+- Provider: Sketchfab
+- License: Creative Commons Attribution 4.0 International (CC BY 4.0)
+- License URL: https://creativecommons.org/licenses/by/4.0/
+- Local files:
+  - `mechanical_keyboard_aesthetic/mechanical_keyboard_aesthetic.glb`
+
+## computer_mouse
+
+- Title: Computer Mouse
+- Source: https://sketchfab.com/3d-models/computer-mouse-2575316f6cac4d469c7fc04aa1c14d49
+- Author: Alex
+- Author profile: https://sketchfab.com/alexburghes
+- Provider: Sketchfab
+- License: Creative Commons Attribution 4.0 International (CC BY 4.0)
+- License URL: https://creativecommons.org/licenses/by/4.0/
+- Local files:
+  - `computer_mouse/computer_mouse.glb`
+
+## looplings_desk_mat
+
+- Title: Looplings green desk mat
+- Source: Procedurally modeled in Blender for this repository.
 - Author: Looplings project
 - License: Project-owned asset
-- Research references:
-  - Filer mechanical keyboard 60, CC Attribution: https://www.filer.dev/en/3d-model/mechanical-keyboard-60.glb
-  - Sketchfab Standard QWERTY keyboard by ChoboiAssets, CC Attribution: https://sketchfab.com/3d-models/standard-qwerty-keyboard-d9d8e80c36cf40f29ef36f48125a0294
-  - Sketchfab Computer Mouse low-poly by LagzDesign, CC Attribution: https://sketchfab.com/3d-models/computer-mouse-low-poly-95eb7d0363bb4db79bd50168280ea1c7
 - Local files:
-  - `looplings_keyboard/looplings_keyboard.glb`
-  - `looplings_mouse/looplings_mouse.glb`
   - `looplings_desk_mat/looplings_desk_mat.glb`
