@@ -85,7 +85,7 @@ const RECEIPT_REST_ARCH = 0.008;
 const PRINTER_POSITION = new THREE.Vector3(-1.58, DESK_SURFACE_Y + 0.002, -1.34 + DESK_WALL_OFFSET_Z);
 const PRINTER_ROTATION_Y = Math.PI - 0.68;
 const WORLD_UP = new THREE.Vector3(0, 1, 0);
-const DESK_KEYBOARD_MODEL_PATH = '/models/room/mechanical_keyboard_aesthetic/mechanical_keyboard_aesthetic.glb';
+const DESK_KEYBOARD_MODEL_PATH = '/models/room/mechanical_keyboard_aesthetic/mechanical_keyboard_aesthetic_interactive.glb';
 const DESK_MOUSE_MODEL_PATH = '/models/room/computer_mouse/computer_mouse.glb';
 const DESK_MAT_MODEL_PATH = '/models/room/looplings_desk_mat/looplings_desk_mat.glb';
 let receiptDragActive = false;
@@ -1961,15 +1961,6 @@ function DeskKeyboardAsset() {
   const { scene } = useGLTF(DESK_KEYBOARD_MODEL_PATH);
   const keyboard = usePreparedDeskAsset(scene, true);
   const [pressedKey, setPressedKey] = useState<string | null>(null);
-  const keyRows = useMemo(
-    () => [
-      { y: -0.26, count: 13, offset: 0, labels: ['ESC', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '='] },
-      { y: -0.08, count: 13, offset: 0.035, labels: ['TAB', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '[', ']'] },
-      { y: 0.1, count: 12, offset: 0.07, labels: ['CAPS', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', 'RETURN'] },
-      { y: 0.28, count: 12, offset: 0.12, labels: ['SHIFT', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', ',', '.', '/', 'SHIFT'] },
-    ],
-    [],
-  );
 
   useEffect(() => {
     if (!pressedKey) return undefined;
@@ -1981,20 +1972,22 @@ function DeskKeyboardAsset() {
     keyboard.traverse((object) => {
       if (!(object instanceof THREE.Mesh)) return;
 
-      const isActive = Boolean(pressedKey);
+      const isKey = object.name.startsWith('Key_');
+      const isActive = isKey && pressedKey === object.name;
       const restY = object.userData.restY as number | undefined;
-      if (typeof restY === 'number') object.position.y = restY - (isActive ? 0.006 : 0);
+      if (isKey && typeof restY === 'number') object.position.y = restY - (isActive ? 0.018 : 0);
 
       const material = object.material;
-      if (material instanceof THREE.MeshStandardMaterial) {
+      if (isKey && material instanceof THREE.MeshStandardMaterial) {
         material.emissive.set(isActive ? '#8cffae' : '#000000');
-        material.emissiveIntensity = isActive ? 0.16 : 0;
+        material.emissiveIntensity = isActive ? 0.38 : 0;
       }
     });
   }, [keyboard, pressedKey]);
 
   const handlePointer = (event: ThreeEvent<PointerEvent>) => {
     const target = event.object;
+    if (!target.name.startsWith('Key_')) return;
     event.stopPropagation();
     setPressedKey(target.name);
   };
@@ -2005,40 +1998,18 @@ function DeskKeyboardAsset() {
       rotation={[0, 0.02, 0]}
       scale={[0.36, 0.36, 0.36]}
     >
-      <primitive object={keyboard} />
-      {keyRows.map((row) =>
-        row.labels.map((label, index) => {
-          const x = -1.18 + row.offset + index * 0.2;
-          const isActive = pressedKey === `Key_${label}_${index}`;
-          return (
-            <mesh
-              key={`${row.y}-${label}-${index}`}
-              name={`Key_${label}_${index}`}
-              position={[x, 0.09, row.y]}
-              onPointerDown={handlePointer}
-              onPointerOver={(event: ThreeEvent<PointerEvent>) => {
-                event.stopPropagation();
-                document.body.style.cursor = 'pointer';
-              }}
-              onPointerOut={() => {
-                document.body.style.cursor = '';
-              }}
-            >
-              <boxGeometry args={[0.15, 0.035, 0.13]} />
-              <meshBasicMaterial
-                color={isActive ? '#8cffae' : '#65f5d6'}
-                transparent
-                opacity={isActive ? 0.32 : 0}
-                depthWrite={false}
-              />
-            </mesh>
-          );
-        }),
-      )}
-      <mesh name="Key_SPACE" position={[-0.22, 0.09, 0.47]} onPointerDown={handlePointer}>
-        <boxGeometry args={[0.9, 0.035, 0.13]} />
-        <meshBasicMaterial color={pressedKey === 'Key_SPACE' ? '#8cffae' : '#65f5d6'} transparent opacity={pressedKey === 'Key_SPACE' ? 0.28 : 0} depthWrite={false} />
-      </mesh>
+      <primitive
+        object={keyboard}
+        onPointerDown={handlePointer}
+        onPointerOver={(event: ThreeEvent<PointerEvent>) => {
+          if (!event.object.name.startsWith('Key_')) return;
+          event.stopPropagation();
+          document.body.style.cursor = 'pointer';
+        }}
+        onPointerOut={() => {
+          document.body.style.cursor = '';
+        }}
+      />
     </group>
   );
 }

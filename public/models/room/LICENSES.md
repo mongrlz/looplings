@@ -46,6 +46,7 @@ Third-party model assets used in the Prime room prototype. Preserve source, auth
 - License URL: https://creativecommons.org/licenses/by/4.0/
 - Local files:
   - `mechanical_keyboard_aesthetic/mechanical_keyboard_aesthetic.glb`
+  - `mechanical_keyboard_aesthetic/mechanical_keyboard_aesthetic_interactive.glb` (Blender-processed variant with loose keycaps split into clickable meshes)
 
 ## computer_mouse
 
