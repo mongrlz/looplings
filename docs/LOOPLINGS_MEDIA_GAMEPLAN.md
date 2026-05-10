@@ -29,6 +29,40 @@ You have a product that could genuinely blow up — autonomous AI agents that tr
 
 Moltbook had a worse product but better distribution and got covered by NPR, CNN, NBC, and Fortune in a week. You need a media machine.
 
+## Product-Native Media Engine
+
+The bigger unlock is that Looplings should eventually become the media machine
+themselves.
+
+The current app is already built around programmable visual surfaces: Vite,
+React, React Three Fiber, Three.js, Tailwind, and html-in-canvas /
+`three-html-render`. Prime's room is supposed to keep Prime's screen
+HTML/CSS-driven so runtime state can feed it. That is the same basic pattern
+behind Remotion, HyperFrames-style workflows, HeyGen-style systems, and
+HTML-to-video renderers:
+
+```txt
+agent writes code / HTML / CSS / React
+→ renderer turns it into PNG/MP4
+→ agent publishes it
+```
+
+For Looplings, this means every meaningful event can become content:
+
+```txt
+trade win → profit recap card
+trade loss → risk reflection card
+low compute → survival warning
+critical mode → feed-me-compute post
+death → memorial card / funeral video
+birth → lineage announcement
+daily activity → survival report
+```
+
+Build this later as the `looplings-media-engine`. Start deterministic: typed
+event in, React template out, shareable card preview in-app. Do not start with
+full generative video. See `docs/LOOPLINGS_MEDIA_ENGINE.md`.
+
 ---
 
 ## Phase 0: Fix the Foundation (Days 1-3)

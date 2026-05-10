@@ -45,6 +45,8 @@ Goal: finish the visible 3D room before live runtime wiring.
 
 - Build the room around Prime and the Steam Deck-style device.
 - Keep Prime's screen HTML/CSS-driven so it can later be fed by runtime state.
+- Preserve this `state → HTML/CSS visual surface` pattern for the future
+  media engine described in `docs/LOOPLINGS_MEDIA_ENGINE.md`.
 - Place room props and interaction affordances after the core composition works.
 - Use mocked state until the runtime contract is ready.
 
@@ -93,3 +95,5 @@ The first adapter can be mocked. The second adapter can read from local
 - Do not commit cloned Hermes or Conway source dumps.
 - Do not introduce new dependencies without checking whether the existing
   stack already solves the problem.
+- Do not add Remotion/HTML-to-video-style rendering until deterministic React
+  media templates are proven in-app.

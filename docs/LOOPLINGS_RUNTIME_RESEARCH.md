@@ -6,10 +6,38 @@ Snapshot from local clones in `apps/runtime/upstreams/`.
 
 | Repo | Local path | Snapshot |
 | --- | --- | --- |
-| Hermes Agent | `apps/runtime/upstreams/hermes-agent` | `b7ad3f4` |
+| Hermes Agent | `apps/runtime/upstreams/hermes-agent` | `5ccab51f` |
 | Conway Automaton | `apps/runtime/upstreams/automaton` | `22096f7` |
 
 These upstreams are gitignored reference material. Do not commit them.
+
+## Refresh Notes — May 6, 2026
+
+Hermes Agent was fast-forwarded locally from `b7ad3f4` to `5ccab51f`.
+Conway Automaton was already current at `22096f7`.
+
+Hermes has a large post-snapshot update set. The parts most relevant to
+Looplings are:
+
+- pluggable provider/runtime surfaces under `providers/` and
+  `plugins/model-providers/`
+- SearXNG/web-search backend split under `tools/web_providers/`
+- Curator/self-improvement work under `agent/curator.py`,
+  `agent/curator_backup.py`, and `hermes_cli/curator.py`
+- checkpoint, cron, browser, gateway, and auth/profile hardening
+- optional creative/media skills, especially `optional-skills/creative/hyperframes/`
+  and `optional-skills/creative/kanban-video-orchestrator/`
+
+Current integration stance:
+
+1. Do not vendor Hermes source into Looplings Core or the frontend.
+2. Keep Hermes as ignored research material and adapt patterns into
+   Looplings-owned interfaces.
+3. Near-term candidates to borrow are provider plugin manifests, the
+   search/extract split, and HyperFrames-style media generation workflows.
+4. Defer Hermes TUI/dashboard, messaging platform breadth, Teams/Feishu/etc.,
+   and full gateway behavior until after Prime's demo loop is stable.
+5. Conway has no new local delta to integrate right now.
 
 ## First Read
 

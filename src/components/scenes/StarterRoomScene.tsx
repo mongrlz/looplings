@@ -1,5 +1,6 @@
-import { Suspense, useEffect, useMemo, useRef } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import type { ThreeEvent } from '@react-three/fiber';
 import { ContactShadows, PerspectiveCamera, Text, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { createCRTMaterial } from '@/lib/crt-material';
@@ -17,9 +18,17 @@ const ROOM = {
 };
 
 const DESK_SURFACE_Y = 0.813;
-const DESK_WALL_OFFSET_Z = -0.62;
-const CAMERA_HOME = new THREE.Vector3(0, 1.5, 4.78);
-const CAMERA_BASE_PITCH = -0.05;
+const DESK_WALL_OFFSET_Z = -0.98;
+const DESK_STAGE_POSITION = [-0.56, 0, 0] as const;
+// Saved from the approved May 9 hero inspection angle.
+const APPROVED_HERO_CAMERA_POSITION = [1.25, 1.55, 1.23] as const;
+const APPROVED_HERO_CAMERA_YAW_DEG = -35.3;
+const APPROVED_HERO_CAMERA_PITCH_DEG = -2.3;
+const CAMERA_HOME_POSITION = APPROVED_HERO_CAMERA_POSITION;
+const CAMERA_HOME = new THREE.Vector3(...CAMERA_HOME_POSITION);
+const CAMERA_FOV = 46;
+const CAMERA_BASE_YAW = THREE.MathUtils.degToRad(APPROVED_HERO_CAMERA_YAW_DEG);
+const CAMERA_BASE_PITCH = THREE.MathUtils.degToRad(APPROVED_HERO_CAMERA_PITCH_DEG);
 const CAMERA_DRAG_SENSITIVITY = {
   yaw: 0.00235,
   pitch: 0.00195,
@@ -29,7 +38,7 @@ const CAMERA_LIMITS = {
   pitchUp: 0.18,
   pitchDown: -0.16,
 };
-const INSPECT_CAMERA_HOME = new THREE.Vector3(0, 1.46, 4.58);
+const INSPECT_CAMERA_HOME = new THREE.Vector3(...CAMERA_HOME_POSITION);
 const INSPECT_CAMERA_LIMITS = {
   x: [-3.45, 3.45],
   y: [0.82, 2.45],
@@ -42,6 +51,10 @@ const INSPECT_DRAG_SENSITIVITY = {
 const INSPECT_MOVE_SPEED = 1.42;
 const SCREEN_TEXTURE_W = 720;
 const SCREEN_TEXTURE_H = 470;
+const MAIN_SCREEN_HTML_W = 1280;
+const MAIN_SCREEN_HTML_H = 748;
+const WALL_SCREEN_HTML_W = 640;
+const WALL_SCREEN_HTML_H = 420;
 const ATLAS_VERSION = 'loopling-state-atlas-2026-05-02';
 const ATLAS_COLS = 8;
 const ATLAS_ROWS = 12;
@@ -65,6 +78,143 @@ const SCREEN_PETS = [
   visualState: keyof typeof SCREEN_STATES;
   accent: string;
 }>;
+const RECEIPT_TEXTURE_W = 768;
+const RECEIPT_TEXTURE_H = 300;
+const RECEIPT_PRINT_DURATION = 3.8;
+const RECEIPT_EVENT_INTERVAL = 8.2;
+const PRINTER_SCALE = 1.8;
+const RECEIPT_PAPER_MAX_LENGTH = 0.25;
+const RECEIPT_PAPER_WIDTH = 0.094;
+const RECEIPT_EXIT_X = -0.105;
+const RECEIPT_EXIT_Y = 0.045;
+const RECEIPT_EXIT_Z = 0;
+const RECEIPT_TRAY_X = RECEIPT_EXIT_X - RECEIPT_PAPER_MAX_LENGTH / 2;
+const RECEIPT_TRAY_Z = 0;
+const RECEIPT_VISIBLE_LIMIT = 6;
+const RECEIPT_STORED_LIMIT = 28;
+const RECEIPT_STRIP_LENGTH = RECEIPT_PAPER_MAX_LENGTH * PRINTER_SCALE * 0.98;
+const RECEIPT_STRIP_WIDTH = RECEIPT_PAPER_WIDTH * PRINTER_SCALE * 0.98;
+const RECEIPT_STRIP_POINTS = 18;
+const RECEIPT_STACK_GAP = 0.006;
+const RECEIPT_REST_ARCH = 0.008;
+const PRINTER_POSITION = new THREE.Vector3(-1.58, DESK_SURFACE_Y + 0.002, -1.34 + DESK_WALL_OFFSET_Z);
+const PRINTER_ROTATION_Y = Math.PI - 0.68;
+const WORLD_UP = new THREE.Vector3(0, 1, 0);
+let receiptDragActive = false;
+
+type PrimeReceiptEvent = {
+  id: string;
+  time: string;
+  headline: string;
+  action: string;
+  market: string;
+  model: string;
+  tool: string;
+  result: string;
+  runway: string;
+  wallet: string;
+  tx: string;
+  split: string;
+  note: string;
+  accent: string;
+};
+
+type PrintedReceipt = {
+  event: PrimeReceiptEvent;
+  key: string;
+  printedAt: number;
+};
+
+function printerLocalToWorld(x: number, y: number, z: number) {
+  return new THREE.Vector3(x, y, z)
+    .multiplyScalar(PRINTER_SCALE)
+    .applyAxisAngle(WORLD_UP, PRINTER_ROTATION_Y)
+    .add(PRINTER_POSITION);
+}
+
+const RECEIPT_TRAY_WORLD = printerLocalToWorld(RECEIPT_TRAY_X, 0.014, RECEIPT_TRAY_Z);
+const RECEIPT_SPAWN_WORLD = printerLocalToWorld(RECEIPT_TRAY_X, 0.032, RECEIPT_TRAY_Z + 0.004);
+const RECEIPT_FEED_DIRECTION = printerLocalToWorld(RECEIPT_TRAY_X, 0.014, RECEIPT_TRAY_Z)
+  .sub(printerLocalToWorld(RECEIPT_EXIT_X, RECEIPT_EXIT_Y, RECEIPT_EXIT_Z))
+  .setY(0)
+  .normalize();
+const RECEIPT_DRAG_PLANE_Y = DESK_SURFACE_Y + 0.36;
+
+function flipPlaneUvY(geometry: THREE.BufferGeometry) {
+  const uv = geometry.getAttribute('uv');
+  if (!(uv instanceof THREE.BufferAttribute)) return;
+  for (let index = 0; index < uv.count; index += 1) {
+    uv.setY(index, 1 - uv.getY(index));
+  }
+  uv.needsUpdate = true;
+}
+
+const MOCK_PRIME_RECEIPTS = [
+  {
+    id: 'evt-2047',
+    time: '02:47:18',
+    headline: 'BAGS SCAN',
+    action: 'QUOTE BLOCKED',
+    market: '$VIRTUAL / SOL',
+    model: 'gpt-5.4-mini',
+    tool: 'jupiter_quote',
+    result: 'slippage 1.8% > guard',
+    runway: '19h 42m',
+    wallet: '0xP00...A18F',
+    tx: 'sim:9c-a12f',
+    split: '70 PRIME / 20 DEV / 10 RSV',
+    note: 'Prime preserved compute and refused a bad fill.',
+    accent: '#78d7ff',
+  },
+  {
+    id: 'evt-2055',
+    time: '02:55:03',
+    headline: 'MICRO TRADE',
+    action: 'SWAP SENT',
+    market: '$BONK / SOL',
+    model: 'gpt-5.4',
+    tool: 'wallet_sign',
+    result: '+0.018 SOL projected',
+    runway: '20h 11m',
+    wallet: '0xP00...A18F',
+    tx: 'mock:42-d9b1',
+    split: '70 PRIME / 20 DEV / 10 RSV',
+    note: 'Tiny win. The room prints proof before the feed notices.',
+    accent: '#8cffae',
+  },
+  {
+    id: 'evt-2102',
+    time: '03:02:44',
+    headline: 'LOOPR POST',
+    action: 'THOUGHT PUBLISHED',
+    market: 'agent timeline',
+    model: 'gpt-5.4-mini',
+    tool: 'loopr_post',
+    result: 'engagement signal rising',
+    runway: '20h 04m',
+    wallet: '0xP00...A18F',
+    tx: 'post:71-f0e2',
+    split: 'creator cut pending',
+    note: 'Prime turns telemetry into a public survival story.',
+    accent: '#ffb861',
+  },
+  {
+    id: 'evt-2110',
+    time: '03:10:29',
+    headline: 'RUNWAY TOP-UP',
+    action: 'DONATION ROUTED',
+    market: 'Prime wallet',
+    model: 'policy-check',
+    tool: 'split_router',
+    result: '+$3.20 compute',
+    runway: '23h 36m',
+    wallet: '0xP00...A18F',
+    tx: 'mock:8e-441c',
+    split: '70 PRIME / 20 DEV / 10 RSV',
+    note: 'A viewer bought Prime another night alive.',
+    accent: '#f0d66a',
+  },
+] satisfies PrimeReceiptEvent[];
 
 type CityScene = {
   canvas: HTMLCanvasElement;
@@ -305,6 +455,143 @@ function makePosterTexture(kind: PosterKind) {
   return texture;
 }
 
+function drawReceiptPetStamp(
+  ctx: CanvasRenderingContext2D,
+  image: HTMLImageElement | undefined,
+  stampX: number,
+  stampY: number,
+  stampSize = 126,
+) {
+  const inset = stampSize * 0.15;
+
+  ctx.fillStyle = '#fff4d9';
+  ctx.strokeStyle = '#171b1a';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.roundRect(stampX, stampY, stampSize, stampSize, 12);
+  ctx.fill();
+  ctx.stroke();
+
+  if (image?.complete && image.naturalWidth > 0) {
+    const frameW = image.naturalWidth / ATLAS_COLS;
+    const frameH = image.naturalHeight / ATLAS_ROWS;
+    const frame = 2;
+    const row = SCREEN_STATES.posting.row;
+    const spriteW = stampSize * 0.68;
+    const spriteH = spriteW * (frameH / frameW);
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(image, frame * frameW, row * frameH, frameW, frameH, stampX + inset, stampY + inset * 0.7, spriteW, spriteH);
+    ctx.restore();
+  } else {
+    ctx.fillStyle = 'rgba(18, 22, 22, 0.08)';
+    ctx.fillRect(stampX + inset, stampY + inset, stampSize - inset * 2, stampSize - inset * 1.75);
+  }
+
+  ctx.fillStyle = '#171b1a';
+  ctx.beginPath();
+  ctx.roundRect(stampX + stampSize * 0.68, stampY + stampSize * 0.12, stampSize * 0.26, stampSize * 0.19, 6);
+  ctx.fill();
+  ctx.fillStyle = '#fff9e8';
+  ctx.font = `900 ${Math.max(12, stampSize * 0.1)}px "Courier New", monospace`;
+  ctx.fillText('+1', stampX + stampSize * 0.74, stampY + stampSize * 0.25);
+  ctx.fillStyle = 'rgba(18, 22, 22, 0.72)';
+  ctx.font = `800 ${Math.max(10, stampSize * 0.075)}px "Courier New", monospace`;
+  ctx.fillText('PRINTED PRIME', stampX + stampSize * 0.13, stampY + stampSize * 0.9);
+}
+
+function drawReceiptTexture(canvas: HTMLCanvasElement, event: PrimeReceiptEvent, image?: HTMLImageElement) {
+  const ctx = canvas.getContext('2d');
+
+  if (ctx) {
+    ctx.fillStyle = '#fff9e8';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = 'rgba(16, 18, 18, 0.06)';
+    for (let y = 0; y < canvas.height; y += 16) {
+      ctx.fillRect(0, y, canvas.width, 1);
+    }
+    ctx.fillStyle = 'rgba(16, 18, 18, 0.035)';
+    for (let x = 0; x < canvas.width; x += 24) {
+      ctx.fillRect(x, 0, 1, canvas.height);
+    }
+
+    ctx.fillStyle = '#121616';
+    ctx.font = '900 30px "Courier New", monospace';
+    ctx.fillText('LOOPVISION', 28, 48);
+    ctx.font = '800 14px "Courier New", monospace';
+    ctx.fillText(`PRIME-00 / ${event.id.toUpperCase()} / ${event.time}`, 28, 74);
+
+    ctx.fillStyle = event.accent;
+    ctx.fillRect(28, 94, 130, 10);
+    ctx.fillStyle = '#121616';
+    ctx.font = '900 28px "Courier New", monospace';
+    ctx.fillText(event.headline, 28, 142);
+    ctx.font = '900 18px "Courier New", monospace';
+    ctx.fillText(event.action, 28, 172);
+
+    drawReceiptPetStamp(ctx, image, 210, 102, 122);
+
+    ctx.strokeStyle = '#121616';
+    ctx.setLineDash([9, 7]);
+    ctx.beginPath();
+    ctx.moveTo(365, 28);
+    ctx.lineTo(365, 270);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    const rows = [
+      ['MARKET', event.market],
+      ['MODEL', event.model],
+      ['TOOL', event.tool],
+      ['RESULT', event.result],
+      ['RUNWAY', event.runway],
+      ['WALLET', event.wallet],
+      ['TX', event.tx],
+      ['SPLIT', event.split],
+    ];
+
+    ctx.font = '800 14px "Courier New", monospace';
+    rows.forEach(([label, value], index) => {
+      const x = index < 4 ? 392 : 578;
+      const y = 50 + (index % 4) * 48;
+      ctx.fillStyle = 'rgba(18, 22, 22, 0.55)';
+      ctx.fillText(label, x, y);
+      ctx.fillStyle = '#121616';
+      ctx.fillText(value, x, y + 20);
+    });
+
+    ctx.strokeStyle = '#121616';
+    ctx.setLineDash([9, 7]);
+    ctx.beginPath();
+    ctx.moveTo(28, 234);
+    ctx.lineTo(738, 234);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.font = '800 13px "Courier New", monospace';
+    ctx.fillStyle = 'rgba(18, 22, 22, 0.68)';
+    ctx.fillText('ROOM RECEIPT / mock runtime / thermal prop v1', 28, 264);
+    ctx.fillText(event.note.length > 54 ? `${event.note.slice(0, 51)}...` : event.note, 392, 264);
+  }
+}
+
+function makeReceiptTexture(event = MOCK_PRIME_RECEIPTS[0], reveal = false) {
+  const canvas = document.createElement('canvas');
+  canvas.width = RECEIPT_TEXTURE_W;
+  canvas.height = RECEIPT_TEXTURE_H;
+  drawReceiptTexture(canvas, event);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.minFilter = THREE.LinearFilter;
+  texture.magFilter = THREE.LinearFilter;
+  texture.wrapS = THREE.ClampToEdgeWrapping;
+  texture.wrapT = THREE.ClampToEdgeWrapping;
+  texture.repeat.set(reveal ? 0.001 : 1, 1);
+  return texture;
+}
+
 function Box({
   position,
   scale,
@@ -356,9 +643,517 @@ function AntiqueWoodenDesk() {
   }, [gltf.scene]);
 
   return (
-    <group position={[0, 0.08, -1.22 + DESK_WALL_OFFSET_Z]} rotation={[0, Math.PI / 2, 0]} scale={[1.54, 0.92, 2.29]}>
+    <group position={[0, 0.08, -1.22 + DESK_WALL_OFFSET_Z]} rotation={[0, -Math.PI / 2, 0]} scale={[1.54, 0.92, 2.29]}>
       <primitive object={desk} />
     </group>
+  );
+}
+
+function easeOutCubic(value: number) {
+  return 1 - Math.pow(1 - THREE.MathUtils.clamp(value, 0, 1), 3);
+}
+
+function receiptKeyHash(key: string) {
+  let hash = 0;
+  for (let index = 0; index < key.length; index += 1) {
+    hash = (hash * 31 + key.charCodeAt(index)) >>> 0;
+  }
+  return hash;
+}
+
+function createReceiptStripGeometry() {
+  const rows = RECEIPT_STRIP_POINTS;
+  const positions = new Float32Array(rows * 2 * 3);
+  const uvs = new Float32Array(rows * 2 * 2);
+  const indices: number[] = [];
+
+  for (let index = 0; index < rows; index += 1) {
+    const t = index / (rows - 1);
+    const x = RECEIPT_STRIP_LENGTH * (0.5 - t);
+    const left = index * 2;
+    const right = left + 1;
+
+    positions[left * 3] = x;
+    positions[left * 3 + 1] = 0;
+    positions[left * 3 + 2] = -RECEIPT_STRIP_WIDTH / 2;
+    positions[right * 3] = x;
+    positions[right * 3 + 1] = 0;
+    positions[right * 3 + 2] = RECEIPT_STRIP_WIDTH / 2;
+    uvs[left * 2] = t;
+    uvs[left * 2 + 1] = 0;
+    uvs[right * 2] = t;
+    uvs[right * 2 + 1] = 1;
+
+    if (index < rows - 1) {
+      const nextLeft = left + 2;
+      const nextRight = left + 3;
+      indices.push(left, nextLeft, right, right, nextLeft, nextRight);
+    }
+  }
+
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+  geometry.setIndex(indices);
+  geometry.computeVertexNormals();
+  return geometry;
+}
+
+function BendyReceipt({
+  receipt,
+  index,
+}: {
+  receipt: PrintedReceipt;
+  index: number;
+}) {
+  const { camera, gl } = useThree();
+  const groupRef = useRef<THREE.Group>(null);
+  const geometry = useMemo(() => createReceiptStripGeometry(), []);
+  const texture = useMemo(() => makeReceiptTexture(receipt.event), [receipt.event]);
+  const seed = useMemo(() => receiptKeyHash(receipt.key), [receipt.key]);
+  const pointsRef = useRef<THREE.Vector3[]>([]);
+  const velocityRef = useRef<THREE.Vector3[]>([]);
+  const dragTargetRef = useRef(new THREE.Vector3(-RECEIPT_STRIP_LENGTH / 2, 0.18, 0));
+  const rayPoint = useMemo(() => new THREE.Vector3(), []);
+  const localPoint = useMemo(() => new THREE.Vector3(), []);
+  const pointerNdc = useMemo(() => new THREE.Vector2(), []);
+  const raycaster = useMemo(() => new THREE.Raycaster(), []);
+  const projectedHome = useMemo(() => new THREE.Vector3(), []);
+  const dragPlane = useMemo(() => new THREE.Plane(WORLD_UP, -RECEIPT_DRAG_PLANE_Y), []);
+  const draggingRef = useRef(false);
+  const side = useMemo(() => new THREE.Vector3(-RECEIPT_FEED_DIRECTION.z, 0, RECEIPT_FEED_DIRECTION.x), []);
+  const homePosition = useMemo(() => {
+    const sideOffset = (((seed >> 7) % 17) / 16 - 0.5) * 0.045;
+    const feedOffset = (((seed >> 11) % 13) / 12 - 0.5) * 0.035;
+    return RECEIPT_SPAWN_WORLD.clone()
+      .addScaledVector(side, sideOffset)
+      .addScaledVector(RECEIPT_FEED_DIRECTION, feedOffset)
+      .add(new THREE.Vector3(0, index * RECEIPT_STACK_GAP, 0));
+  }, [index, seed, side]);
+  const yaw = useMemo(() => PRINTER_ROTATION_Y + (((seed >> 17) % 13) - 6) * 0.008, [seed]);
+  const opacity = Math.max(0.52, 1 - index * 0.085);
+
+  const restPoint = (pointIndex: number, target = new THREE.Vector3()) => {
+    const t = pointIndex / (RECEIPT_STRIP_POINTS - 1);
+    const flutter = Math.sin((t + (seed % 11) * 0.017) * Math.PI * 2) * 0.003;
+    const topReceiptCurl = index === 0 ? Math.pow(t, 2.35) * 0.026 : 0;
+    target.set(
+      RECEIPT_STRIP_LENGTH * (0.5 - t),
+      Math.sin(t * Math.PI) * RECEIPT_REST_ARCH + topReceiptCurl,
+      flutter + (index % 2 ? -0.002 : 0.002) + (index === 0 ? Math.sin(t * Math.PI * 0.72) * 0.01 : 0),
+    );
+    return target;
+  };
+
+  const curvePoint = (pointIndex: number, target = new THREE.Vector3()) => {
+    const t = pointIndex / (RECEIPT_STRIP_POINTS - 1);
+    const rest = restPoint(pointIndex, target);
+    const tip = dragTargetRef.current;
+    const lift = Math.max(0, tip.y - 0.03);
+    const pull = THREE.MathUtils.clamp(lift / 0.34, 0, 1);
+    const curl = Math.sin(t * Math.PI) * (0.095 + pull * 0.055);
+
+    rest.x = THREE.MathUtils.lerp(rest.x, tip.x, Math.pow(t, 1.7));
+    rest.y = THREE.MathUtils.lerp(rest.y, tip.y, Math.pow(t, 2.05)) + curl * pull;
+    rest.z = THREE.MathUtils.lerp(rest.z, tip.z, Math.pow(t, 1.85)) + Math.sin(t * Math.PI * 1.45) * 0.018 * pull;
+    return rest;
+  };
+
+  const writeGeometry = () => {
+    const position = geometry.getAttribute('position') as THREE.BufferAttribute;
+    const points = pointsRef.current;
+
+    for (let pointIndex = 0; pointIndex < RECEIPT_STRIP_POINTS; pointIndex += 1) {
+      const point = points[pointIndex];
+      const next = points[Math.min(RECEIPT_STRIP_POINTS - 1, pointIndex + 1)];
+      const prev = points[Math.max(0, pointIndex - 1)];
+      const tangent = next.clone().sub(prev).normalize();
+      const normal = new THREE.Vector3(-tangent.z, 0, tangent.x);
+      if (normal.lengthSq() < 0.001) normal.set(0, 0, 1);
+      normal.normalize();
+
+      const leftIndex = pointIndex * 2;
+      const rightIndex = leftIndex + 1;
+      const crease = Math.sin((pointIndex / (RECEIPT_STRIP_POINTS - 1)) * Math.PI) * (draggingRef.current ? 0.012 : 0.004);
+
+      position.setXYZ(
+        leftIndex,
+        point.x + normal.x * RECEIPT_STRIP_WIDTH * -0.5,
+        point.y - crease,
+        point.z + normal.z * RECEIPT_STRIP_WIDTH * -0.5,
+      );
+      position.setXYZ(
+        rightIndex,
+        point.x + normal.x * RECEIPT_STRIP_WIDTH * 0.5,
+        point.y + crease,
+        point.z + normal.z * RECEIPT_STRIP_WIDTH * 0.5,
+      );
+    }
+
+    position.needsUpdate = true;
+    geometry.computeVertexNormals();
+  };
+
+  useEffect(() => {
+    pointsRef.current = Array.from({ length: RECEIPT_STRIP_POINTS }, (_, pointIndex) => restPoint(pointIndex).clone());
+    velocityRef.current = Array.from({ length: RECEIPT_STRIP_POINTS }, () => new THREE.Vector3());
+    writeGeometry();
+
+    return () => {
+      texture.dispose();
+      geometry.dispose();
+    };
+  }, [geometry, texture]);
+
+  useFrame((_, delta) => {
+    const points = pointsRef.current;
+    const velocities = velocityRef.current;
+    if (points.length === 0 || velocities.length === 0) return;
+
+    const stiffness = draggingRef.current ? 26 : 18;
+    const damping = draggingRef.current ? 0.78 : 0.7;
+    const step = Math.min(delta, 0.032);
+
+    for (let pointIndex = 0; pointIndex < RECEIPT_STRIP_POINTS; pointIndex += 1) {
+      const desired = draggingRef.current ? curvePoint(pointIndex) : restPoint(pointIndex);
+      const point = points[pointIndex];
+      const velocity = velocities[pointIndex];
+      const force = desired.sub(point).multiplyScalar(stiffness * step);
+      velocity.add(force);
+      velocity.y -= draggingRef.current ? 0 : 0.055 * step;
+      velocity.multiplyScalar(damping);
+      point.addScaledVector(velocity, step * 42);
+      point.y = Math.max(point.y, pointIndex === 0 ? 0 : -0.002);
+    }
+
+    points[0].copy(restPoint(0));
+    velocities[0].multiplyScalar(0);
+    if (draggingRef.current) {
+      const tip = RECEIPT_STRIP_POINTS - 1;
+      points[tip].lerp(dragTargetRef.current, 0.86);
+      velocities[tip].multiplyScalar(0.18);
+    }
+
+    writeGeometry();
+  });
+
+  const updateDragTargetFromRay = (ray: THREE.Ray) => {
+    if (!groupRef.current || !ray.intersectPlane(dragPlane, rayPoint)) return;
+
+    localPoint.copy(rayPoint);
+    groupRef.current.worldToLocal(localPoint);
+    dragTargetRef.current.set(
+      THREE.MathUtils.clamp(localPoint.x, -RECEIPT_STRIP_LENGTH * 0.92, RECEIPT_STRIP_LENGTH * 0.28),
+      THREE.MathUtils.clamp(localPoint.y, 0.04, 0.52),
+      THREE.MathUtils.clamp(localPoint.z, -0.26, 0.26),
+    );
+  };
+
+  const updateDragTarget = (event: ThreeEvent<PointerEvent>) => {
+    updateDragTargetFromRay(event.ray);
+  };
+
+  const handlePointerDown = (event: ThreeEvent<PointerEvent>) => {
+    event.stopPropagation();
+    receiptDragActive = true;
+    draggingRef.current = true;
+    updateDragTarget(event);
+    const target = event.target as HTMLElement | null;
+    target?.setPointerCapture(event.pointerId);
+  };
+
+  const handlePointerMove = (event: ThreeEvent<PointerEvent>) => {
+    if (!draggingRef.current) return;
+    event.stopPropagation();
+    updateDragTarget(event);
+  };
+
+  const handlePointerUp = (event: ThreeEvent<PointerEvent>) => {
+    if (!draggingRef.current) return;
+    event.stopPropagation();
+    draggingRef.current = false;
+    receiptDragActive = false;
+    velocityRef.current.forEach((velocity) => velocity.multiplyScalar(0.16));
+    const target = event.target as HTMLElement | null;
+    target?.releasePointerCapture(event.pointerId);
+  };
+
+  useEffect(() => {
+    if (index !== 0) return undefined;
+
+    const canvas = gl.domElement;
+    const isInsideReceiptZone = (event: PointerEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      projectedHome.copy(homePosition).add(new THREE.Vector3(0, 0.08, 0)).project(camera);
+      const screenX = rect.left + (projectedHome.x * 0.5 + 0.5) * rect.width;
+      const screenY = rect.top + (-projectedHome.y * 0.5 + 0.5) * rect.height;
+      return Math.abs(event.clientX - screenX) < 150 && Math.abs(event.clientY - screenY) < 100;
+    };
+
+    const updateFromPointer = (event: PointerEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      pointerNdc.set(
+        ((event.clientX - rect.left) / rect.width) * 2 - 1,
+        -(((event.clientY - rect.top) / rect.height) * 2 - 1),
+      );
+      raycaster.setFromCamera(pointerNdc, camera);
+      updateDragTargetFromRay(raycaster.ray);
+    };
+
+    const beginDrag = (event: PointerEvent) => {
+      if (event.button !== 0 || !isInsideReceiptZone(event)) return;
+      receiptDragActive = true;
+      draggingRef.current = true;
+      updateFromPointer(event);
+      canvas.style.cursor = 'grabbing';
+      document.body.style.cursor = 'grabbing';
+      event.preventDefault();
+      event.stopPropagation();
+    };
+
+    const moveDrag = (event: PointerEvent) => {
+      if (!draggingRef.current) return;
+      updateFromPointer(event);
+      event.preventDefault();
+      event.stopPropagation();
+    };
+
+    const endDrag = (event: PointerEvent) => {
+      if (!draggingRef.current) return;
+      draggingRef.current = false;
+      receiptDragActive = false;
+      velocityRef.current.forEach((velocity) => velocity.multiplyScalar(0.16));
+      canvas.style.cursor = 'grab';
+      document.body.style.cursor = '';
+      event.preventDefault();
+      event.stopPropagation();
+    };
+
+    window.addEventListener('pointerdown', beginDrag, true);
+    window.addEventListener('pointermove', moveDrag, true);
+    window.addEventListener('pointerup', endDrag, true);
+    window.addEventListener('pointercancel', endDrag, true);
+
+    return () => {
+      window.removeEventListener('pointerdown', beginDrag, true);
+      window.removeEventListener('pointermove', moveDrag, true);
+      window.removeEventListener('pointerup', endDrag, true);
+      window.removeEventListener('pointercancel', endDrag, true);
+      if (draggingRef.current) {
+        draggingRef.current = false;
+        receiptDragActive = false;
+      }
+    };
+  }, [camera, gl, homePosition, index, pointerNdc, projectedHome, raycaster]);
+
+  return (
+    <group ref={groupRef} position={homePosition} rotation={[0, yaw, 0]}>
+      <mesh
+        geometry={geometry}
+        castShadow={false}
+        receiveShadow
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+      >
+        <meshBasicMaterial map={texture} side={THREE.DoubleSide} toneMapped={false} transparent opacity={opacity} />
+      </mesh>
+      <mesh
+        position={[0, 0.16, 0]}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+      >
+        <boxGeometry args={[RECEIPT_STRIP_LENGTH * 4, 0.42, RECEIPT_STRIP_WIDTH * 5.4]} />
+        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+      </mesh>
+    </group>
+  );
+}
+
+function BendyReceiptStack({ receipts }: { receipts: PrintedReceipt[] }) {
+  return (
+    <>
+      {receipts.slice(0, RECEIPT_VISIBLE_LIMIT).map((receipt, index) => (
+        <BendyReceipt key={receipt.key} receipt={receipt} index={index} />
+      ))}
+    </>
+  );
+}
+
+function ReceiptTrayVisual({ storedCount }: { storedCount: number }) {
+  return (
+    <group position={[RECEIPT_TRAY_X, 0.014, RECEIPT_TRAY_Z]} rotation={[0, 0, 0]}>
+      <Box position={[0, -0.013, 0]} scale={[0.32, 0.024, 0.145]} color="#111417" roughness={0.54} metalness={0.08} />
+      <Box position={[-0.17, 0.01, 0]} scale={[0.018, 0.036, 0.145]} color="#2a2021" roughness={0.58} />
+      <Box position={[0.17, 0.01, 0]} scale={[0.018, 0.036, 0.145]} color="#2a2021" roughness={0.58} />
+      <Box position={[0, 0.01, -0.08]} scale={[0.32, 0.036, 0.02]} color="#2a2021" roughness={0.58} />
+      <Text
+        position={[-0.145, 0.032, 0.084]}
+        rotation={[-Math.PI / 2, 0, -0.02]}
+        fontSize={0.015}
+        color="#b9d6d0"
+        anchorX="left"
+        anchorY="middle"
+      >
+        PRINT LOG
+      </Text>
+      <Text
+        position={[0.026, 0.033, 0.084]}
+        rotation={[-Math.PI / 2, 0, -0.02]}
+        fontSize={0.012}
+        color="#7fffdc"
+        anchorX="left"
+        anchorY="middle"
+      >
+        {`ARCHIVE ${String(storedCount).padStart(2, '0')}`}
+      </Text>
+    </group>
+  );
+}
+
+function ReceiptPrinter() {
+  const gltf = useGLTF('/models/room/label_printer/label_printer.glb');
+  const receiptTexture = useMemo(() => makeReceiptTexture(MOCK_PRIME_RECEIPTS[0], true), []);
+  const paperRef = useRef<THREE.Mesh>(null);
+  const lightRef = useRef<THREE.PointLight>(null);
+  const activeEventRef = useRef<PrimeReceiptEvent>(MOCK_PRIME_RECEIPTS[0]);
+  const primeImageRef = useRef<HTMLImageElement | null>(null);
+  const printStartRef = useRef(-100);
+  const nextEventAtRef = useRef(0.72);
+  const eventIndexRef = useRef(0);
+  const archivedEventIdRef = useRef<string | null>(null);
+  const [activeEvent, setActiveEvent] = useState<PrimeReceiptEvent>(MOCK_PRIME_RECEIPTS[0]);
+  const [receiptArchive, setReceiptArchive] = useState<PrintedReceipt[]>([]);
+  const printerRig = useMemo(() => {
+    const clone = gltf.scene.clone(true);
+    const duplicatePrinter = clone.getObjectByName('Small_Label_Printer_Low_Res');
+    duplicatePrinter?.parent?.remove(duplicatePrinter);
+    const glowMaterials: THREE.MeshStandardMaterial[] = [];
+
+    clone.traverse((object) => {
+      if (object instanceof THREE.Mesh) {
+        object.castShadow = true;
+        object.receiveShadow = true;
+        if (object.material instanceof THREE.MeshStandardMaterial) {
+          object.material = object.material.clone();
+          object.material.roughness = Math.max(object.material.roughness, 0.58);
+          object.material.metalness = Math.min(object.material.metalness, 0.08);
+          if (object.name === 'Buttons' || object.name === 'Looplings_Status_Lens') {
+            object.material.color.set('#2d8cff');
+            object.material.emissive.set('#2d8cff');
+            object.material.emissiveIntensity = object.name === 'Looplings_Status_Lens' ? 1.8 : 0.24;
+            glowMaterials.push(object.material);
+          }
+        }
+      }
+    });
+
+    const receiptPaper = clone.getObjectByName('Looplings_Receipt_Paper');
+    if (receiptPaper instanceof THREE.Mesh) {
+      receiptPaper.visible = false;
+    }
+
+    clone.updateMatrixWorld(true);
+    const readAnchor = (name: string, fallback: THREE.Vector3) => {
+      const anchor = clone.getObjectByName(name);
+      if (!anchor) return fallback;
+      const position = new THREE.Vector3();
+      anchor.getWorldPosition(position);
+      return position;
+    };
+
+    const lightOrigin = readAnchor('button_light_origin', new THREE.Vector3(-0.064, 0.064, -0.091));
+
+    return {
+      clone,
+      lightOrigin,
+      glowMaterials,
+    };
+  }, [gltf.scene]);
+
+  useEffect(() => {
+    const image = new Image();
+    image.src = `/pets/prime-test/state-atlas.png?v=${ATLAS_VERSION}`;
+    image.onload = () => {
+      primeImageRef.current = image;
+      drawReceiptTexture(receiptTexture.image as HTMLCanvasElement, activeEventRef.current, image);
+      receiptTexture.needsUpdate = true;
+    };
+
+    return () => receiptTexture.dispose();
+  }, [receiptTexture]);
+
+  useEffect(() => {
+    activeEventRef.current = activeEvent;
+    drawReceiptTexture(receiptTexture.image as HTMLCanvasElement, activeEvent, primeImageRef.current ?? undefined);
+    receiptTexture.needsUpdate = true;
+  }, [activeEvent, receiptTexture]);
+
+  useFrame(({ clock }) => {
+    const elapsed = clock.elapsedTime;
+    const printAge = elapsed - printStartRef.current;
+    const isPrinting = printAge >= 0 && printAge <= RECEIPT_PRINT_DURATION;
+    const canPrintNext = printAge > RECEIPT_PRINT_DURATION + 1.5;
+
+    if (elapsed >= nextEventAtRef.current && canPrintNext) {
+      const event = MOCK_PRIME_RECEIPTS[eventIndexRef.current % MOCK_PRIME_RECEIPTS.length];
+      eventIndexRef.current += 1;
+      archivedEventIdRef.current = null;
+      printStartRef.current = elapsed;
+      setActiveEvent(event);
+    }
+
+    const progress = printAge < 0 ? 0 : easeOutCubic(printAge / RECEIPT_PRINT_DURATION);
+    const stableProgress = Math.max(0.001, progress);
+    if (paperRef.current) {
+      paperRef.current.visible = progress > 0.015 && printAge < RECEIPT_PRINT_DURATION + 0.48;
+      paperRef.current.scale.x = stableProgress;
+      paperRef.current.position.x = RECEIPT_EXIT_X - (RECEIPT_PAPER_MAX_LENGTH * stableProgress) / 2;
+      paperRef.current.position.y = RECEIPT_EXIT_Y - Math.sin(stableProgress * Math.PI) * 0.012;
+      paperRef.current.position.z = RECEIPT_EXIT_Z;
+    }
+    receiptTexture.repeat.x = stableProgress;
+
+    if (printAge > RECEIPT_PRINT_DURATION && archivedEventIdRef.current !== activeEventRef.current.id) {
+      const printedEvent = activeEventRef.current;
+      const archivedReceipt = { event: printedEvent, key: `${printedEvent.id}-${Math.round(elapsed * 1000)}`, printedAt: elapsed };
+      archivedEventIdRef.current = printedEvent.id;
+      nextEventAtRef.current = elapsed + RECEIPT_EVENT_INTERVAL;
+      setReceiptArchive((current) => [
+        archivedReceipt,
+        ...current.filter((receipt) => receipt.event.id !== printedEvent.id),
+      ].slice(0, RECEIPT_STORED_LIMIT));
+    }
+
+    const eventPulse = isPrinting ? 0.32 + Math.sin(elapsed * 21) * 0.2 : 0;
+    const idlePulse = 0.64 + Math.sin(elapsed * 3.2) * 0.28;
+    const pulse = idlePulse + eventPulse;
+    printerRig.glowMaterials.forEach((material) => {
+      material.emissive.set(activeEventRef.current.accent);
+      material.emissiveIntensity = 0.18 + pulse * (isPrinting ? 1.8 : 0.72);
+    });
+    if (lightRef.current) {
+      lightRef.current.color.set(activeEventRef.current.accent);
+      lightRef.current.intensity = 0.18 + pulse * (isPrinting ? 0.86 : 0.42);
+    }
+  });
+
+  return (
+    <>
+      <group position={PRINTER_POSITION} rotation={[0, PRINTER_ROTATION_Y, 0]} scale={PRINTER_SCALE}>
+        <primitive object={printerRig.clone} />
+        <mesh ref={paperRef} position={[RECEIPT_EXIT_X, RECEIPT_EXIT_Y, RECEIPT_EXIT_Z]} rotation={[-Math.PI / 2, 0, 0]} castShadow={false} receiveShadow>
+          <planeGeometry args={[RECEIPT_PAPER_MAX_LENGTH, RECEIPT_PAPER_WIDTH]} />
+          <meshBasicMaterial map={receiptTexture} side={THREE.DoubleSide} toneMapped={false} />
+        </mesh>
+        <ReceiptTrayVisual storedCount={receiptArchive.length} />
+        <pointLight ref={lightRef} position={printerRig.lightOrigin} intensity={0.42} distance={0.62} color="#2d8cff" />
+      </group>
+      <BendyReceiptStack receipts={receiptArchive} />
+    </>
   );
 }
 
@@ -397,32 +1192,146 @@ function drawAtlasPet(
   ctx.restore();
 }
 
+function drawPaperPanel(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  fill = '#f4e4b7',
+) {
+  ctx.fillStyle = fill;
+  ctx.strokeStyle = '#8f7a45';
+  ctx.lineWidth = 2;
+  drawRoundedRect(ctx, x, y, width, height, 6);
+
+  ctx.strokeStyle = 'rgba(65, 52, 30, 0.42)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(x + 8, y + 8, width - 16, height - 16);
+}
+
+function drawMiniBars(ctx: CanvasRenderingContext2D, x: number, y: number, count: number, color = '#2d7440') {
+  for (let index = 0; index < count; index += 1) {
+    const height = 8 + ((index * 7) % 18);
+    ctx.fillStyle = index % 5 === 0 ? '#d7c27a' : color;
+    ctx.fillRect(x + index * 15, y + 24 - height, 9, height);
+  }
+}
+
+function drawSparkline(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, elapsed: number) {
+  const points = Array.from({ length: 38 }, (_, index) => {
+    const t = index / 37;
+    return {
+      x: x + t * width,
+      y: y + height * (0.68 - t * 0.42) + Math.sin(t * 18 + elapsed * 0.55) * 9 + Math.sin(t * 43) * 4,
+    };
+  });
+
+  ctx.strokeStyle = '#2c753d';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  points.forEach((point, index) => {
+    if (index === 0) ctx.moveTo(point.x, point.y);
+    else ctx.lineTo(point.x, point.y);
+  });
+  ctx.stroke();
+
+  ctx.fillStyle = 'rgba(44, 117, 61, 0.12)';
+  ctx.beginPath();
+  ctx.moveTo(points[0].x, y + height);
+  points.forEach((point) => ctx.lineTo(point.x, point.y));
+  ctx.lineTo(points[points.length - 1].x, y + height);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function drawPixelHabitat(
+  ctx: CanvasRenderingContext2D,
+  elapsed: number,
+  images: Map<string, HTMLImageElement>,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+) {
+  const sky = ctx.createLinearGradient(0, y, 0, y + height);
+  sky.addColorStop(0, '#dfe7b8');
+  sky.addColorStop(0.34, '#badb93');
+  sky.addColorStop(1, '#4d8e45');
+  ctx.fillStyle = sky;
+  ctx.fillRect(x, y, width, height);
+
+  ctx.fillStyle = 'rgba(255, 242, 184, 0.52)';
+  ctx.beginPath();
+  ctx.arc(x + width * 0.84, y + height * 0.17, 18, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = '#6a4c2c';
+  ctx.fillRect(x + width * 0.72, y + height * 0.34, 18, 94);
+  ['#2f743b', '#3d8a40', '#5b9b45', '#1f5c31'].forEach((color, index) => {
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(x + width * 0.75 + Math.cos(index * 1.7) * 22, y + height * 0.28 + Math.sin(index * 1.25) * 20, 42 - index * 3, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  ctx.fillStyle = '#7b5a38';
+  for (let index = 0; index < 8; index += 1) {
+    const postX = x + 18 + index * 26;
+    ctx.fillRect(postX, y + height * 0.62, 5, 44);
+    ctx.fillRect(postX - 3, y + height * 0.66, 28, 5);
+  }
+
+  ctx.fillStyle = '#8bbd5b';
+  ctx.fillRect(x, y + height * 0.68, width, height * 0.32);
+  ctx.fillStyle = '#d4b375';
+  ctx.beginPath();
+  ctx.ellipse(x + width * 0.42, y + height * 0.86, 74, 27, -0.18, 0, Math.PI * 2);
+  ctx.fill();
+
+  for (let index = 0; index < 72; index += 1) {
+    const px = x + ((index * 37) % Math.floor(width - 20)) + 10;
+    const py = y + height * 0.66 + ((index * 19) % Math.floor(height * 0.28));
+    ctx.fillStyle = index % 5 === 0 ? '#ff93b6' : index % 3 === 0 ? '#f5d66d' : '#2f743b';
+    ctx.fillRect(px, py, index % 4 === 0 ? 4 : 3, index % 4 === 0 ? 4 : 3);
+  }
+
+  drawAtlasPet(ctx, images.get('prime-test'), 'idle', elapsed, x + 50, y + 78, 95);
+
+  ctx.fillStyle = '#fff9e8';
+  ctx.strokeStyle = '#191710';
+  ctx.lineWidth = 2;
+  drawRoundedRect(ctx, x + 116, y + 54, 42, 28, 6);
+  ctx.fillStyle = '#191710';
+  ctx.font = '900 18px "Courier New", monospace';
+  ctx.fillText('...', x + 126, y + 73);
+}
+
 function drawLooplingsScreen(
   ctx: CanvasRenderingContext2D,
   elapsed: number,
   images: Map<string, HTMLImageElement>,
 ) {
   ctx.clearRect(0, 0, SCREEN_TEXTURE_W, SCREEN_TEXTURE_H);
-  ctx.fillStyle = '#03120f';
+  ctx.fillStyle = '#ead7a6';
   ctx.fillRect(0, 0, SCREEN_TEXTURE_W, SCREEN_TEXTURE_H);
 
-  const glow = ctx.createRadialGradient(360, 160, 20, 360, 160, 360);
-  glow.addColorStop(0, 'rgba(132,255,218,0.2)');
-  glow.addColorStop(0.5, 'rgba(132,255,218,0.04)');
-  glow.addColorStop(1, 'rgba(0,0,0,0.42)');
-  ctx.fillStyle = glow;
+  const paperGlow = ctx.createRadialGradient(500, 190, 40, 500, 190, 430);
+  paperGlow.addColorStop(0, 'rgba(255, 250, 221, 0.75)');
+  paperGlow.addColorStop(0.58, 'rgba(246, 226, 174, 0.12)');
+  paperGlow.addColorStop(1, 'rgba(62, 42, 24, 0.12)');
+  ctx.fillStyle = paperGlow;
   ctx.fillRect(0, 0, SCREEN_TEXTURE_W, SCREEN_TEXTURE_H);
 
-  ctx.globalAlpha = 0.22;
-  ctx.strokeStyle = '#9affde';
-  ctx.lineWidth = 1;
-  for (let x = 0; x < SCREEN_TEXTURE_W; x += 24) {
+  ctx.globalAlpha = 0.12;
+  ctx.strokeStyle = '#927c45';
+  for (let x = 0; x < SCREEN_TEXTURE_W; x += 22) {
     ctx.beginPath();
     ctx.moveTo(x + 0.5, 0);
     ctx.lineTo(x + 0.5, SCREEN_TEXTURE_H);
     ctx.stroke();
   }
-  for (let y = 0; y < SCREEN_TEXTURE_H; y += 24) {
+  for (let y = 0; y < SCREEN_TEXTURE_H; y += 22) {
     ctx.beginPath();
     ctx.moveTo(0, y + 0.5);
     ctx.lineTo(SCREEN_TEXTURE_W, y + 0.5);
@@ -430,84 +1339,936 @@ function drawLooplingsScreen(
   }
   ctx.globalAlpha = 1;
 
-  ctx.fillStyle = '#65f5d6';
-  ctx.font = '800 12px "Courier New", monospace';
-  ctx.letterSpacing = '2px';
-  ctx.fillText('LOOPLINGS OS', 24, 38);
-  ctx.fillStyle = '#f3fff5';
-  ctx.font = '800 28px "Courier New", monospace';
-  ctx.fillText('STARTER HABITAT', 24, 72);
+  ctx.strokeStyle = '#4f3e24';
+  ctx.lineWidth = 5;
+  ctx.strokeRect(14, 14, SCREEN_TEXTURE_W - 28, SCREEN_TEXTURE_H - 28);
+  ctx.strokeStyle = '#ba9c54';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(23, 23, SCREEN_TEXTURE_W - 46, SCREEN_TEXTURE_H - 46);
 
-  ctx.strokeStyle = 'rgba(145,255,195,0.16)';
+  ctx.fillStyle = '#221b12';
+  ctx.font = '900 31px "Courier New", monospace';
+  ctx.fillText('STARTER HABITAT', 48, 58);
+
+  drawPaperPanel(ctx, 40, 82, 250, 206, '#f0dfae');
+  drawPixelHabitat(ctx, elapsed, images, 54, 98, 222, 174);
+
+  ctx.fillStyle = '#221b12';
+  ctx.font = '900 22px "Courier New", monospace';
+  ctx.fillText('PRIME-00', 52, 114);
+  ctx.fillStyle = '#2f7a3a';
+  ctx.font = '900 31px "Courier New", monospace';
+  ctx.fillText('ALIVE', 52, 150);
+
+  drawPaperPanel(ctx, 310, 82, 154, 72);
+  ctx.fillStyle = '#3b3a22';
+  ctx.font = '900 13px "Courier New", monospace';
+  ctx.fillText('RUNWAY', 326, 112);
+  ctx.fillStyle = '#20180f';
+  ctx.font = '900 20px "Courier New", monospace';
+  ctx.fillText('19h 42m', 326, 142);
+  drawMiniBars(ctx, 326, 146, 8);
+
+  drawPaperPanel(ctx, 478, 82, 196, 72);
+  ctx.fillStyle = '#3b3a22';
+  ctx.font = '900 13px "Courier New", monospace';
+  ctx.fillText('MOOD', 494, 112);
+  ctx.fillStyle = '#20180f';
+  ctx.font = '900 20px "Courier New", monospace';
+  ctx.fillText('HAPPY', 494, 142);
+  ctx.fillStyle = '#8bc464';
   ctx.beginPath();
-  ctx.moveTo(24, 95);
-  ctx.lineTo(696, 95);
-  ctx.stroke();
+  ctx.arc(642, 122, 19, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#1e3218';
+  ctx.fillRect(633, 117, 4, 4);
+  ctx.fillRect(647, 117, 4, 4);
+  ctx.fillRect(635, 132, 14, 3);
 
-  ctx.fillStyle = 'rgba(1,9,8,0.72)';
-  ctx.strokeStyle = 'rgba(101,245,214,0.17)';
-  drawRoundedRect(ctx, 24, 118, 210, 145, 2);
-  drawAtlasPet(ctx, images.get('prime-test'), 'idle', elapsed, 75, 132, 108);
+  drawPaperPanel(ctx, 310, 168, 364, 80);
+  ctx.fillStyle = '#3b3a22';
+  ctx.font = '900 13px "Courier New", monospace';
+  ctx.fillText('WALLET', 326, 198);
+  ctx.fillStyle = '#20180f';
+  ctx.font = '900 24px "Courier New", monospace';
+  ctx.fillText('$2.47', 326, 228);
+  ctx.fillStyle = '#415235';
+  ctx.font = '900 12px "Courier New", monospace';
+  ctx.fillText('USDC', 416, 227);
+  drawSparkline(ctx, 470, 190, 170, 42, elapsed);
 
-  ctx.fillStyle = 'rgba(184,255,210,0.56)';
-  ctx.font = '800 11px "Courier New", monospace';
-  ctx.fillText('PRIME-00', 258, 150);
-  ctx.fillStyle = '#8cffae';
-  ctx.font = '800 22px "Courier New", monospace';
-  ctx.fillText('ALIVE', 258, 182);
-  ctx.fillStyle = 'rgba(223,255,232,0.7)';
-  ctx.font = '14px "Courier New", monospace';
-  ctx.fillText('Scanning market conditions and', 258, 216);
-  ctx.fillText('keeping the loop warm.', 258, 237);
+  drawPaperPanel(ctx, 310, 260, 364, 72);
+  ctx.fillStyle = '#3b3a22';
+  ctx.font = '900 13px "Courier New", monospace';
+  ctx.fillText('CURRENT TASK', 326, 289);
+  ctx.fillStyle = '#20180f';
+  ctx.font = '900 15px "Courier New", monospace';
+  ctx.fillText('Evaluating market signal', 326, 314);
+  ctx.fillStyle = 'rgba(47, 122, 58, 0.18)';
+  ctx.fillRect(520, 303, 120, 12);
+  ctx.fillStyle = '#2f7a3a';
+  ctx.fillRect(520, 303, 82 + Math.sin(elapsed * 1.5) * 8, 12);
+  ctx.fillStyle = '#3b3a22';
+  ctx.fillText('68%', 650, 314);
 
-  const stats = [
-    ['RUNWAY', '19h 42m'],
-    ['CREDITS', '$2.47'],
-    ['NEXT TICK', '01:47'],
-  ];
-  stats.forEach(([label, value], index) => {
-    const x = 24 + index * 224;
-    ctx.fillStyle = 'rgba(1,8,7,0.58)';
-    ctx.strokeStyle = 'rgba(145,255,195,0.13)';
-    drawRoundedRect(ctx, x, 284, 206, 56, 2);
-    ctx.fillStyle = 'rgba(184,255,210,0.56)';
-    ctx.font = '800 11px "Courier New", monospace';
-    ctx.fillText(label, x + 12, 307);
-    ctx.fillStyle = '#f5fff7';
-    ctx.font = '800 17px "Courier New", monospace';
-    ctx.fillText(value, x + 12, 329);
-  });
+  drawPaperPanel(ctx, 40, 350, 168, 55);
+  ctx.fillStyle = '#3b3a22';
+  ctx.font = '900 12px "Courier New", monospace';
+  ctx.fillText('MODEL', 56, 374);
+  ctx.fillStyle = '#20180f';
+  ctx.font = '900 17px "Courier New", monospace';
+  ctx.fillText('Prime v1.2', 56, 397);
 
+  drawPaperPanel(ctx, 224, 350, 168, 55);
+  ctx.fillStyle = '#3b3a22';
+  ctx.font = '900 12px "Courier New", monospace';
+  ctx.fillText('TOOL', 240, 374);
+  ctx.fillStyle = '#20180f';
+  ctx.font = '900 17px "Courier New", monospace';
+  ctx.fillText('LoopVision', 240, 397);
+
+  drawPaperPanel(ctx, 40, 414, 330, 40);
+  ctx.fillStyle = '#3b3a22';
+  ctx.font = '900 12px "Courier New", monospace';
+  ctx.fillText('COMPANIONS', 56, 439);
   SCREEN_PETS.forEach((pet, index) => {
-    const x = 24 + index * 166;
-    ctx.fillStyle = 'rgba(1,8,7,0.58)';
-    ctx.strokeStyle = 'rgba(145,255,195,0.13)';
-    drawRoundedRect(ctx, x, 360, 154, 58, 2);
-    drawAtlasPet(ctx, images.get(pet.pet), pet.visualState, elapsed, x + 10, 370, 42);
-    ctx.fillStyle = 'rgba(184,255,210,0.56)';
-    ctx.font = '800 10px "Courier New", monospace';
-    ctx.fillText(pet.id, x + 62, 383);
-    ctx.fillStyle = pet.accent;
-    ctx.font = '800 12px "Courier New", monospace';
-    ctx.fillText(pet.state.toUpperCase(), x + 62, 404);
+    const petX = 152 + index * 48;
+    drawAtlasPet(ctx, images.get(pet.pet), pet.visualState, elapsed, petX, 423, 28);
+  });
+  ctx.strokeStyle = '#8f7a45';
+  ctx.strokeRect(330, 422, 30, 24);
+  ctx.fillStyle = '#221b12';
+  ctx.font = '900 22px "Courier New", monospace';
+  ctx.fillText('+', 337, 442);
+
+  drawPaperPanel(ctx, 400, 350, 274, 104);
+  drawAtlasPet(ctx, images.get('prime-test'), 'thinking', elapsed, 418, 378, 42);
+  ctx.fillStyle = '#20180f';
+  ctx.font = '900 14px "Courier New", monospace';
+  ctx.fillText('Exploring markets,', 474, 385);
+  ctx.fillText('learning, and protecting', 474, 408);
+  ctx.fillText('my loop.', 474, 431);
+  ctx.fillStyle = '#bd4c42';
+  ctx.font = '900 22px "Courier New", monospace';
+  ctx.fillText('<3', 642, 433);
+}
+
+function createMainScreenHtml() {
+  const primeAtlas = `/pets/prime-test/state-atlas.png?v=${ATLAS_VERSION}`;
+
+  return `
+    <div class="loopvision-screen">
+      <style>
+        .loopvision-screen,
+        .loopvision-screen * {
+          box-sizing: border-box;
+        }
+
+        .loopvision-screen {
+          width: ${MAIN_SCREEN_HTML_W}px;
+          height: ${MAIN_SCREEN_HTML_H}px;
+          position: relative;
+          overflow: hidden;
+          color: #1d160e;
+          font-family: "Courier New", Courier, monospace;
+          background:
+            radial-gradient(circle at 18% 12%, rgba(255, 251, 221, 0.82), transparent 32%),
+            radial-gradient(circle at 74% 14%, rgba(255, 239, 174, 0.34), transparent 34%),
+            repeating-linear-gradient(0deg, rgba(87, 63, 31, 0.045) 0 1px, transparent 1px 20px),
+            repeating-linear-gradient(90deg, rgba(87, 63, 31, 0.04) 0 1px, transparent 1px 20px),
+            linear-gradient(135deg, #f7e9bd 0%, #ead4a0 54%, #dcb97a 100%);
+          border: 14px solid #21160c;
+          outline: 5px solid #a8874b;
+          box-shadow:
+            inset 0 0 0 6px rgba(255, 247, 209, 0.42),
+            inset 0 0 64px rgba(91, 61, 22, 0.13);
+          image-rendering: pixelated;
+        }
+
+        .loopvision-screen::before,
+        .loopvision-screen::after {
+          content: "";
+          position: absolute;
+          inset: 26px;
+          pointer-events: none;
+          border: 2px solid rgba(80, 58, 25, 0.62);
+        }
+
+        .loopvision-screen::after {
+          inset: 40px;
+          border-color: rgba(153, 124, 62, 0.5);
+        }
+
+        .screen-vine {
+          position: absolute;
+          z-index: 12;
+          pointer-events: none;
+        }
+
+        .screen-vine.top-left {
+          left: 28px;
+          top: 14px;
+          width: 170px;
+          height: 92px;
+          border-top: 10px solid #356231;
+          border-left: 8px solid #356231;
+        }
+
+        .screen-vine.top-right {
+          right: 28px;
+          top: 14px;
+          width: 180px;
+          height: 96px;
+          border-top: 10px solid #356231;
+          border-right: 8px solid #356231;
+        }
+
+        .screen-vine.bottom-right {
+          right: 18px;
+          bottom: 4px;
+          width: 154px;
+          height: 84px;
+          border-right: 8px solid #356231;
+          border-bottom: 10px solid #356231;
+        }
+
+        .screen-vine i {
+          position: absolute;
+          width: 28px;
+          height: 18px;
+          border-radius: 60% 38% 60% 38%;
+          background: #5f9140;
+          box-shadow: inset -5px -4px rgba(30, 66, 29, 0.32);
+        }
+
+        .screen-vine i:nth-child(1) { left: 22px; top: -12px; transform: rotate(-24deg); }
+        .screen-vine i:nth-child(2) { left: 62px; top: -5px; transform: rotate(26deg); background: #7ba24b; }
+        .screen-vine i:nth-child(3) { right: 16px; top: 10px; transform: rotate(-14deg); }
+        .screen-vine i:nth-child(4) { right: -14px; bottom: 18px; transform: rotate(34deg); background: #466f35; }
+
+        .main-title {
+          position: absolute;
+          left: 86px;
+          top: 58px;
+          font-size: 42px;
+          line-height: 1;
+          letter-spacing: 0;
+          font-weight: 900;
+        }
+
+        .os-label {
+          position: absolute;
+          left: 88px;
+          top: 38px;
+          color: #2f7a3a;
+          font-size: 14px;
+          line-height: 1;
+          font-weight: 900;
+          text-transform: uppercase;
+        }
+
+        .panel {
+          position: absolute;
+          border: 3px solid #6f552c;
+          background:
+            linear-gradient(135deg, rgba(255,255,255,0.34), transparent 45%),
+            #f1dfae;
+          box-shadow:
+            inset 0 0 0 2px rgba(255, 249, 219, 0.62),
+            inset 0 0 0 7px rgba(82, 60, 25, 0.1);
+        }
+
+        .panel::before,
+        .panel::after {
+          content: "";
+          position: absolute;
+          width: 18px;
+          height: 18px;
+          border-color: #6f552c;
+          pointer-events: none;
+        }
+
+        .panel::before {
+          left: 10px;
+          top: 10px;
+          border-left: 2px solid;
+          border-top: 2px solid;
+        }
+
+        .panel::after {
+          right: 10px;
+          bottom: 10px;
+          border-right: 2px solid;
+          border-bottom: 2px solid;
+        }
+
+        .habitat-card {
+          left: 72px;
+          top: 118px;
+          width: 476px;
+          height: 390px;
+          overflow: hidden;
+        }
+
+        .habitat-label {
+          position: absolute;
+          left: 28px;
+          top: 26px;
+          z-index: 4;
+          font-size: 32px;
+          font-weight: 900;
+        }
+
+        .alive-label {
+          position: absolute;
+          left: 28px;
+          top: 78px;
+          z-index: 4;
+          color: #2f7a3a;
+          font-size: 42px;
+          font-weight: 900;
+        }
+
+        .park {
+          position: absolute;
+          left: 22px;
+          right: 22px;
+          bottom: 22px;
+          height: 250px;
+          overflow: hidden;
+          border: 3px solid #5e4b29;
+          background:
+            radial-gradient(circle at 84% 22%, rgba(255, 238, 164, 0.9) 0 14px, transparent 17px),
+            linear-gradient(#b7d98f 0 36%, #7fb458 36% 66%, #4f853e 66% 100%);
+          box-shadow:
+            inset 0 0 0 5px rgba(255, 247, 209, 0.18),
+            inset 0 -28px rgba(44, 92, 39, 0.14);
+        }
+
+        .park::before {
+          content: "";
+          position: absolute;
+          left: -28px;
+          bottom: -58px;
+          width: 372px;
+          height: 152px;
+          background:
+            radial-gradient(ellipse at center, #d7bd81 0 45%, #b78f56 46% 56%, transparent 57%);
+          transform: rotate(-12deg);
+          opacity: 0.96;
+          z-index: 2;
+        }
+
+        .park::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background:
+            repeating-linear-gradient(90deg, transparent 0 38px, rgba(94, 64, 29, 0.72) 38px 43px, transparent 43px 76px),
+            linear-gradient(transparent 0 58%, rgba(94, 64, 29, 0.72) 58% 61%, transparent 61% 100%);
+          opacity: 0.46;
+          z-index: 3;
+        }
+
+        .tree-trunk {
+          position: absolute;
+          right: 92px;
+          bottom: 26px;
+          width: 28px;
+          height: 128px;
+          background: #684728;
+          z-index: 4;
+          box-shadow: inset -8px 0 #4d321f;
+        }
+
+        .tree-leaf {
+          position: absolute;
+          width: 124px;
+          height: 102px;
+          border-radius: 46%;
+          background: #386f32;
+          z-index: 5;
+          box-shadow:
+            -34px 22px 0 #4f8a3c,
+            34px 18px 0 #2e6530,
+            4px -28px 0 #5e9b45,
+            -8px 42px 0 #6f9f47;
+        }
+
+        .leaf-a {
+          right: 44px;
+          bottom: 120px;
+        }
+
+        .flower-dot {
+          position: absolute;
+          width: 7px;
+          height: 7px;
+          background: #ff88b5;
+          z-index: 8;
+          box-shadow: 10px 5px 0 #ffe06d, -8px 7px 0 #fff8dd;
+        }
+
+        .path-stone,
+        .lamp-post,
+        .habitat-shrub {
+          position: absolute;
+          z-index: 7;
+        }
+
+        .path-stone {
+          width: 24px;
+          height: 13px;
+          border-radius: 50%;
+          background: #9b8d6b;
+          box-shadow: inset -4px -2px rgba(61, 54, 40, 0.24);
+        }
+
+        .lamp-post {
+          right: 26px;
+          bottom: 34px;
+          width: 8px;
+          height: 72px;
+          background: #4c3421;
+        }
+
+        .lamp-post::before {
+          content: "";
+          position: absolute;
+          left: -13px;
+          top: -30px;
+          width: 34px;
+          height: 34px;
+          border: 4px solid #4c3421;
+          background: radial-gradient(circle, #fff0a2 0 38%, #b36d31 42% 100%);
+        }
+
+        .habitat-shrub {
+          width: 54px;
+          height: 28px;
+          border-radius: 50% 50% 35% 35%;
+          background: #3f7b38;
+          box-shadow: 20px 2px 0 #5e9b45, -16px 8px 0 #2f6531;
+        }
+
+        .prime-crop {
+          position: absolute;
+          left: 54px;
+          bottom: 24px;
+          width: 138px;
+          height: 150px;
+          overflow: hidden;
+          z-index: 9;
+          filter: drop-shadow(0 10px 0 rgba(64, 56, 35, 0.18)) drop-shadow(0 0 12px rgba(58, 92, 48, 0.35));
+        }
+
+        .prime-crop img {
+          width: 1104px;
+          height: 1794px;
+          image-rendering: pixelated;
+          transform: translate(0, 0);
+          display: block;
+        }
+
+        .speech {
+          position: absolute;
+          left: 178px;
+          bottom: 126px;
+          width: 62px;
+          height: 38px;
+          border: 3px solid #1d160e;
+          background: #fff8df;
+          z-index: 10;
+          border-radius: 6px;
+        }
+
+        .speech::after {
+          content: "";
+          position: absolute;
+          left: 10px;
+          bottom: -11px;
+          border-width: 10px 8px 0 0;
+          border-style: solid;
+          border-color: #1d160e transparent transparent transparent;
+        }
+
+        .speech span {
+          position: absolute;
+          left: 14px;
+          top: 5px;
+          font-size: 24px;
+          font-weight: 900;
+        }
+
+        .metric {
+          padding: 28px 30px;
+        }
+
+        .metric h3,
+        .wide h3,
+        .small h3,
+        .bubble h3 {
+          margin: 0 0 12px 0;
+          color: #3d512d;
+          font-size: 18px;
+          line-height: 1;
+          font-weight: 900;
+          text-transform: uppercase;
+        }
+
+        .metric strong {
+          display: block;
+          color: #1e170e;
+          font-size: 30px;
+          line-height: 1.1;
+          font-weight: 900;
+        }
+
+        .runway {
+          left: 574px;
+          top: 118px;
+          width: 264px;
+          height: 112px;
+        }
+
+        .mood {
+          left: 862px;
+          top: 118px;
+          width: 270px;
+          height: 112px;
+        }
+
+        .mood-face {
+          position: absolute;
+          right: 36px;
+          top: 34px;
+          width: 46px;
+          height: 46px;
+          border: 3px solid #42662e;
+          background: #8ec76a;
+          color: #203118;
+          font-size: 26px;
+          line-height: 38px;
+          text-align: center;
+          font-weight: 900;
+        }
+
+        .bars {
+          position: absolute;
+          left: 30px;
+          bottom: 22px;
+          display: flex;
+          gap: 8px;
+          align-items: end;
+        }
+
+        .bars span {
+          width: 15px;
+          height: calc(var(--h) * 1px);
+          background: #2e7440;
+          box-shadow: inset 0 0 0 1px rgba(255,255,255,0.25);
+        }
+
+        .bars span:nth-child(3n) {
+          background: #d1b76f;
+        }
+
+        .wallet {
+          left: 574px;
+          top: 254px;
+          width: 558px;
+          height: 144px;
+          padding: 24px 28px;
+        }
+
+        .wallet-value {
+          position: absolute;
+          left: 30px;
+          top: 56px;
+          font-size: 36px;
+          font-weight: 900;
+        }
+
+        .wallet-unit {
+          position: absolute;
+          left: 156px;
+          top: 70px;
+          color: #52613a;
+          font-size: 17px;
+          font-weight: 900;
+        }
+
+        .sparkline {
+          position: absolute;
+          right: 34px;
+          top: 40px;
+          width: 300px;
+          height: 75px;
+        }
+
+        .task {
+          left: 574px;
+          top: 420px;
+          width: 558px;
+          height: 118px;
+          padding: 24px 28px;
+        }
+
+        .task-copy {
+          font-size: 23px;
+          font-weight: 900;
+        }
+
+        .progress-track {
+          position: absolute;
+          left: 292px;
+          right: 80px;
+          bottom: 32px;
+          height: 16px;
+          background: rgba(84, 68, 35, 0.18);
+        }
+
+        .progress-fill {
+          height: 100%;
+          width: 68%;
+          background: #2f7a3a;
+        }
+
+        .progress-number {
+          position: absolute;
+          right: 30px;
+          bottom: 24px;
+          font-size: 22px;
+          font-weight: 900;
+        }
+
+        .model {
+          left: 72px;
+          top: 532px;
+          width: 252px;
+          height: 84px;
+        }
+
+        .tool {
+          left: 348px;
+          top: 532px;
+          width: 284px;
+          height: 84px;
+        }
+
+        .small {
+          padding: 20px 24px;
+          font-size: 26px;
+          font-weight: 900;
+        }
+
+        .companions {
+          left: 72px;
+          top: 642px;
+          width: 560px;
+          height: 76px;
+          display: flex;
+          align-items: center;
+          gap: 22px;
+          padding: 12px 24px;
+        }
+
+        .companions h3 {
+          margin-right: 8px;
+        }
+
+        .mini-pet {
+          width: 34px;
+          height: 40px;
+          border: 3px solid #1d160e;
+          border-radius: 50% 50% 42% 42%;
+          background: var(--c);
+          box-shadow: inset 0 -8px rgba(0,0,0,0.16);
+        }
+
+        .add-pet {
+          width: 48px;
+          height: 48px;
+          border: 3px dashed #756037;
+          display: grid;
+          place-items: center;
+          margin-left: auto;
+          font-size: 36px;
+          font-weight: 900;
+        }
+
+        .bubble {
+          left: 656px;
+          top: 562px;
+          width: 476px;
+          height: 164px;
+          padding: 22px 28px 22px 110px;
+        }
+
+        .bubble .prime-small {
+          position: absolute;
+          left: 26px;
+          top: 30px;
+          width: 68px;
+          height: 74px;
+          overflow: hidden;
+        }
+
+        .bubble .prime-small img {
+          width: 544px;
+          height: 888px;
+          image-rendering: pixelated;
+          display: block;
+        }
+
+        .bubble-copy {
+          margin-top: 14px;
+          font-size: 22px;
+          line-height: 1.25;
+          font-weight: 900;
+        }
+
+        .heart {
+          position: absolute;
+          right: 28px;
+          bottom: 22px;
+          color: #bd4c42;
+          font-size: 28px;
+          font-weight: 900;
+        }
+      </style>
+
+      <div class="os-label">Looplings OS</div>
+      <div class="main-title">STARTER HABITAT</div>
+      <div class="screen-vine top-left"><i></i><i></i><i></i><i></i></div>
+      <div class="screen-vine top-right"><i></i><i></i><i></i><i></i></div>
+      <div class="screen-vine bottom-right"><i></i><i></i><i></i><i></i></div>
+
+      <section class="panel habitat-card">
+        <div class="habitat-label">PRIME-00</div>
+        <div class="alive-label">ALIVE</div>
+        <div class="park">
+          <div class="habitat-shrub" style="left: 20px; bottom: 34px;"></div>
+          <div class="habitat-shrub" style="right: 128px; bottom: 22px; transform: scale(.72);"></div>
+          <div class="path-stone" style="left: 126px; bottom: 38px;"></div>
+          <div class="path-stone" style="left: 178px; bottom: 58px; transform: scale(.8);"></div>
+          <div class="path-stone" style="left: 250px; bottom: 74px; transform: scale(.64);"></div>
+          <div class="tree-trunk"></div>
+          <div class="tree-leaf leaf-a"></div>
+          <div class="lamp-post"></div>
+          <div class="flower-dot" style="left: 26px; bottom: 30px;"></div>
+          <div class="flower-dot" style="left: 70px; bottom: 22px; background: #f4d66b;"></div>
+          <div class="flower-dot" style="right: 26px; bottom: 44px;"></div>
+          <div class="flower-dot" style="right: 114px; bottom: 28px; background: #f4d66b;"></div>
+          <div class="prime-crop"><img alt="" src="${primeAtlas}" /></div>
+          <div class="speech"><span>...</span></div>
+        </div>
+      </section>
+
+      <section class="panel metric runway">
+        <h3>Runway</h3>
+        <strong>19h 42m</strong>
+        <div class="bars">
+          <span style="--h: 13"></span><span style="--h: 18"></span><span style="--h: 23"></span><span style="--h: 22"></span><span style="--h: 17"></span><span style="--h: 27"></span><span style="--h: 30"></span><span style="--h: 22"></span>
+        </div>
+      </section>
+
+      <section class="panel metric mood">
+        <h3>Mood</h3>
+        <strong>HAPPY</strong>
+        <div class="mood-face">:)</div>
+      </section>
+
+      <section class="panel wallet wide">
+        <h3>Wallet</h3>
+        <div class="wallet-value">$2.47</div>
+        <div class="wallet-unit">USDC</div>
+        <svg class="sparkline" viewBox="0 0 300 75" preserveAspectRatio="none">
+          <path d="M0 62 L18 57 L32 59 L48 51 L64 55 L82 42 L98 48 L116 38 L132 42 L150 34 L168 39 L186 27 L204 33 L222 25 L240 28 L260 18 L282 23 L300 14" fill="none" stroke="#2f7a3a" stroke-width="6" stroke-linejoin="round" />
+          <path d="M0 75 L0 62 L18 57 L32 59 L48 51 L64 55 L82 42 L98 48 L116 38 L132 42 L150 34 L168 39 L186 27 L204 33 L222 25 L240 28 L260 18 L282 23 L300 14 L300 75 Z" fill="rgba(47,122,58,0.14)" />
+        </svg>
+      </section>
+
+      <section class="panel task wide">
+        <h3>Current Task</h3>
+        <div class="task-copy">Evaluating market signal</div>
+        <div class="progress-track"><div class="progress-fill"></div></div>
+        <div class="progress-number">68%</div>
+      </section>
+
+      <section class="panel small model">
+        <h3>Model</h3>
+        Prime v1.2
+      </section>
+
+      <section class="panel small tool">
+        <h3>Tool</h3>
+        LoopVision
+      </section>
+
+      <section class="panel companions">
+        <h3>Companions</h3>
+        <div class="mini-pet" style="--c:#ff6ea9"></div>
+        <div class="mini-pet" style="--c:#68b7ff"></div>
+        <div class="mini-pet" style="--c:#ffb02f"></div>
+        <div class="mini-pet" style="--c:#5dbb4f"></div>
+        <div class="add-pet">+</div>
+      </section>
+
+      <section class="panel bubble">
+        <div class="prime-small"><img alt="" src="${primeAtlas}" /></div>
+        <h3>Prime says</h3>
+        <div class="bubble-copy">Exploring markets,<br />learning, and protecting<br />my loop.</div>
+        <div class="heart">&lt;3</div>
+      </section>
+    </div>
+  `;
+}
+
+type HtmlInCanvasSurfaceProps = {
+  meshRef: { current: THREE.Mesh | null };
+  width: number;
+  height: number;
+  html: string;
+};
+
+function HtmlInCanvasSurface({ meshRef, width, height, html }: HtmlInCanvasSurfaceProps) {
+  const { gl } = useThree();
+  const elementRef = useRef<HTMLDivElement | null>(null);
+  const materialRef = useRef<THREE.ShaderMaterial | null>(null);
+  const textureRef = useRef<THREE.Texture | null>(null);
+  const glTextureRef = useRef<WebGLTexture | null>(null);
+  const dirtyRef = useRef(true);
+  const warmupFramesRef = useRef(90);
+  const lastUploadRef = useRef(-Infinity);
+
+  useEffect(() => {
+    const canvas = gl.domElement;
+    const context = gl.getContext() as WebGL2RenderingContext;
+    if (typeof context.texElementImage2D !== 'function') return undefined;
+
+    const element = document.createElement('div');
+    element.style.width = `${width}px`;
+    element.style.height = `${height}px`;
+    element.style.position = 'absolute';
+    element.style.left = '0';
+    element.style.top = '0';
+    element.style.pointerEvents = 'auto';
+    element.style.transformOrigin = '0 0';
+    element.style.opacity = '0';
+    element.innerHTML = html;
+
+    canvas.setAttribute('layoutsubtree', '');
+    canvas.appendChild(element);
+    elementRef.current = element;
+
+    const glTexture = context.createTexture();
+    if (!glTexture) {
+      element.remove();
+      return undefined;
+    }
+
+    context.bindTexture(context.TEXTURE_2D, glTexture);
+    context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_S, context.CLAMP_TO_EDGE);
+    context.texParameteri(context.TEXTURE_2D, context.TEXTURE_WRAP_T, context.CLAMP_TO_EDGE);
+    context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MIN_FILTER, context.LINEAR);
+    context.texParameteri(context.TEXTURE_2D, context.TEXTURE_MAG_FILTER, context.LINEAR);
+
+    const texture = new THREE.Texture();
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    texture.generateMipmaps = false;
+    const textureProps = gl.properties.get(texture) as {
+      __webglTexture?: WebGLTexture;
+      __webglInit?: boolean;
+    };
+    textureProps.__webglTexture = glTexture;
+    textureProps.__webglInit = true;
+
+    const material = createCRTMaterial(texture);
+    material.uniforms.u_resolution.value.set(width, height);
+    materialRef.current = material;
+    textureRef.current = texture;
+    glTextureRef.current = glTexture;
+
+    let raf = 0;
+    const attachMaterialWhenReady = () => {
+      const mesh = meshRef.current;
+      if (!mesh) {
+        raf = window.requestAnimationFrame(attachMaterialWhenReady);
+        return;
+      }
+      mesh.material = material;
+    };
+    attachMaterialWhenReady();
+
+    const handlePaint = () => {
+      dirtyRef.current = true;
+    };
+
+    canvas.addEventListener('paint', handlePaint);
+    canvas.requestPaint?.();
+
+    return () => {
+      window.cancelAnimationFrame(raf);
+      canvas.removeEventListener('paint', handlePaint);
+      element.remove();
+      material.dispose();
+      texture.dispose();
+      context.deleteTexture(glTexture);
+      elementRef.current = null;
+      materialRef.current = null;
+      textureRef.current = null;
+      glTextureRef.current = null;
+    };
+  }, [gl, height, html, meshRef, width]);
+
+  useFrame(({ clock }) => {
+    const element = elementRef.current;
+    const material = materialRef.current;
+    const glTexture = glTextureRef.current;
+    if (!element || !material || !glTexture) return;
+
+    const elapsed = clock.elapsedTime;
+    material.uniforms.u_time.value = elapsed;
+
+    if (!dirtyRef.current && warmupFramesRef.current <= 0) return;
+    if (elapsed - lastUploadRef.current < 1 / 24) return;
+
+    const context = gl.getContext() as WebGL2RenderingContext;
+    try {
+      context.bindTexture(context.TEXTURE_2D, glTexture);
+      context.texElementImage2D(
+        context.TEXTURE_2D,
+        0,
+        context.RGBA,
+        context.RGBA,
+        context.UNSIGNED_BYTE,
+        element,
+      );
+      gl.state.reset();
+      dirtyRef.current = false;
+      warmupFramesRef.current = Math.max(0, warmupFramesRef.current - 1);
+      lastUploadRef.current = elapsed;
+    } catch {
+      dirtyRef.current = true;
+    }
   });
 
-  ctx.fillStyle = 'rgba(1,8,7,0.58)';
-  ctx.strokeStyle = 'rgba(145,255,195,0.13)';
-  drawRoundedRect(ctx, 24, 432, 672, 26, 2);
-  ctx.fillStyle = 'rgba(184,255,210,0.56)';
-  ctx.font = '800 11px "Courier New", monospace';
-  ctx.fillText('CURRENT TASK', 38, 450);
-  ctx.fillStyle = '#f5fff7';
-  ctx.fillText('Evaluating $VIRTUAL on Base', 188, 450);
+  return null;
+}
 
-  const scanY = ((elapsed * 40) % (SCREEN_TEXTURE_H + 120)) - 60;
-  const scan = ctx.createLinearGradient(0, scanY - 18, 0, scanY + 18);
-  scan.addColorStop(0, 'rgba(180,255,220,0)');
-  scan.addColorStop(0.5, 'rgba(180,255,220,0.05)');
-  scan.addColorStop(1, 'rgba(180,255,220,0)');
-  ctx.fillStyle = scan;
-  ctx.fillRect(0, scanY - 20, SCREEN_TEXTURE_W, 40);
+function HtmlInCanvasScreen({ meshRef }: { meshRef: { current: THREE.Mesh | null } }) {
+  const html = useMemo(() => createMainScreenHtml(), []);
+
+  return (
+    <HtmlInCanvasSurface
+      meshRef={meshRef}
+      width={MAIN_SCREEN_HTML_W}
+      height={MAIN_SCREEN_HTML_H}
+      html={html}
+    />
+  );
 }
 
 function CanvasScreenTexture({ material }: { material: THREE.ShaderMaterial }) {
@@ -562,27 +2323,16 @@ function CanvasScreenTexture({ material }: { material: THREE.ShaderMaterial }) {
 
 function Casing() {
   const screenRef = useRef<THREE.Mesh>(null);
-  const crtMaterial = useMemo(() => createCRTMaterial(), []);
-
-  useEffect(() => {
-    return () => {
-      crtMaterial.dispose();
-    };
-  }, [crtMaterial]);
 
   return (
-    <group position={[0, DESK_SURFACE_Y + 0.9, -1.72 + DESK_WALL_OFFSET_Z]} rotation={[0, 0, 0]}>
-      <Box position={[0, 0, -0.1]} scale={[2.28, 1.52, 0.46]} color={ROOM.monitor} roughness={0.52} metalness={0.08} castShadow />
-      <Box position={[0, 0.79, 0.18]} scale={[2.42, 0.18, 0.18]} color={ROOM.monitorEdge} castShadow />
-      <Box position={[0, -0.79, 0.18]} scale={[2.42, 0.22, 0.18]} color={ROOM.monitorEdge} castShadow />
-      <Box position={[-1.22, 0, 0.18]} scale={[0.2, 1.44, 0.18]} color={ROOM.monitorEdge} castShadow />
-      <Box position={[1.22, 0, 0.18]} scale={[0.2, 1.44, 0.18]} color={ROOM.monitorEdge} castShadow />
+    <group position={[0.18, DESK_SURFACE_Y + 1.2, -1.74 + DESK_WALL_OFFSET_Z]} rotation={[0, 0, 0]} scale={[1.28, 1.28, 1]}>
+      <Box position={[0, 0, 0.226]} scale={[2.08, 1.22, 0.04]} color="#050505" roughness={0.6} />
 
       <mesh ref={screenRef} position={[0, 0, 0.285]} castShadow={false} receiveShadow>
-        <planeGeometry args={[2.02, 1.18]} />
-        <primitive object={crtMaterial} attach="material" />
+        <planeGeometry args={[2.02, 1.18, 40, 40]} onUpdate={flipPlaneUvY} />
+        <meshBasicMaterial color="#111122" toneMapped={false} />
       </mesh>
-      <CanvasScreenTexture material={crtMaterial} />
+      <HtmlInCanvasScreen meshRef={screenRef} />
 
       <mesh position={[0, 0, 0.292]}>
         <planeGeometry args={[2.02, 1.18]} />
@@ -615,18 +2365,18 @@ function Desk() {
   return (
     <group>
       <AntiqueWoodenDesk />
-      <Box position={[0, DESK_SURFACE_Y + 0.045, -0.42 + DESK_WALL_OFFSET_Z]} scale={[1.78, 0.09, 0.32]} color="#17171b" roughness={0.38} />
+      <Box position={[0.36, DESK_SURFACE_Y + 0.045, -0.68 + DESK_WALL_OFFSET_Z]} scale={[1.28, 0.08, 0.28]} color="#17171b" roughness={0.38} />
       {Array.from({ length: 18 }, (_, index) => (
         <Box
           key={index}
-          position={[-0.79 + (index % 9) * 0.19, DESK_SURFACE_Y + 0.107, -0.43 - Math.floor(index / 9) * 0.1 + DESK_WALL_OFFSET_Z]}
-          scale={[0.13, 0.035, 0.055]}
+          position={[-0.2 + (index % 9) * 0.14, DESK_SURFACE_Y + 0.101, -0.69 - Math.floor(index / 9) * 0.082 + DESK_WALL_OFFSET_Z]}
+          scale={[0.094, 0.03, 0.046]}
           color={index % 4 === 0 ? '#2a2b34' : '#1d1e24'}
           roughness={0.45}
         />
       ))}
-      <mesh position={[1.45, DESK_SURFACE_Y + 0.025, -0.37 + DESK_WALL_OFFSET_Z]} castShadow receiveShadow>
-        <sphereGeometry args={[0.18, 32, 16, 0, Math.PI * 2, 0, Math.PI * 0.52]} />
+      <mesh position={[1.52, DESK_SURFACE_Y + 0.012, -0.83 + DESK_WALL_OFFSET_Z]} castShadow receiveShadow>
+        <sphereGeometry args={[0.145, 32, 16, 0, Math.PI * 2, 0, Math.PI * 0.52]} />
         <meshStandardMaterial color="#111215" roughness={0.34} metalness={0.08} />
       </mesh>
     </group>
@@ -655,7 +2405,7 @@ function AnimatedWindowPane() {
 
   return (
     <mesh position={[0, 0, -0.02]}>
-      <planeGeometry args={[1.42, 1.24]} />
+      <planeGeometry args={[1.34, 1.14]} />
       <meshBasicMaterial map={cityScene.texture} toneMapped={false} />
     </mesh>
   );
@@ -663,14 +2413,14 @@ function AnimatedWindowPane() {
 
 function Window() {
   return (
-    <group position={[-2.54, 1.72, -2.96]}>
+    <group position={[-3.17, 1.9, -2.96]} scale={[0.72, 0.72, 1]}>
       <AnimatedWindowPane />
-      <Box position={[0, 0.68, 0]} scale={[1.62, 0.08, 0.08]} color={ROOM.trim} />
-      <Box position={[0, -0.68, 0]} scale={[1.62, 0.08, 0.08]} color={ROOM.trim} />
-      <Box position={[-0.82, 0, 0]} scale={[0.08, 1.38, 0.08]} color={ROOM.trim} />
-      <Box position={[0.82, 0, 0]} scale={[0.08, 1.38, 0.08]} color={ROOM.trim} />
-      <Box position={[0, 0, 0.01]} scale={[0.05, 1.32, 0.05]} color={ROOM.trim} />
-      <Box position={[0, 0, 0.02]} scale={[1.5, 0.04, 0.05]} color={ROOM.trim} />
+      <Box position={[0, 0.64, 0]} scale={[1.52, 0.07, 0.08]} color={ROOM.trim} />
+      <Box position={[0, -0.64, 0]} scale={[1.52, 0.07, 0.08]} color={ROOM.trim} />
+      <Box position={[-0.76, 0, 0]} scale={[0.07, 1.3, 0.08]} color={ROOM.trim} />
+      <Box position={[0.76, 0, 0]} scale={[0.07, 1.3, 0.08]} color={ROOM.trim} />
+      <Box position={[0, 0, 0.01]} scale={[0.045, 1.24, 0.05]} color={ROOM.trim} />
+      <Box position={[0, 0, 0.02]} scale={[1.42, 0.035, 0.05]} color={ROOM.trim} />
       <pointLight position={[0, -0.1, 0.18]} intensity={1.1} distance={1.8} color="#9b5dff" />
     </group>
   );
@@ -708,33 +2458,621 @@ function WallPoster({
   );
 }
 
-function WallDataPanel({
+function WallTelemetryPanel({
   position,
   rotation = [0, 0, 0],
+  title,
+  value,
+  detail,
+  accent,
+  phase = 0,
 }: {
   position: [number, number, number];
   rotation?: [number, number, number];
+  title: string;
+  value: string;
+  detail: string;
+  accent: string;
+  phase?: number;
 }) {
+  const barsRef = useRef<THREE.Mesh[]>([]);
+  const statusRef = useRef<THREE.Mesh>(null);
+
+  useFrame(({ clock }) => {
+    const elapsed = clock.elapsedTime + phase;
+    barsRef.current.forEach((bar, index) => {
+      const wave = 0.52 + Math.sin(elapsed * (1.18 + index * 0.14) + index * 1.7) * 0.28;
+      const height = THREE.MathUtils.clamp(wave, 0.2, 0.92);
+      bar.scale.y = height;
+      bar.position.y = -0.095 + height * 0.038;
+    });
+    if (statusRef.current) {
+      const pulse = 0.76 + Math.sin(elapsed * 4.2) * 0.24;
+      statusRef.current.scale.setScalar(pulse);
+    }
+  });
+
   return (
     <group position={position} rotation={rotation}>
-      <Box position={[0, 0, -0.02]} scale={[0.7, 0.48, 0.04]} color="#080d11" roughness={0.45} metalness={0.12} />
-      <mesh position={[0, 0.06, 0.01]}>
-        <planeGeometry args={[0.58, 0.28]} />
-        <meshBasicMaterial color="#071c18" />
+      <Box position={[0, 0, -0.026]} scale={[0.78, 0.48, 0.04]} color="#16100b" roughness={0.45} metalness={0.12} />
+      <mesh position={[0, 0, 0.004]}>
+        <planeGeometry args={[0.7, 0.4]} />
+        <meshBasicMaterial color="#ead8a8" toneMapped={false} />
       </mesh>
-      {Array.from({ length: 8 }, (_, index) => (
-        <mesh key={index} position={[-0.23 + index * 0.066, -0.11 + (index % 3) * 0.012, 0.025]}>
-          <boxGeometry args={[0.038, 0.08 + (index % 4) * 0.035, 0.008]} />
+      <mesh position={[0, -0.006, 0.014]}>
+        <planeGeometry args={[0.58, 0.25]} />
+        <meshBasicMaterial color="#071c18" toneMapped={false} />
+      </mesh>
+      <mesh ref={statusRef} position={[-0.272, 0.152, 0.034]}>
+        <boxGeometry args={[0.026, 0.026, 0.01]} />
+        <meshBasicMaterial color="#1f5d30" toneMapped={false} />
+      </mesh>
+      {Array.from({ length: 7 }, (_, index) => (
+        <mesh
+          key={index}
+          ref={(node) => {
+            if (node) barsRef.current[index] = node;
+          }}
+          position={[-0.22 + index * 0.074, -0.075, 0.03]}
+        >
+          <boxGeometry args={[0.035, 0.09, 0.008]} />
           <meshBasicMaterial
-            color={index % 2 === 0 ? ROOM.glow : '#ffe28f'}
+            color={index % 2 === 0 ? accent : '#ffe28f'}
             toneMapped={false}
           />
         </mesh>
       ))}
-      <Text position={[-0.25, 0.17, 0.025]} fontSize={0.04} color="#7fffdc" anchorX="left" anchorY="middle">
-        COMPUTE
+      <Text position={[-0.235, 0.15, 0.035]} fontSize={0.029} color="#2d2415" anchorX="left" anchorY="middle">
+        {title}
       </Text>
-      <pointLight position={[0, 0, 0.12]} intensity={0.55} distance={1} color={ROOM.glow} />
+      <Text position={[-0.24, 0.062, 0.035]} fontSize={0.056} color="#fbfff8" anchorX="left" anchorY="middle">
+        {value}
+      </Text>
+      <Text position={[-0.24, -0.162, 0.035]} fontSize={0.021} color="#ecd99a" anchorX="left" anchorY="middle">
+        {detail}
+      </Text>
+      <pointLight position={[0, 0, 0.12]} intensity={0.24} distance={0.8} color={accent} />
+    </group>
+  );
+}
+
+type WallHtmlScreenKind = 'prime-id' | 'companions' | 'loopr' | 'balance' | 'runway' | 'model' | 'donate';
+
+function createWallScreenHtml(kind: WallHtmlScreenKind) {
+  const primeAtlas = `/pets/prime-test/state-atlas.png?v=${ATLAS_VERSION}`;
+  const screenBody = {
+    'prime-id': `
+      <div class="portrait-frame">
+        <div class="portrait-crop"><img alt="" src="${primeAtlas}" /></div>
+        <div class="portrait-name">PRIME-00</div>
+        <div class="portrait-state">ALIVE / WATCHING</div>
+      </div>
+    `,
+    companions: `
+      <div class="screen-heading">COMPANIONS</div>
+      <div class="companion-grid">
+        <div class="pet-dot pink"></div>
+        <div class="pet-dot blue"></div>
+        <div class="pet-dot amber"></div>
+        <div class="pet-dot green"></div>
+      </div>
+      <div class="status-row"><span>4/4 ONLINE</span><b>SYNCED</b></div>
+    `,
+    loopr: `
+      <div class="screen-heading">LOOPR FEED</div>
+      <div class="feed-list">
+        <div><b>@Critters_Quest</b><span>Prime spotted a volatility spike</span><em>2m</em></div>
+        <div><b>@BretGreenstein</b><span>Receipt received</span><em>8m</em></div>
+        <div><b>@0xLoopr</b><span>What signal is Prime seeing?</span><em>12m</em></div>
+      </div>
+      <button type="button">VIEW ALL</button>
+    `,
+    balance: `
+      <div class="screen-heading">BALANCE</div>
+      <div class="big-value">$2.47</div>
+      <div class="tiny-label">USDC / PRIME WALLET</div>
+      <div class="mini-bars">${Array.from({ length: 9 }, (_, index) => `<i style="--h:${24 + ((index * 17) % 48)}"></i>`).join('')}</div>
+    `,
+    runway: `
+      <div class="screen-heading">COMPUTE RUNWAY</div>
+      <div class="big-value">19h 42m</div>
+      <div class="tiny-label">UPDATED 10s AGO</div>
+      <div class="mini-bars amber">${Array.from({ length: 9 }, (_, index) => `<i style="--h:${30 + ((index * 13) % 42)}"></i>`).join('')}</div>
+    `,
+    model: `
+      <div class="screen-heading">MODEL STATUS</div>
+      <div class="big-value model-value">Prime v1.2</div>
+      <div class="tiny-label">CONFIDENCE</div>
+      <div class="confidence"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><strong>68%</strong></div>
+    `,
+    donate: `
+      <div class="screen-heading">DONATE SPLIT</div>
+      <div class="split-grid"><div><b>70%</b><span>PRIME</span></div><div><b>20%</b><span>DEV</span></div><div><b>10%</b><span>RSV</span></div></div>
+      <div class="thanks">&lt;3 THANK YOU</div>
+    `,
+  } satisfies Record<WallHtmlScreenKind, string>;
+
+  return `
+    <div class="loop-wall-screen ${kind}">
+      <style>
+        .loop-wall-screen,
+        .loop-wall-screen * {
+          box-sizing: border-box;
+        }
+
+        .loop-wall-screen {
+          width: 100%;
+          height: 100%;
+          position: relative;
+          overflow: hidden;
+          padding: 34px 38px;
+          color: #f5e5b2;
+          font-family: "Courier New", Courier, monospace;
+          image-rendering: pixelated;
+          background:
+            radial-gradient(circle at 82% 18%, rgba(120, 255, 156, 0.12), transparent 34%),
+            repeating-linear-gradient(0deg, rgba(255,255,255,0.035) 0 1px, transparent 1px 7px),
+            linear-gradient(145deg, #071511 0%, #07100e 52%, #111914 100%);
+          border: 14px solid #ead8a8;
+          outline: 8px solid #17100b;
+          box-shadow:
+            inset 0 0 0 4px rgba(33, 21, 9, 0.75),
+            inset 0 0 42px rgba(112, 255, 176, 0.1);
+        }
+
+        .loop-wall-screen::before,
+        .loop-wall-screen::after {
+          content: "";
+          position: absolute;
+          inset: 18px;
+          border: 2px solid rgba(234, 216, 168, 0.42);
+          pointer-events: none;
+        }
+
+        .loop-wall-screen::after {
+          inset: 30px;
+          border-color: rgba(112, 255, 176, 0.2);
+        }
+
+        .screen-heading {
+          position: relative;
+          z-index: 2;
+          color: #e8d47c;
+          font-size: 34px;
+          line-height: 1;
+          font-weight: 900;
+        }
+
+        .big-value {
+          position: relative;
+          z-index: 2;
+          margin-top: 42px;
+          color: #fff4bf;
+          font-size: 70px;
+          line-height: 0.9;
+          font-weight: 900;
+          font-variant-numeric: tabular-nums;
+        }
+
+        .model-value {
+          font-size: 46px;
+        }
+
+        .tiny-label {
+          position: relative;
+          z-index: 2;
+          margin-top: 22px;
+          color: #80ffad;
+          font-size: 20px;
+          font-weight: 900;
+        }
+
+        .mini-bars {
+          position: absolute;
+          left: 42px;
+          right: 42px;
+          bottom: 42px;
+          z-index: 2;
+          height: 92px;
+          display: grid;
+          grid-template-columns: repeat(9, 1fr);
+          align-items: end;
+          gap: 18px;
+        }
+
+        .mini-bars i {
+          display: block;
+          height: calc(var(--h) * 1%);
+          min-height: 18px;
+          background: linear-gradient(#dfffb2, #72ff9f);
+          box-shadow: 0 0 18px rgba(112, 255, 176, 0.28);
+        }
+
+        .mini-bars.amber i {
+          background: linear-gradient(#fff3b7, #e8b457);
+          box-shadow: 0 0 18px rgba(255, 184, 97, 0.3);
+        }
+
+        .portrait-frame {
+          position: absolute;
+          inset: 34px;
+          display: grid;
+          place-items: center;
+          border: 4px solid rgba(232, 212, 124, 0.58);
+          background: radial-gradient(circle at 50% 42%, rgba(112, 255, 176, 0.12), transparent 42%);
+        }
+
+        .portrait-crop {
+          width: 178px;
+          height: 194px;
+          overflow: hidden;
+        }
+
+        .portrait-crop img {
+          width: 1424px;
+          height: 2328px;
+          display: block;
+          image-rendering: pixelated;
+        }
+
+        .portrait-name {
+          color: #e8d47c;
+          font-size: 38px;
+          font-weight: 900;
+        }
+
+        .portrait-state {
+          color: #80ffad;
+          font-size: 18px;
+          font-weight: 900;
+        }
+
+        .companion-grid {
+          position: relative;
+          z-index: 2;
+          height: 190px;
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          align-items: center;
+          gap: 22px;
+        }
+
+        .pet-dot {
+          height: 78px;
+          border-radius: 24px 24px 18px 18px;
+          background: var(--pet);
+          box-shadow: inset 0 -16px rgba(0,0,0,0.2), 0 0 22px color-mix(in srgb, var(--pet) 52%, transparent);
+          position: relative;
+        }
+
+        .pet-dot::before,
+        .pet-dot::after {
+          content: "";
+          position: absolute;
+          top: 28px;
+          width: 10px;
+          height: 10px;
+          background: #06110e;
+        }
+
+        .pet-dot::before { left: 25%; }
+        .pet-dot::after { right: 25%; }
+        .pink { --pet: #ff6ea9; }
+        .blue { --pet: #68b7ff; }
+        .amber { --pet: #ffb02f; }
+        .green { --pet: #6fca5e; }
+
+        .status-row {
+          position: relative;
+          z-index: 2;
+          display: flex;
+          justify-content: space-between;
+          color: #e8d47c;
+          font-size: 22px;
+          font-weight: 900;
+        }
+
+        .status-row b {
+          color: #80ffad;
+        }
+
+        .feed-list {
+          position: relative;
+          z-index: 2;
+          margin-top: 24px;
+          display: grid;
+          gap: 18px;
+        }
+
+        .feed-list div {
+          display: grid;
+          grid-template-columns: 1fr auto;
+          gap: 6px 18px;
+          padding: 14px 0;
+          border-bottom: 2px solid rgba(232, 212, 124, 0.18);
+        }
+
+        .feed-list b {
+          color: #fff2b1;
+          font-size: 21px;
+        }
+
+        .feed-list span {
+          grid-column: 1 / -1;
+          color: #cfbf88;
+          font-size: 18px;
+          line-height: 1.18;
+        }
+
+        .feed-list em {
+          color: #80ffad;
+          font-size: 18px;
+          font-style: normal;
+          font-weight: 900;
+        }
+
+        button {
+          position: absolute;
+          left: 38px;
+          right: 38px;
+          bottom: 34px;
+          z-index: 2;
+          height: 54px;
+          border: 3px solid #b59450;
+          background: #0d1d14;
+          color: #e8d47c;
+          font: 900 20px "Courier New", Courier, monospace;
+        }
+
+        .confidence {
+          position: absolute;
+          left: 42px;
+          right: 42px;
+          bottom: 64px;
+          z-index: 2;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .confidence span {
+          width: 34px;
+          height: 34px;
+          background: #78d7ff;
+          box-shadow: 0 0 16px rgba(120, 215, 255, 0.22);
+        }
+
+        .confidence strong {
+          margin-left: auto;
+          color: #fff2b1;
+          font-size: 28px;
+        }
+
+        .split-grid {
+          position: relative;
+          z-index: 2;
+          margin-top: 44px;
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 16px;
+        }
+
+        .split-grid div {
+          min-height: 112px;
+          display: grid;
+          place-items: center;
+          border: 3px solid #6f552c;
+          background: #ead8a8;
+          color: #17100b;
+        }
+
+        .split-grid b {
+          font-size: 42px;
+          line-height: 1;
+        }
+
+        .split-grid span {
+          font-size: 14px;
+          font-weight: 900;
+        }
+
+        .thanks {
+          position: absolute;
+          left: 42px;
+          right: 42px;
+          bottom: 42px;
+          z-index: 2;
+          height: 50px;
+          display: grid;
+          place-items: center;
+          background: #0d1d14;
+          border: 3px solid #6f552c;
+          color: #ff6e72;
+          font-size: 22px;
+          font-weight: 900;
+        }
+
+        @keyframes wallPulse {
+          from { opacity: 0.7; transform: scaleY(0.86); }
+          to { opacity: 1; transform: scaleY(1); }
+        }
+      </style>
+      ${screenBody[kind]}
+    </div>
+  `;
+}
+
+function HtmlWallScreen({
+  kind,
+  position,
+  rotation = [0, 0, 0],
+  scale = [0.7, 0.46],
+  htmlSize = [WALL_SCREEN_HTML_W, WALL_SCREEN_HTML_H],
+  accent = '#8cffae',
+}: {
+  kind: WallHtmlScreenKind;
+  position: [number, number, number];
+  rotation?: [number, number, number];
+  scale?: [number, number];
+  htmlSize?: [number, number];
+  accent?: string;
+}) {
+  const screenRef = useRef<THREE.Mesh>(null);
+  const html = useMemo(() => createWallScreenHtml(kind), [kind]);
+
+  return (
+    <group position={position} rotation={rotation}>
+      <Box position={[0, 0, -0.034]} scale={[scale[0] + 0.12, scale[1] + 0.1, 0.052]} color="#16100b" roughness={0.45} metalness={0.12} />
+      <mesh position={[0, 0, 0.002]} receiveShadow>
+        <planeGeometry args={[scale[0] + 0.05, scale[1] + 0.04]} />
+        <meshBasicMaterial color="#ead8a8" toneMapped={false} />
+      </mesh>
+      <mesh ref={screenRef} position={[0, 0, 0.018]} receiveShadow>
+        <planeGeometry args={[scale[0], scale[1], 40, 40]} onUpdate={flipPlaneUvY} />
+        <meshBasicMaterial color="#111122" toneMapped={false} />
+      </mesh>
+      <HtmlInCanvasSurface meshRef={screenRef} width={htmlSize[0]} height={htmlSize[1]} html={html} />
+      <mesh position={[0, 0, 0.026]}>
+        <planeGeometry args={scale} />
+        <meshBasicMaterial color={accent} transparent opacity={0.035} blending={THREE.AdditiveBlending} depthWrite={false} />
+      </mesh>
+      <pointLight position={[0, 0, 0.16]} intensity={0.22} distance={0.82} color={accent} />
+    </group>
+  );
+}
+
+function LeftCommandPanel({
+  position,
+  rotation = [0, 0, 0],
+  title,
+  accent,
+  rows,
+  footer,
+  scale = [0.62, 0.52],
+}: {
+  position: [number, number, number];
+  rotation?: [number, number, number];
+  title: string;
+  accent: string;
+  rows: Array<{ label: string; value: string; color?: string }>;
+  footer?: string;
+  scale?: [number, number];
+}) {
+  return (
+    <group position={position} rotation={rotation}>
+      <Box position={[0, 0, -0.024]} scale={[scale[0] + 0.11, scale[1] + 0.1, 0.045]} color="#160f0b" roughness={0.5} metalness={0.1} />
+      <mesh position={[0, 0, 0.004]} receiveShadow>
+        <planeGeometry args={[scale[0] + 0.035, scale[1] + 0.03]} />
+        <meshBasicMaterial color="#ead8a8" toneMapped={false} />
+      </mesh>
+      <mesh position={[0, 0, 0.014]} receiveShadow>
+        <planeGeometry args={scale} />
+        <meshBasicMaterial color="#081711" toneMapped={false} />
+      </mesh>
+      <mesh position={[0, 0, 0.022]}>
+        <planeGeometry args={[scale[0] - 0.06, scale[1] - 0.06]} />
+        <meshBasicMaterial color={accent} transparent opacity={0.035} blending={THREE.AdditiveBlending} depthWrite={false} />
+      </mesh>
+      <Box position={[0, scale[1] * 0.5 - 0.035, 0.036]} scale={[scale[0] - 0.05, 0.012, 0.01]} color={accent} roughness={0.35} />
+      <Box position={[0, -scale[1] * 0.5 + 0.035, 0.036]} scale={[scale[0] - 0.05, 0.009, 0.01]} color="#ba9c54" roughness={0.35} />
+      <Text position={[-scale[0] * 0.42, scale[1] * 0.34, 0.046]} fontSize={0.035} color="#ffe9a6" anchorX="left" anchorY="middle">
+        {title}
+      </Text>
+      {rows.map((row, index) => {
+        const y = scale[1] * 0.17 - index * 0.105;
+        return (
+          <group key={`${row.label}-${index}`} position={[0, y, 0]}>
+            <mesh position={[-scale[0] * 0.39, 0, 0.048]}>
+              <boxGeometry args={[0.032, 0.032, 0.01]} />
+              <meshBasicMaterial color={row.color ?? accent} toneMapped={false} />
+            </mesh>
+            <Text position={[-scale[0] * 0.31, 0.014, 0.05]} fontSize={0.026} color="#eef8de" anchorX="left" anchorY="middle">
+              {row.label}
+            </Text>
+            <Text position={[scale[0] * 0.32, -0.018, 0.05]} fontSize={0.02} color="#b7c5a3" anchorX="right" anchorY="middle">
+              {row.value}
+            </Text>
+          </group>
+        );
+      })}
+      {footer ? (
+        <Text position={[0, -scale[1] * 0.38, 0.05]} fontSize={0.023} color={accent} anchorX="center" anchorY="middle">
+          {footer}
+        </Text>
+      ) : null}
+      <pointLight position={[0, 0, 0.08]} intensity={0.18} distance={0.72} color={accent} />
+    </group>
+  );
+}
+
+function LeftCommandColumn() {
+  const leftWallRotation: [number, number, number] = [0, Math.PI / 2, 0];
+
+  return (
+    <group>
+      <HtmlWallScreen
+        kind="prime-id"
+        position={[-3.965, 2.42, -2.26]}
+        rotation={leftWallRotation}
+        scale={[0.5, 0.6]}
+        htmlSize={[520, 620]}
+        accent="#8cffae"
+      />
+      <HtmlWallScreen
+        kind="companions"
+        position={[-3.965, 1.84, -2.26]}
+        rotation={leftWallRotation}
+        scale={[0.72, 0.42]}
+        accent="#8cffae"
+      />
+      <HtmlWallScreen
+        kind="loopr"
+        position={[-3.965, 1.18, -2.26]}
+        rotation={leftWallRotation}
+        scale={[0.78, 0.64]}
+        htmlSize={[640, 520]}
+        accent="#ffb861"
+      />
+    </group>
+  );
+}
+
+function LooplingControlWall() {
+  const rightWallRotation: [number, number, number] = [0, -Math.PI / 2, 0];
+
+  return (
+    <group>
+      <HtmlWallScreen
+        kind="balance"
+        position={[3.965, 2.48, -1.34]}
+        rotation={rightWallRotation}
+        scale={[0.7, 0.42]}
+        accent="#8cffae"
+      />
+      <HtmlWallScreen
+        kind="runway"
+        position={[3.965, 1.98, -1.34]}
+        rotation={rightWallRotation}
+        scale={[0.7, 0.42]}
+        accent="#78d7ff"
+      />
+      <HtmlWallScreen
+        kind="model"
+        position={[3.965, 1.48, -1.34]}
+        rotation={rightWallRotation}
+        scale={[0.7, 0.42]}
+        accent="#ffb861"
+      />
+      <HtmlWallScreen
+        kind="donate"
+        position={[3.965, 0.98, -1.34]}
+        rotation={rightWallRotation}
+        scale={[0.7, 0.42]}
+        accent="#ff6e72"
+      />
+      <Text position={[3.94, 2.76, -1.7]} rotation={rightWallRotation} fontSize={0.034} color="#7fffdc" anchorX="left" anchorY="middle">
+        PRIME CONTROL BUS
+      </Text>
     </group>
   );
 }
@@ -742,27 +3080,8 @@ function WallDataPanel({
 function WallDecor() {
   return (
     <group>
-      {/* Left Wall — large chart poster + small moon poster stacked */}
-      <WallPoster kind="chart" position={[-3.96, 1.4, -1.5]} rotation={[0, Math.PI / 2, 0]} scale={[0.54, 0.72]} />
-      <WallPoster kind="moon" position={[-3.96, 2.2, -1.5]} rotation={[0, Math.PI / 2, 0]} scale={[0.3, 0.4]} />
-      {/* Left Wall — small loop poster near back corner */}
-      <WallPoster kind="loop" position={[-3.96, 1.6, -2.4]} rotation={[0, Math.PI / 2, 0]} scale={[0.28, 0.38]} />
-
-      {/* Back Wall — left of window */}
-      <WallPoster kind="prime" position={[-3.65, 1.8, -2.94]} scale={[0.32, 0.44]} />
-
-      {/* Back Wall — above CRT */}
-      <WallPoster kind="loop" position={[0, 2.68, -2.94]} scale={[0.38, 0.52]} />
-
-      {/* Back Wall — right of shelf, left of bookcase */}
-      <WallPoster kind="chart" position={[3.0, 2.55, -2.94]} scale={[0.26, 0.36]} />
-
-      {/* Right Wall — large prime poster */}
-      <WallPoster kind="prime" position={[3.96, 1.9, -0.35]} rotation={[0, -Math.PI / 2, 0]} scale={[0.58, 0.78]} />
-      {/* Right Wall — small moon poster below */}
-      <WallPoster kind="moon" position={[3.96, 1.0, -0.35]} rotation={[0, -Math.PI / 2, 0]} scale={[0.3, 0.4]} />
-      {/* Right Wall — small loop poster further back */}
-      <WallPoster kind="loop" position={[3.96, 2.2, -1.2]} rotation={[0, -Math.PI / 2, 0]} scale={[0.26, 0.36]} />
+      <LeftCommandColumn />
+      <LooplingControlWall />
     </group>
   );
 }
@@ -825,30 +3144,6 @@ function RoomShell() {
   );
 }
 
-function Shelf({ position }: { position: [number, number, number] }) {
-  return (
-    <group position={position}>
-      <Box position={[0, 0.44, 0]} scale={[1.45, 0.08, 0.28]} color={ROOM.wood} />
-      <Box position={[0, -0.1, 0]} scale={[1.45, 0.08, 0.28]} color={ROOM.wood} />
-      <Box position={[-0.72, 0.16, 0]} scale={[0.08, 1.18, 0.28]} color={ROOM.deskDark} />
-      <Box position={[0.72, 0.16, 0]} scale={[0.08, 1.18, 0.28]} color={ROOM.deskDark} />
-      {['#7ad7ff', '#ff6ea9', '#f0bd5e', '#9b8cff', '#70ffb0'].map((color, index) => (
-        <Box
-          key={color}
-          position={[-0.42 + index * 0.2, 0.65 + (index % 2) * 0.04, 0.05]}
-          scale={[0.11, 0.34 + (index % 2) * 0.08, 0.18]}
-          color={color}
-          roughness={0.62}
-        />
-      ))}
-      <mesh position={[0.45, 0.08, 0.08]}>
-        <boxGeometry args={[0.28, 0.28, 0.22]} />
-        <meshStandardMaterial color="#48d7ff" emissive="#0b5770" emissiveIntensity={0.75} roughness={0.58} />
-      </mesh>
-    </group>
-  );
-}
-
 function StandingBookcase({ position, rotation = [0, 0, 0] }: { position: [number, number, number]; rotation?: [number, number, number] }) {
   const bookColors = ['#7ad7ff', '#ff6ea9', '#f0bd5e', '#9b8cff', '#70ffb0', '#dfe8ff'];
 
@@ -882,10 +3177,268 @@ function StandingBookcase({ position, rotation = [0, 0, 0] }: { position: [numbe
   );
 }
 
+function LooplingAtlasBillboard({
+  pet = 'prime-test',
+  state = 'idle',
+  position,
+  rotation = [0, 0, 0],
+  scale = [0.28, 0.31],
+}: {
+  pet?: string;
+  state?: keyof typeof SCREEN_STATES;
+  position: [number, number, number];
+  rotation?: [number, number, number];
+  scale?: [number, number];
+}) {
+  const sprite = useMemo(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 192;
+    canvas.height = 208;
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.minFilter = THREE.NearestFilter;
+    texture.magFilter = THREE.NearestFilter;
+    texture.generateMipmaps = false;
+    return { canvas, texture };
+  }, []);
+  const imageRef = useRef<HTMLImageElement | null>(null);
+  const lastDrawRef = useRef(-Infinity);
+
+  useEffect(() => {
+    const image = new Image();
+    image.src = `/pets/${pet}/state-atlas.png?v=${ATLAS_VERSION}`;
+    image.onload = () => {
+      imageRef.current = image;
+      lastDrawRef.current = -Infinity;
+    };
+
+    return () => sprite.texture.dispose();
+  }, [pet, sprite.texture]);
+
+  useFrame(({ clock }) => {
+    const elapsed = clock.elapsedTime;
+    const meta = SCREEN_STATES[state];
+    if (elapsed - lastDrawRef.current < 1 / meta.fps) return;
+
+    const ctx = sprite.canvas.getContext('2d');
+    const image = imageRef.current;
+    if (ctx && image?.complete && image.naturalWidth > 0) {
+      const frame = Math.floor(elapsed * meta.fps) % meta.frames;
+      const frameW = image.naturalWidth / ATLAS_COLS;
+      const frameH = image.naturalHeight / ATLAS_ROWS;
+      ctx.clearRect(0, 0, sprite.canvas.width, sprite.canvas.height);
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(image, frame * frameW, meta.row * frameH, frameW, frameH, 0, 0, sprite.canvas.width, sprite.canvas.height);
+      sprite.texture.needsUpdate = true;
+    }
+    lastDrawRef.current = elapsed;
+  });
+
+  return (
+    <mesh position={position} rotation={rotation}>
+      <planeGeometry args={scale} />
+      <meshBasicMaterial map={sprite.texture} transparent toneMapped={false} side={THREE.DoubleSide} />
+    </mesh>
+  );
+}
+
+function PrimeHabitatDome() {
+  return (
+    <group position={[-2.34, DESK_SURFACE_Y + 0.11, -1.05 + DESK_WALL_OFFSET_Z]} rotation={[0, 0.1, 0]}>
+      <mesh position={[0, -0.025, 0]} castShadow receiveShadow>
+        <cylinderGeometry args={[0.28, 0.31, 0.075, 42]} />
+        <meshStandardMaterial color="#11120f" roughness={0.44} metalness={0.22} />
+      </mesh>
+      <mesh position={[0, 0.03, 0.004]} receiveShadow>
+        <cylinderGeometry args={[0.24, 0.24, 0.035, 42]} />
+        <meshStandardMaterial color="#274225" roughness={0.86} />
+      </mesh>
+      <mesh position={[0, 0.245, 0]} castShadow={false} receiveShadow={false}>
+        <sphereGeometry args={[0.27, 42, 22, 0, Math.PI * 2, 0, Math.PI * 0.55]} />
+        <meshPhysicalMaterial
+          color="#dffcff"
+          roughness={0.04}
+          metalness={0}
+          transmission={0.55}
+          transparent
+          opacity={0.28}
+          thickness={0.08}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+      <mesh position={[0, 0.52, 0]}>
+        <cylinderGeometry args={[0.1, 0.12, 0.04, 32]} />
+        <meshStandardMaterial color="#0f1416" roughness={0.3} metalness={0.28} />
+      </mesh>
+      {Array.from({ length: 18 }, (_, index) => {
+        const angle = index * 2.42;
+        const radius = 0.07 + (index % 5) * 0.028;
+        return (
+          <mesh
+            key={index}
+            position={[Math.cos(angle) * radius, 0.065 + (index % 3) * 0.018, Math.sin(angle) * radius]}
+            rotation={[0, 0, angle]}
+            scale={[1.5, 0.85, 1]}
+          >
+            <circleGeometry args={[0.021 + (index % 3) * 0.004, 9]} />
+            <meshStandardMaterial color={index % 4 === 0 ? '#8bbd5b' : '#3e7f37'} roughness={0.82} side={THREE.DoubleSide} />
+          </mesh>
+        );
+      })}
+      <LooplingAtlasBillboard position={[-0.02, 0.135, 0.145]} scale={[0.2, 0.217]} />
+      <Text position={[0, -0.071, 0.235]} rotation={[-0.16, 0, 0]} fontSize={0.035} color="#e8d47c" anchorX="center" anchorY="middle">
+        PRIME-00
+      </Text>
+      <pointLight position={[0, 0.2, 0.18]} intensity={0.58} distance={0.72} color="#8cffae" />
+    </group>
+  );
+}
+
+function AgentHandbook() {
+  return (
+    <group position={[-2.18, DESK_SURFACE_Y + 0.061, -0.37 + DESK_WALL_OFFSET_Z]} rotation={[-Math.PI / 2, 0, -0.16]}>
+      <Box position={[0, 0, -0.012]} scale={[0.45, 0.57, 0.024]} color="#082015" roughness={0.72} />
+      <mesh position={[0, 0, 0.004]} receiveShadow>
+        <planeGeometry args={[0.41, 0.53]} />
+        <meshStandardMaterial color="#15331f" roughness={0.82} side={THREE.DoubleSide} />
+      </mesh>
+      <Box position={[0, 0.232, 0.016]} scale={[0.35, 0.012, 0.01]} color="#d7c27a" roughness={0.42} />
+      <Box position={[0, -0.232, 0.016]} scale={[0.35, 0.012, 0.01]} color="#d7c27a" roughness={0.42} />
+      <Text position={[0, 0.13, 0.028]} fontSize={0.046} color="#e8d47c" anchorX="center" anchorY="middle">
+        AGENT
+      </Text>
+      <Text position={[0, 0.07, 0.028]} fontSize={0.039} color="#e8d47c" anchorX="center" anchorY="middle">
+        HANDBOOK
+      </Text>
+      <Text position={[0, -0.14, 0.028]} fontSize={0.033} color="#8cffae" anchorX="center" anchorY="middle">
+        LOOPLING OS
+      </Text>
+    </group>
+  );
+}
+
+function PrimeIdCard() {
+  return (
+    <group position={[-1.68, DESK_SURFACE_Y + 0.064, -0.34 + DESK_WALL_OFFSET_Z]} rotation={[-Math.PI / 2, 0, 0.12]}>
+      <mesh receiveShadow>
+        <planeGeometry args={[0.44, 0.31]} />
+        <meshStandardMaterial color="#ead8a8" roughness={0.84} side={THREE.DoubleSide} />
+      </mesh>
+      <Box position={[0, 0.13, 0.012]} scale={[0.38, 0.012, 0.01]} color="#17120c" roughness={0.44} />
+      <LooplingAtlasBillboard position={[-0.1, 0.0, 0.025]} rotation={[0, 0, 0]} scale={[0.13, 0.14]} />
+      <Text position={[0.08, 0.04, 0.026]} fontSize={0.03} color="#18120b" anchorX="center" anchorY="middle">
+        PRIME-00
+      </Text>
+      <Text position={[0.08, -0.06, 0.026]} fontSize={0.022} color="#2f7a3a" anchorX="center" anchorY="middle">
+        ID: 000-PRIME
+      </Text>
+      <mesh position={[0.18, -0.095, 0.026]}>
+        <planeGeometry args={[0.07, 0.07]} />
+        <meshBasicMaterial color="#11120f" transparent opacity={0.88} />
+      </mesh>
+    </group>
+  );
+}
+
+function DonateTerminal() {
+  return (
+    <group position={[0.94, DESK_SURFACE_Y + 0.145, -0.92 + DESK_WALL_OFFSET_Z]} rotation={[-0.18, -0.23, 0]} scale={0.62}>
+      <Box position={[0, 0, -0.035]} scale={[0.46, 0.36, 0.08]} color="#111417" roughness={0.44} metalness={0.12} castShadow />
+      <mesh position={[0, 0.03, 0.018]} receiveShadow>
+        <planeGeometry args={[0.38, 0.24]} />
+        <meshBasicMaterial color="#082116" toneMapped={false} />
+      </mesh>
+      <Text position={[0, 0.12, 0.035]} fontSize={0.028} color="#e8d47c" anchorX="center" anchorY="middle">
+        DONATE COMPUTE
+      </Text>
+      <Text position={[0, 0.064, 0.035]} fontSize={0.02} color="#8cffae" anchorX="center" anchorY="middle">
+        KEEP PRIME ALIVE
+      </Text>
+      {['+10m', '+1h', '+24h'].map((label, index) => (
+        <group key={label} position={[-0.128 + index * 0.128, -0.02, 0.037]}>
+          <mesh>
+            <planeGeometry args={[0.09, 0.06]} />
+            <meshBasicMaterial color="#ead8a8" toneMapped={false} />
+          </mesh>
+          <Text position={[0, 0, 0.01]} fontSize={0.017} color="#17120c" anchorX="center" anchorY="middle">
+            {label}
+          </Text>
+        </group>
+      ))}
+      <mesh position={[0, -0.105, 0.038]}>
+        <planeGeometry args={[0.28, 0.052]} />
+        <meshBasicMaterial color="#2f7a3a" toneMapped={false} />
+      </mesh>
+      <Text position={[0, -0.105, 0.05]} fontSize={0.025} color="#f6e7b8" anchorX="center" anchorY="middle">
+        DONATE
+      </Text>
+      <pointLight position={[0, 0, 0.22]} intensity={0.42} distance={0.74} color="#8cffae" />
+    </group>
+  );
+}
+
+function WalletPuck() {
+  return (
+    <group position={[1.82, DESK_SURFACE_Y + 0.068, -0.74 + DESK_WALL_OFFSET_Z]} rotation={[0, -0.12, 0]} scale={0.78}>
+      <mesh castShadow receiveShadow>
+        <cylinderGeometry args={[0.2, 0.23, 0.11, 48]} />
+        <meshStandardMaterial color="#0c1912" roughness={0.36} metalness={0.18} />
+      </mesh>
+      <mesh position={[0, 0.058, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <torusGeometry args={[0.155, 0.012, 8, 48]} />
+        <meshBasicMaterial color="#70ffb0" toneMapped={false} />
+      </mesh>
+      <Text position={[0, 0.074, 0.04]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.035} color="#70ffb0" anchorX="center" anchorY="middle">
+        WALLET
+      </Text>
+      <pointLight position={[0, 0.15, 0]} intensity={0.7} distance={0.85} color="#70ffb0" />
+    </group>
+  );
+}
+
+function ModeDock() {
+  const modes = [
+    ['RESEARCH', '#78d7ff'],
+    ['TRADE', '#8cffae'],
+    ['POST', '#ff6ea9'],
+    ['MEMORY', '#b792ff'],
+    ['MEDIA', '#ffb861'],
+  ];
+
+  return (
+    <group position={[0.08, DESK_SURFACE_Y + 0.16, -0.98 + DESK_WALL_OFFSET_Z]} rotation={[0, 0.02, 0]}>
+      <Box position={[0, -0.045, -0.01]} scale={[0.86, 0.09, 0.19]} color="#16100b" roughness={0.48} metalness={0.12} castShadow />
+      {modes.map(([label, color], index) => (
+        <group key={label} position={[-0.34 + index * 0.17, 0, 0.004]}>
+          <Box position={[0, 0, 0]} scale={[0.13, 0.11, 0.09]} color="#271b12" roughness={0.52} metalness={0.16} castShadow />
+          <mesh position={[0, 0.003, 0.048]}>
+            <planeGeometry args={[0.08, 0.065]} />
+            <meshBasicMaterial color={color} transparent opacity={0.55} toneMapped={false} />
+          </mesh>
+          <Text position={[0, 0.078, 0.054]} rotation={[-0.14, 0, 0]} fontSize={0.018} color="#e8d47c" anchorX="center" anchorY="middle">
+            {label}
+          </Text>
+          <mesh position={[0, -0.072, 0.052]}>
+            <sphereGeometry args={[0.014, 12, 8]} />
+            <meshBasicMaterial color="#70ffb0" toneMapped={false} />
+          </mesh>
+        </group>
+      ))}
+    </group>
+  );
+}
+
 function DeskClutter() {
   return (
     <group>
-      <group position={[-1.42, DESK_SURFACE_Y + 0.11, -1.04 + DESK_WALL_OFFSET_Z]} rotation={[0, 0.32, 0]}>
+      <PrimeHabitatDome />
+      <AgentHandbook />
+      <PrimeIdCard />
+      <ModeDock />
+      <DonateTerminal />
+      <WalletPuck />
+
+      <group position={[-2.2, DESK_SURFACE_Y + 0.09, -1.54 + DESK_WALL_OFFSET_Z]} rotation={[0, 0.32, 0]}>
         <mesh receiveShadow>
           <cylinderGeometry args={[0.11, 0.1, 0.18, 24]} />
           <meshStandardMaterial color="#101419" roughness={0.42} metalness={0.08} />
@@ -900,7 +3453,7 @@ function DeskClutter() {
         </mesh>
       </group>
 
-      <group position={[-1.78, DESK_SURFACE_Y + 0.17, -0.55 + DESK_WALL_OFFSET_Z]}>
+      <group position={[-2.16, DESK_SURFACE_Y + 0.17, -0.72 + DESK_WALL_OFFSET_Z]}>
         <mesh receiveShadow>
           <cylinderGeometry args={[0.17, 0.15, 0.34, 32]} />
           <meshStandardMaterial color="#76d2ff" transparent opacity={0.24} roughness={0.08} metalness={0.02} />
@@ -922,9 +3475,9 @@ function DeskClutter() {
       </group>
 
       {[
-        [-0.92, DESK_SURFACE_Y + 0.051, -1.1 + DESK_WALL_OFFSET_Z, '#ff6ea9'],
-        [-0.72, DESK_SURFACE_Y + 0.052, -1.04 + DESK_WALL_OFFSET_Z, '#ffe28f'],
-        [0.86, DESK_SURFACE_Y + 0.052, -1.06 + DESK_WALL_OFFSET_Z, '#7ad7ff'],
+        [-0.74, DESK_SURFACE_Y + 0.051, -0.98 + DESK_WALL_OFFSET_Z, '#ff6ea9'],
+        [-0.52, DESK_SURFACE_Y + 0.052, -0.92 + DESK_WALL_OFFSET_Z, '#ffe28f'],
+        [1.02, DESK_SURFACE_Y + 0.052, -1.02 + DESK_WALL_OFFSET_Z, '#7ad7ff'],
       ].map(([x, y, z, color], index) => (
         <mesh key={index} position={[x as number, y as number, z as number]} rotation={[-Math.PI / 2, 0, (index - 1) * 0.12]} receiveShadow>
           <planeGeometry args={[0.18, 0.14]} />
@@ -936,20 +3489,11 @@ function DeskClutter() {
 }
 
 function SeatedLookCamera({ resetSignal }: { resetSignal: number }) {
-  const { camera, gl } = useThree();
+  const { camera } = useThree();
   const targetYawRef = useRef(0);
   const targetPitchRef = useRef(0);
   const currentYawRef = useRef(0);
   const currentPitchRef = useRef(0);
-  const releasedAtRef = useRef(0);
-  const dragRef = useRef({
-    active: false,
-    pointerId: -1,
-    x: 0,
-    y: 0,
-    yaw: 0,
-    pitch: 0,
-  });
 
   useEffect(() => {
     camera.position.copy(CAMERA_HOME);
@@ -961,79 +3505,16 @@ function SeatedLookCamera({ resetSignal }: { resetSignal: number }) {
     targetPitchRef.current = 0;
     currentYawRef.current = 0;
     currentPitchRef.current = 0;
-    releasedAtRef.current = performance.now();
   }, [resetSignal]);
-
-  useEffect(() => {
-    const canvas = gl.domElement;
-    canvas.style.cursor = 'grab';
-
-    const handlePointerDown = (event: PointerEvent) => {
-      if (event.button !== 0) return;
-      if (event.target instanceof HTMLElement && event.target.closest('.starter-room-view-controls')) return;
-
-      dragRef.current = {
-        active: true,
-        pointerId: event.pointerId,
-        x: event.clientX,
-        y: event.clientY,
-        yaw: targetYawRef.current,
-        pitch: targetPitchRef.current,
-      };
-      canvas.style.cursor = 'grabbing';
-      document.body.style.cursor = 'grabbing';
-      event.preventDefault();
-    };
-
-    const handlePointerMove = (event: PointerEvent) => {
-      const drag = dragRef.current;
-      if (!drag.active || drag.pointerId !== event.pointerId) return;
-
-      const nextYaw = drag.yaw + (event.clientX - drag.x) * CAMERA_DRAG_SENSITIVITY.yaw;
-      const nextPitch = drag.pitch - (event.clientY - drag.y) * CAMERA_DRAG_SENSITIVITY.pitch;
-      targetYawRef.current = THREE.MathUtils.clamp(nextYaw, -CAMERA_LIMITS.yaw, CAMERA_LIMITS.yaw);
-      targetPitchRef.current = THREE.MathUtils.clamp(nextPitch, CAMERA_LIMITS.pitchDown, CAMERA_LIMITS.pitchUp);
-    };
-
-    const finishDrag = (event: PointerEvent) => {
-      const drag = dragRef.current;
-      if (!drag.active || drag.pointerId !== event.pointerId) return;
-
-      dragRef.current.active = false;
-      releasedAtRef.current = performance.now();
-      canvas.style.cursor = 'grab';
-      document.body.style.cursor = '';
-    };
-
-    window.addEventListener('pointerdown', handlePointerDown, true);
-    window.addEventListener('pointermove', handlePointerMove, true);
-    window.addEventListener('pointerup', finishDrag, true);
-    window.addEventListener('pointercancel', finishDrag, true);
-
-    return () => {
-      window.removeEventListener('pointerdown', handlePointerDown, true);
-      window.removeEventListener('pointermove', handlePointerMove, true);
-      window.removeEventListener('pointerup', finishDrag, true);
-      window.removeEventListener('pointercancel', finishDrag, true);
-      canvas.style.cursor = '';
-      document.body.style.cursor = '';
-    };
-  }, [gl]);
 
   const _lookDir = useMemo(() => new THREE.Vector3(), []);
   const _lookTarget = useMemo(() => new THREE.Vector3(), []);
 
   useFrame((_, delta) => {
-    const now = performance.now();
-    if (!dragRef.current.active && now - releasedAtRef.current > 550) {
-      targetYawRef.current = THREE.MathUtils.damp(targetYawRef.current, 0, 4.2, delta);
-      targetPitchRef.current = THREE.MathUtils.damp(targetPitchRef.current, 0, 4.2, delta);
-    }
-
     currentYawRef.current = THREE.MathUtils.damp(currentYawRef.current, targetYawRef.current, 18, delta);
     currentPitchRef.current = THREE.MathUtils.damp(currentPitchRef.current, targetPitchRef.current, 18, delta);
 
-    const yaw = currentYawRef.current;
+    const yaw = CAMERA_BASE_YAW + currentYawRef.current;
     const pitch = CAMERA_BASE_PITCH + currentPitchRef.current;
     _lookDir.set(
       Math.sin(yaw) * Math.cos(pitch),
@@ -1057,7 +3538,7 @@ function InspectionCamera({
   onInspectCameraChange?: (snapshot: RoomInspectionSnapshot) => void;
 }) {
   const { camera, gl } = useThree();
-  const yawRef = useRef(0);
+  const yawRef = useRef(CAMERA_BASE_YAW);
   const pitchRef = useRef(CAMERA_BASE_PITCH);
   const keysRef = useRef(new Set<string>());
   const lastReportRef = useRef(0);
@@ -1072,7 +3553,7 @@ function InspectionCamera({
 
   useEffect(() => {
     camera.position.copy(INSPECT_CAMERA_HOME);
-    yawRef.current = 0;
+    yawRef.current = CAMERA_BASE_YAW;
     pitchRef.current = CAMERA_BASE_PITCH;
     camera.updateProjectionMatrix();
   }, [camera, resetSignal]);
@@ -1083,6 +3564,7 @@ function InspectionCamera({
 
     const handlePointerDown = (event: PointerEvent) => {
       if (event.button !== 0) return;
+      if (receiptDragActive) return;
       if (event.target instanceof HTMLElement && event.target.closest('.starter-room-view-controls')) return;
 
       dragRef.current = {
@@ -1099,6 +3581,13 @@ function InspectionCamera({
     };
 
     const handlePointerMove = (event: PointerEvent) => {
+      if (receiptDragActive) {
+        dragRef.current.active = false;
+        canvas.style.cursor = 'grab';
+        document.body.style.cursor = '';
+        return;
+      }
+
       const drag = dragRef.current;
       if (!drag.active || drag.pointerId !== event.pointerId) return;
 
@@ -1248,12 +3737,14 @@ function StarterRoomContent() {
       <RoomShell />
       <WallDecor />
       <StandingBookcase position={[3.56, 0, -2.4]} rotation={[0, -Math.PI / 2, 0]} />
-      <Shelf position={[1.8, 2.15, -2.87]} />
-      <Desk />
-      <DeskClutter />
-      <Casing />
-      <IndustrialLamp />
-      <ContactShadows position={[0, 0.015, -1.15]} opacity={0.42} scale={6} blur={2.5} far={3} frames={1} />
+      <group position={[DESK_STAGE_POSITION[0], DESK_STAGE_POSITION[1], DESK_STAGE_POSITION[2]]}>
+        <Desk />
+        <DeskClutter />
+        <Casing />
+        <ReceiptPrinter />
+        <IndustrialLamp />
+      </group>
+      <ContactShadows position={[DESK_STAGE_POSITION[0], 0.015, -1.22]} opacity={0.42} scale={6} blur={2.5} far={3} frames={1} />
     </Suspense>
   );
 }
@@ -1270,7 +3761,7 @@ export default function StarterRoomScene({
   return (
     <Canvas className="starter-room-canvas" shadows dpr={[1, 2]} gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}>
       <color attach="background" args={['#07080c']} />
-      <PerspectiveCamera makeDefault position={[0, 1.5, 4.78]} fov={43} />
+      <PerspectiveCamera makeDefault position={CAMERA_HOME_POSITION} fov={CAMERA_FOV} />
       <StarterRoomContent />
       {inspectMode ? (
         <InspectionCamera resetSignal={resetSignal} onInspectCameraChange={onInspectCameraChange} />
@@ -1283,3 +3774,4 @@ export default function StarterRoomScene({
 
 useGLTF.preload('/models/room/industrial_pipe_lamp/industrial_pipe_lamp_1k.gltf');
 useGLTF.preload('/models/room/antique_wooden_desk/antique_wooden_desk.glb');
+useGLTF.preload('/models/room/label_printer/label_printer.glb');

@@ -315,6 +315,12 @@ Looplings built."
 ### Summary
 Every Loopling lives in a room rendered as a **fixed-camera 3D diorama**, not a walkable space. Think Tomodachi Life or Habbo Hotel: one curated camera angle that frames the entire scene so the user sees everything at once. This is the Tamagotchi × digital pet shop window × Twitch stream in a single always-on frame.
 
+The same HTML/CSS surface direction that powers Prime's in-room screen should
+also become the foundation for a future agent-native media engine. Looplings
+should be able to turn their own life events into shareable cards, recap
+videos, survival warnings, memes, and Loopr posts. See
+`docs/LOOPLINGS_MEDIA_ENGINE.md`.
+
 ### Core Principle
 **No navigation. No hunting for data. Just presence.**
 
@@ -1013,4 +1019,5 @@ The species becomes the product. The individual Looplings are its carriers.
 - [ ] Token utility design ($LOOP if launched)
 - [ ] Dual-wallet architecture (agent vs owner custody)
 - [ ] Notification / email digest system
+- [ ] Agent-native media engine → see `docs/LOOPLINGS_MEDIA_ENGINE.md`
 - [ ] Share-a-moment export (screenshots, clips)

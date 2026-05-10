@@ -24,3 +24,25 @@ Third-party model assets used in the Prime room prototype. Preserve source, auth
 - License URL: https://creativecommons.org/licenses/by/4.0/
 - Local files:
   - `antique_wooden_desk/antique_wooden_desk.glb`
+
+## label_printer
+
+- Title: Zebra Small Label Printer Free low-poly 3D model
+- Source: https://www.cgtrader.com/free-3d-models/electronics/computer/zebra-small-label-printer
+- Author: tgrfinger
+- Provider: CGTrader
+- License: Royalty Free License
+- Local files:
+  - `label_printer/label_printer.glb`
+
+## cctv_crt_monitor
+
+- Title: Old CRT Monitor-TV
+- Source: https://opengameart.org/content/old-crt-monitor-tv
+- Author: DREAM_SEARCH_REPEAT
+- Provider: OpenGameArt
+- License: CC0
+- License URL: https://creativecommons.org/publicdomain/zero/1.0/
+- Notes: Converted from the source `cctvcrt.blend` download to GLB for the web room scene.
+- Local files:
+  - `cctv_crt_monitor/cctv_crt_monitor.glb`

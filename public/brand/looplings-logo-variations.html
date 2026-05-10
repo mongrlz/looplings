@@ -1,0 +1,617 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Looplings Logo Variations</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #07080b;
+        --panel: #101217;
+        --panel-2: #151820;
+        --ink: #f8f4ea;
+        --muted: #8e96a3;
+        --line: rgba(255, 255, 255, 0.11);
+        --glow: #74b8ff;
+        --blue: #8dc8ff;
+        --green: #6ee7c7;
+        --orange: #f7b267;
+        --violet: #c5a6ff;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          radial-gradient(circle at 20% 0%, rgba(116, 184, 255, 0.12), transparent 34rem),
+          radial-gradient(circle at 88% 12%, rgba(110, 231, 199, 0.1), transparent 32rem),
+          var(--bg);
+        color: var(--ink);
+        font-family:
+          "SF Mono", "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+      }
+
+      .sheet {
+        width: min(1560px, calc(100vw - 48px));
+        margin: 0 auto;
+        padding: 42px 0 56px;
+      }
+
+      header {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 28px;
+        align-items: end;
+        margin-bottom: 28px;
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 22px;
+      }
+
+      h1,
+      h2,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        font-size: clamp(34px, 5vw, 78px);
+        line-height: 0.9;
+        letter-spacing: 0;
+        text-transform: uppercase;
+      }
+
+      .kicker,
+      .meta,
+      .label,
+      .note {
+        color: var(--muted);
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .meta {
+        display: grid;
+        gap: 8px;
+        text-align: right;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .tile {
+        position: relative;
+        min-height: 315px;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent 42%),
+          var(--panel);
+      }
+
+      .tile.large {
+        grid-column: span 2;
+      }
+
+      .tile.tall {
+        min-height: 644px;
+        grid-row: span 2;
+      }
+
+      .tile-inner {
+        position: absolute;
+        inset: 18px;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        gap: 18px;
+      }
+
+      .stage {
+        position: relative;
+        display: grid;
+        min-height: 210px;
+        place-items: center;
+      }
+
+      .wordmark {
+        position: relative;
+        z-index: 3;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--ink);
+        font-size: clamp(34px, 4.1vw, 76px);
+        font-weight: 800;
+        line-height: 0.86;
+        letter-spacing: 0;
+        text-transform: lowercase;
+        text-shadow: 0 0 22px rgba(141, 200, 255, 0.12);
+        white-space: nowrap;
+      }
+
+      .wordmark.small {
+        font-size: clamp(24px, 2.4vw, 42px);
+      }
+
+      .wordmark.hero {
+        font-size: clamp(56px, 8.1vw, 132px);
+      }
+
+      .sprite {
+        --scale: 0.66;
+        width: calc(192px * var(--scale));
+        height: calc(208px * var(--scale));
+        background-image: url("../pets/prime-test/state-atlas.png");
+        background-repeat: no-repeat;
+        background-size: calc(1536px * var(--scale)) calc(2496px * var(--scale));
+        background-position: 0 0;
+        image-rendering: pixelated;
+        filter: drop-shadow(0 0 18px rgba(141, 200, 255, 0.34));
+      }
+
+      .sprite.big {
+        --scale: 1.18;
+      }
+
+      .sprite.mid {
+        --scale: 0.86;
+      }
+
+      .sprite.mini {
+        --scale: 0.42;
+      }
+
+      .sprite.mark {
+        --scale: 0.56;
+      }
+
+      .peek {
+        position: absolute;
+        bottom: 18px;
+        left: 50%;
+        height: 126px;
+        overflow: hidden;
+        transform: translateX(-50%);
+        z-index: 2;
+        opacity: 0.98;
+      }
+
+      .peek .sprite {
+        transform: translateY(-12px);
+      }
+
+      .crop-head {
+        position: absolute;
+        bottom: -42px;
+        left: 50%;
+        height: 148px;
+        overflow: hidden;
+        transform: translateX(-50%);
+        z-index: 4;
+      }
+
+      .crop-head .sprite {
+        transform: translateY(-24px);
+      }
+
+      .halo-letter {
+        position: relative;
+        display: inline-grid;
+        width: 0.76em;
+        height: 0.76em;
+        margin: 0 0.015em 0 0.02em;
+        place-items: center;
+        border: 0.09em solid var(--blue);
+        border-radius: 999px;
+        box-shadow:
+          0 0 0 0.035em #ffffff,
+          0 0 22px rgba(141, 200, 255, 0.72);
+        transform: translateY(-0.01em);
+      }
+
+      .halo-letter::after {
+        content: "";
+        width: 0.28em;
+        height: 0.28em;
+        border-radius: 999px;
+        background: var(--bg);
+      }
+
+      .antenna-i {
+        position: relative;
+        display: inline-block;
+        width: 0.35em;
+        height: 0.98em;
+        margin: 0 -0.04em 0 0.02em;
+        transform: translateY(0.05em);
+      }
+
+      .antenna-i::before {
+        content: "";
+        position: absolute;
+        left: 50%;
+        bottom: 0;
+        width: 0.08em;
+        height: 0.64em;
+        background: #ffffff;
+        box-shadow: 0 0 12px rgba(141, 200, 255, 0.6);
+        transform: translateX(-50%);
+      }
+
+      .antenna-i::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 0;
+        width: 0.34em;
+        height: 0.34em;
+        border: 0.055em solid var(--blue);
+        border-radius: 999px;
+        box-shadow: 0 0 14px rgba(141, 200, 255, 0.76);
+        transform: translateX(-50%);
+      }
+
+      .lockup {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+      }
+
+      .badge {
+        display: grid;
+        width: 230px;
+        height: 230px;
+        place-items: center;
+        border: 1px solid rgba(141, 200, 255, 0.34);
+        border-radius: 34px;
+        background:
+          linear-gradient(180deg, rgba(141, 200, 255, 0.11), transparent),
+          #0b0d13;
+        box-shadow:
+          inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+          0 22px 80px rgba(0, 0, 0, 0.36);
+      }
+
+      .badge .sprite {
+        transform: translateY(7px);
+      }
+
+      .subline {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .pill {
+        border: 1px solid rgba(110, 231, 199, 0.32);
+        border-radius: 999px;
+        color: var(--green);
+        padding: 6px 10px;
+        font-size: 11px;
+        text-transform: uppercase;
+      }
+
+      .underline {
+        position: absolute;
+        right: 12%;
+        bottom: 36%;
+        left: 12%;
+        height: 6px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, transparent, var(--blue), transparent);
+        filter: drop-shadow(0 0 12px rgba(141, 200, 255, 0.5));
+        opacity: 0.76;
+      }
+
+      .antenna-cut {
+        position: absolute;
+        top: 34px;
+        left: 50%;
+        width: 7px;
+        height: 154px;
+        background: #ffffff;
+        box-shadow: 0 0 18px rgba(141, 200, 255, 0.68);
+        transform: translateX(-50%);
+        z-index: 2;
+      }
+
+      .antenna-cut::before {
+        content: "";
+        position: absolute;
+        top: -44px;
+        left: 50%;
+        width: 70px;
+        height: 70px;
+        border: 10px solid var(--blue);
+        border-radius: 999px;
+        box-shadow:
+          0 0 0 4px #fff,
+          0 0 28px rgba(141, 200, 255, 0.78);
+        transform: translateX(-50%);
+      }
+
+      .split-word {
+        display: grid;
+        gap: 22px;
+        justify-items: center;
+      }
+
+      .signal-o {
+        color: var(--blue);
+      }
+
+      .tiny-row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 14px;
+      }
+
+      .micro {
+        display: grid;
+        width: 104px;
+        height: 104px;
+        place-items: center;
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        background: var(--panel-2);
+      }
+
+      .logo-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 9px 13px 9px 8px;
+        background: rgba(255, 255, 255, 0.04);
+        font-size: 18px;
+        font-weight: 800;
+        text-transform: lowercase;
+      }
+
+      .word-as-room {
+        width: 100%;
+        max-width: 640px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 8px;
+        padding: 28px;
+        background:
+          linear-gradient(90deg, rgba(141, 200, 255, 0.08) 1px, transparent 1px),
+          linear-gradient(rgba(141, 200, 255, 0.08) 1px, transparent 1px),
+          #090b11;
+        background-size: 24px 24px;
+      }
+
+      .room-line {
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        min-height: 150px;
+      }
+
+      .room-line .sprite {
+        margin-right: -18px;
+      }
+
+      .corner-mark {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        color: rgba(255, 255, 255, 0.24);
+        font-size: 12px;
+      }
+
+      @media (max-width: 1100px) {
+        .grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .tile.tall {
+          grid-row: auto;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .sheet {
+          width: min(100vw - 28px, 560px);
+          padding-top: 26px;
+        }
+
+        header,
+        .grid {
+          grid-template-columns: 1fr;
+        }
+
+        .meta {
+          text-align: left;
+        }
+
+        .tile.large,
+        .tile.tall {
+          grid-column: auto;
+        }
+
+        .wordmark.hero {
+          font-size: 54px;
+        }
+
+        .lockup {
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="sheet">
+      <header>
+        <div>
+          <p class="kicker">Looplings identity exploration</p>
+          <h1>Logo Variations</h1>
+        </div>
+        <div class="meta">
+          <span>Prime L01 mascot source</span>
+          <span>Wordmark / mascot integration</span>
+          <span>v0.1 concept sheet</span>
+        </div>
+      </header>
+
+      <section class="grid" aria-label="Looplings logo variation board">
+        <article class="tile large">
+          <div class="tile-inner">
+            <p class="label">01 / peek wordmark</p>
+            <div class="stage">
+              <div class="peek" aria-hidden="true"><div class="sprite big"></div></div>
+              <div class="wordmark hero">looplings</div>
+            </div>
+            <div class="subline">
+              <span class="note">Mascot emerging from below the name</span>
+              <span class="pill">friendly</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="tile large">
+          <div class="tile-inner">
+            <p class="label">02 / signal O</p>
+            <div class="stage">
+              <div class="split-word">
+                <div class="wordmark hero">l<span class="halo-letter"></span>oplings</div>
+                <div class="sprite mid"></div>
+              </div>
+            </div>
+            <div class="subline">
+              <span class="note">Antenna loop replaces the first O</span>
+              <span class="pill">iconic</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="tile tall">
+          <div class="tile-inner">
+            <p class="label">03 / app icon family</p>
+            <div class="stage">
+              <div class="badge"><div class="sprite big"></div></div>
+            </div>
+            <div class="tiny-row" aria-label="Small logo marks">
+              <div class="micro"><div class="sprite mini"></div></div>
+              <div class="micro"><div class="halo-letter" style="font-size: 70px"></div></div>
+              <div class="micro"><span class="logo-chip"><div class="sprite mini"></div>loop</span></div>
+              <div class="micro"><span class="wordmark small signal-o">L01</span></div>
+            </div>
+            <div class="subline">
+              <span class="note">Good for favicon, app tile, profile badge</span>
+              <span class="pill">system</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="tile">
+          <div class="tile-inner">
+            <p class="label">04 / antenna I cut</p>
+            <div class="stage">
+              <div class="wordmark">loopl<span class="antenna-i"></span>ngs</div>
+            </div>
+            <div class="subline">
+              <span class="note">Antenna becomes the I in Looplings</span>
+              <span class="pill">clever</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="tile">
+          <div class="tile-inner">
+            <p class="label">05 / mascot lockup</p>
+            <div class="stage">
+              <div class="lockup">
+                <div class="sprite mid"></div>
+                <div>
+                  <div class="wordmark small">looplings</div>
+                  <p class="note" style="margin-top: 12px">autonomous little agents</p>
+                </div>
+              </div>
+            </div>
+            <div class="subline">
+              <span class="note">Straightforward product header lockup</span>
+              <span class="pill">usable</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="tile">
+          <div class="tile-inner">
+            <p class="label">06 / antenna through word</p>
+            <div class="stage">
+              <div class="antenna-cut" aria-hidden="true"></div>
+              <div class="wordmark">looplings</div>
+              <div class="underline" aria-hidden="true"></div>
+            </div>
+            <div class="subline">
+              <span class="note">Antenna slices through the logotype</span>
+              <span class="pill">loud</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="tile">
+          <div class="tile-inner">
+            <p class="label">07 / head crop</p>
+            <div class="stage">
+              <div class="crop-head" aria-hidden="true"><div class="sprite big"></div></div>
+              <div class="wordmark">looplings</div>
+            </div>
+            <div class="subline">
+              <span class="note">Head overlaps the baseline like a mascot stamp</span>
+              <span class="pill">playful</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="tile large">
+          <div class="tile-inner">
+            <p class="label">08 / room-sign version</p>
+            <div class="stage">
+              <div class="word-as-room">
+                <div class="room-line">
+                  <div class="sprite mark"></div>
+                  <div class="wordmark">looplings</div>
+                </div>
+              </div>
+            </div>
+            <div class="subline">
+              <span class="note">Works as in-world signage inside Prime's room</span>
+              <span class="pill">diegetic</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="tile">
+          <div class="tile-inner">
+            <p class="label">09 / compact chip</p>
+            <div class="stage">
+              <span class="logo-chip">
+                <div class="sprite mini"></div>
+                looplings
+              </span>
+            </div>
+            <div class="subline">
+              <span class="note">Useful for nav, buttons, tiny surfaces</span>
+              <span class="pill">compact</span>
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>

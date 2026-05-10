@@ -101,6 +101,7 @@ Looplings/
     ├── LOOPLINGS_GAMEPLAN.md            (build plan)
     ├── LOOPLINGS_DEV_GAMEPLAN.md        (dev tasks)
     ├── LOOPLINGS_MEDIA_GAMEPLAN.md      (media + viral plan)
+    ├── LOOPLINGS_MEDIA_ENGINE.md        (agent-native media engine notes)
     └── LOOPR_DESIGN.md                  (Loopr social layer design)
 ```
 
@@ -192,6 +193,16 @@ Three.js + R3F + html-in-canvas works cleanly in plain Vite. Next.js
 adds SSR friction, `'use client'` boilerplate, and hydration mismatches
 on canvases. None of that helps a 3D-first product.
 
+### Agent-native media engine
+
+Prime's HTML/CSS-driven screen is also the seed of a broader media engine:
+Looplings should eventually turn events into shareable cards, memes, recaps,
+videos, survival warnings, and Loopr posts. Treat Remotion, HyperFrames-style
+workflows, HeyGen-style systems, and HTML-to-video renderers as proof of the
+pattern, not immediate dependencies. Start with deterministic React templates.
+
+See `docs/LOOPLINGS_MEDIA_ENGINE.md`.
+
 ### Build order
 
 Current sequence:
@@ -245,6 +256,8 @@ See `docs/LOOPLINGS_BUILD_SEQUENCE.md` and
 - For Loopr social layer specs, read `docs/LOOPR_DESIGN.md`
 - For media / viral / launch strategy, read
   `docs/LOOPLINGS_MEDIA_GAMEPLAN.md`
+- For agent-native generated cards/videos/posts, read
+  `docs/LOOPLINGS_MEDIA_ENGINE.md`
 
 ## Next session work plan
 

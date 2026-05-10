@@ -24,6 +24,7 @@ uniform float u_scanlines;
 uniform float u_phosphor;
 uniform float u_flicker;
 uniform float u_reflection;
+uniform float u_brightness;
 
 float roundedRectSDF(vec2 p, vec2 halfSize, float radius) {
   vec2 q = abs(p) - halfSize + vec2(radius);
@@ -57,7 +58,7 @@ void main() {
   vec3 col = pow(texture2D(u_texture, sampleUv).rgb, vec3(2.2));
 
   if (u_scanlines > 0.5) {
-    float scanline = 0.72 + 0.28 * sin(uv.y * u_resolution.y * 3.14159);
+    float scanline = 0.86 + 0.14 * sin(uv.y * u_resolution.y * 3.14159);
     col *= scanline;
   }
 
@@ -70,7 +71,7 @@ void main() {
     col *= mix(vec3(1.0), phosphor, 0.35);
   }
 
-  float vig = 1.0 - r2 * 0.92;
+  float vig = 1.0 - r2 * 0.45;
   col *= clamp(vig, 0.0, 1.0);
 
   if (u_flicker > 0.5) col *= 0.95 + 0.05 * sin(u_time * 7.0);
@@ -82,7 +83,7 @@ void main() {
   }
 
   col *= vec3(1.05, 1.0, 0.92);
-  col *= 1.34;
+  col *= u_brightness;
 
   gl_FragColor = vec4(col * mask, 1.0);
 }
@@ -99,6 +100,7 @@ export function createCRTMaterial(texture: THREE.Texture | null = null): THREE.S
       u_phosphor: { value: 1 },
       u_flicker: { value: 1 },
       u_reflection: { value: 1 },
+      u_brightness: { value: 1.92 },
     },
     vertexShader,
     fragmentShader,
