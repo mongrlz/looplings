@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&family=Press+Start+2P&display=swap');
 @import "tailwindcss";
 
 :root {
@@ -4246,5 +4247,686 @@ body.looplings-room-locked > div:not(#root)[style*="transform-style: preserve-3d
   .screen-lab-frame-meta {
     justify-items: start;
     text-align: left;
+  }
+}
+
+.screen-lab-page {
+  background:
+    radial-gradient(circle at 9% 12%, rgba(255, 255, 240, 0.68), transparent 16rem),
+    radial-gradient(circle at 78% 16%, rgba(248, 221, 145, 0.3), transparent 20rem),
+    radial-gradient(circle at 88% 82%, rgba(88, 137, 70, 0.18), transparent 22rem),
+    linear-gradient(rgba(44, 93, 56, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(44, 93, 56, 0.07) 1px, transparent 1px),
+    #dce9cf;
+  background-size: auto, auto, auto, 28px 28px, 28px 28px, auto;
+  font-family: 'Pixelify Sans', 'JetBrains Mono', 'Courier New', ui-monospace, monospace;
+}
+
+.screen-lab-page::before {
+  background:
+    radial-gradient(circle, rgba(255, 255, 245, 0.86) 0 1px, transparent 2px),
+    radial-gradient(circle at 40% 35%, rgba(91, 133, 75, 0.18) 0 2px, transparent 3px),
+    radial-gradient(circle at 62% 58%, rgba(241, 202, 138, 0.22) 0 2px, transparent 3px);
+  background-position:
+    0 0,
+    13px 18px,
+    28px 34px;
+  background-size:
+    44px 44px,
+    78px 78px,
+    96px 96px;
+}
+
+.screen-lab-shell {
+  width: min(1840px, calc(100% - 44px));
+  padding-top: 22px;
+}
+
+.screen-lab-nav {
+  position: sticky;
+  top: 14px;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: auto minmax(180px, 1fr) auto;
+  gap: 20px;
+  align-items: center;
+  min-height: 76px;
+  margin-bottom: 46px;
+  padding: 10px 16px;
+  border: 4px solid #0f160e;
+  background:
+    linear-gradient(180deg, rgba(255, 254, 239, 0.96), rgba(255, 242, 204, 0.96)),
+    #fff3cf;
+  box-shadow:
+    0 0 0 4px #fffbea,
+    0 8px 0 #0b2e17,
+    inset 0 0 0 2px rgba(78, 89, 43, 0.22);
+}
+
+.screen-lab-brand {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-width: max-content;
+  color: #0e1322;
+  text-decoration: none;
+}
+
+.screen-lab-brand .screen-lab-pixel-pet {
+  width: 34px !important;
+  filter: drop-shadow(3px 3px 0 #b9d6a6);
+}
+
+.screen-lab-brand strong {
+  font-size: 38px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1;
+  text-shadow:
+    3px 3px 0 #fff,
+    5px 5px 0 rgba(39, 92, 50, 0.22);
+}
+
+.screen-lab-nav-line {
+  color: #172035;
+  font-size: 20px;
+  font-weight: 600;
+  text-align: right;
+}
+
+.screen-lab-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.screen-lab-nav-actions button,
+.screen-lab-controls button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 48px;
+  padding: 0 18px;
+  border: 4px solid #0f160e;
+  background: #fff4d4;
+  color: #12160f;
+  cursor: pointer;
+  font: 700 18px 'Pixelify Sans', 'JetBrains Mono', monospace;
+  box-shadow:
+    5px 5px 0 #0b2e17,
+    inset 0 0 0 2px rgba(255, 255, 255, 0.6);
+  transition:
+    transform 140ms ease,
+    box-shadow 140ms ease,
+    background-color 140ms ease;
+}
+
+.screen-lab-nav-actions button:first-child {
+  min-width: 166px;
+  background: #4f8c4e;
+  color: #fff8d7;
+}
+
+.screen-lab-nav-actions button:last-child {
+  width: 54px;
+  padding: 0;
+}
+
+.screen-lab-nav-actions button:hover,
+.screen-lab-controls button:hover {
+  transform: translate(-2px, -2px);
+  box-shadow:
+    7px 7px 0 #0b2e17,
+    inset 0 0 0 2px rgba(255, 255, 255, 0.6);
+}
+
+.screen-lab-nav-actions button:active,
+.screen-lab-controls button:active {
+  transform: translate(3px, 3px);
+  box-shadow:
+    2px 2px 0 #0b2e17,
+    inset 0 0 0 2px rgba(255, 255, 255, 0.6);
+}
+
+.screen-lab-hero {
+  grid-template-columns: minmax(0, 0.96fr) minmax(560px, 0.92fr);
+  gap: 48px;
+  margin-bottom: 30px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.screen-lab-hero > div:first-child {
+  align-self: center;
+}
+
+.screen-lab-kicker {
+  min-height: 34px;
+  font: 700 16px 'Pixelify Sans', 'JetBrains Mono', monospace;
+}
+
+.screen-lab-hero h1 {
+  max-width: 840px;
+  margin-top: 22px;
+  font-size: clamp(64px, 7vw, 124px);
+  font-weight: 700;
+  line-height: 0.78;
+  text-shadow:
+    5px 5px 0 #fff,
+    8px 8px 0 rgba(43, 103, 61, 0.32);
+}
+
+.screen-lab-hero h1 span {
+  display: block;
+  margin-top: 12px;
+  color: #4f8c4e;
+  text-shadow:
+    5px 5px 0 #fff,
+    8px 8px 0 rgba(43, 103, 61, 0.24);
+}
+
+.screen-lab-intro {
+  max-width: 720px;
+  margin-top: 34px;
+  color: #161c14;
+  font-size: 27px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.screen-lab-pet-showcase {
+  position: relative;
+  align-self: center;
+}
+
+.screen-lab-garden-frame {
+  position: relative;
+  padding: 14px;
+  border: 4px solid #0f160e;
+  background: #fff7d8;
+  box-shadow:
+    0 0 0 5px #fffdf0,
+    9px 9px 0 #0b2e17,
+    inset 0 0 0 2px rgba(72, 95, 42, 0.24);
+}
+
+.screen-lab-garden-frame::before,
+.screen-lab-garden-frame::after,
+.screen-lab-garden-caption::before,
+.screen-lab-garden-caption::after {
+  content: "";
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, #315f36 0 10px, #6ca660 10px 20px, transparent 20px) 0 0 / 22px 11px no-repeat,
+    linear-gradient(#315f36 0 10px, #6ca660 10px 20px, transparent 20px) 0 0 / 11px 22px no-repeat;
+}
+
+.screen-lab-garden-frame::before {
+  top: -12px;
+  left: -12px;
+}
+
+.screen-lab-garden-frame::after {
+  right: -12px;
+  bottom: -12px;
+  transform: rotate(180deg);
+}
+
+.screen-lab-garden-scene {
+  position: relative;
+  min-height: 342px;
+  overflow: hidden;
+  border: 3px solid #244017;
+  background:
+    radial-gradient(circle at 18% 78%, #87bb5b 0 0.5rem, transparent 0.55rem),
+    radial-gradient(circle at 24% 72%, #f5e28c 0 0.16rem, transparent 0.2rem),
+    radial-gradient(circle at 84% 24%, #f278a6 0 1.7rem, transparent 1.75rem),
+    radial-gradient(circle at 85% 25%, #df5c94 0 2.6rem, transparent 2.65rem),
+    linear-gradient(rgba(50, 101, 37, 0.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(50, 101, 37, 0.1) 1px, transparent 1px),
+    linear-gradient(145deg, #9dd36e, #5fb45a 52%, #8dcc65);
+  background-size:
+    auto,
+    auto,
+    auto,
+    auto,
+    24px 24px,
+    24px 24px,
+    auto;
+}
+
+.screen-lab-garden-scene::before {
+  content: "";
+  position: absolute;
+  inset: 18px;
+  border: 3px solid rgba(39, 73, 25, 0.42);
+  pointer-events: none;
+}
+
+.screen-lab-pixel-cloud {
+  position: absolute;
+  width: 74px;
+  height: 22px;
+  background: rgba(255, 248, 223, 0.82);
+  box-shadow:
+    18px -10px 0 rgba(255, 248, 223, 0.82),
+    36px 0 0 rgba(255, 248, 223, 0.82),
+    54px -7px 0 rgba(255, 248, 223, 0.82);
+}
+
+.screen-lab-pixel-cloud.is-left {
+  top: 34px;
+  left: 48px;
+}
+
+.screen-lab-pixel-cloud.is-right {
+  top: 58px;
+  right: 100px;
+  transform: scale(0.82);
+}
+
+.screen-lab-pixel-tree {
+  position: absolute;
+  bottom: 42px;
+  width: 38px;
+  height: 56px;
+  background:
+    linear-gradient(#7e5030, #7e5030) 15px 22px / 10px 38px no-repeat,
+    radial-gradient(circle, #2f7837 0 22px, transparent 23px);
+}
+
+.screen-lab-pixel-tree.is-left {
+  left: 44px;
+}
+
+.screen-lab-pixel-tree.is-right {
+  right: 50px;
+  transform: scale(1.2);
+}
+
+.screen-lab-garden-path {
+  position: absolute;
+  inset: auto -30px 0 26%;
+  height: 118px;
+  background:
+    repeating-linear-gradient(90deg, rgba(138, 94, 55, 0.26) 0 20px, rgba(229, 180, 111, 0.26) 20px 36px),
+    #d9b16f;
+  clip-path: polygon(30% 0, 55% 0, 100% 100%, 0 100%);
+  opacity: 0.86;
+}
+
+.screen-lab-garden-pet {
+  position: absolute;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+}
+
+.screen-lab-garden-pet .screen-lab-pixel-pet {
+  filter: drop-shadow(0 9px 0 rgba(29, 45, 18, 0.18));
+}
+
+.screen-lab-garden-pet > span {
+  display: inline-grid;
+  min-height: 26px;
+  place-items: center;
+  padding: 0 10px;
+  border: 3px solid #0f160e;
+  background: #fff8df;
+  color: #10170f;
+  font-size: 18px;
+  font-weight: 500;
+  box-shadow: 3px 3px 0 rgba(21, 55, 24, 0.44);
+}
+
+.screen-lab-garden-pet.is-pet-1 {
+  left: 45%;
+  top: 43%;
+  transform: translate(-50%, -50%);
+}
+
+.screen-lab-garden-pet.is-pet-2 {
+  left: 22%;
+  top: 52%;
+}
+
+.screen-lab-garden-pet.is-pet-3 {
+  right: 22%;
+  top: 37%;
+}
+
+.screen-lab-garden-pet.is-pet-4 {
+  right: 34%;
+  bottom: 22px;
+}
+
+.screen-lab-garden-caption {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  margin: 18px 34px 0;
+  padding: 13px 16px;
+  border: 3px solid #0f160e;
+  background: #fff4d4;
+  box-shadow:
+    5px 5px 0 #0b2e17,
+    inset 0 0 0 2px rgba(79, 140, 78, 0.16);
+}
+
+.screen-lab-garden-caption::before {
+  top: -10px;
+  left: -10px;
+  transform: scale(0.52);
+}
+
+.screen-lab-garden-caption::after {
+  right: -10px;
+  bottom: -10px;
+  transform: rotate(180deg) scale(0.52);
+}
+
+.screen-lab-garden-caption strong {
+  color: #0f160e;
+  font-size: 21px;
+}
+
+.screen-lab-garden-caption span {
+  color: #315f36;
+  font-size: 16px;
+  text-align: right;
+}
+
+.screen-lab-controls {
+  display: grid;
+  grid-template-columns: minmax(300px, 560px) minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: center;
+  margin: 44px 0 26px;
+}
+
+.screen-lab-controls label {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 66px;
+  padding: 0 20px;
+  border: 4px solid #0f160e;
+  background: #fff4d4;
+  box-shadow:
+    6px 6px 0 #0b2e17,
+    inset 0 0 0 2px rgba(79, 140, 78, 0.14);
+}
+
+.screen-lab-controls label svg {
+  color: #0f160e;
+}
+
+.screen-lab-controls input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #0f160e;
+  font: 500 23px 'Pixelify Sans', 'JetBrains Mono', monospace;
+}
+
+.screen-lab-controls input::placeholder {
+  color: rgba(23, 32, 53, 0.52);
+}
+
+.screen-lab-controls div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.screen-lab-controls > span {
+  color: #0f160e;
+  font: 500 22px 'Pixelify Sans', 'JetBrains Mono', monospace;
+}
+
+.screen-lab-hero-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+  margin: 26px 0;
+}
+
+.screen-lab-hero-stats article {
+  min-height: 128px;
+  padding: 18px;
+  border: 4px solid #0f160e;
+  background:
+    linear-gradient(180deg, #eef7d2, #fff4d4),
+    #fff4d4;
+  box-shadow:
+    6px 6px 0 #0b2e17,
+    inset 0 0 0 2px rgba(79, 140, 78, 0.16);
+}
+
+.screen-lab-hero-stats span,
+.screen-lab-hero aside span,
+.screen-lab-role-map span,
+.screen-lab-slot-rack span,
+.screen-lab-signal-matrix span,
+.screen-lab-panel > header span,
+.screen-lab-topline span,
+.screen-lab-frame-meta dt,
+.screen-lab-screen-brief strong,
+.screen-lab-priority {
+  color: #2f743e;
+  font-family: 'Press Start 2P', 'Pixelify Sans', monospace;
+  font-size: 8px;
+  line-height: 1.75;
+}
+
+.screen-lab-hero-stats strong {
+  display: block;
+  margin-top: 12px;
+  color: #0f160e;
+  font-size: 31px;
+  line-height: 0.94;
+}
+
+.screen-lab-hero-stats p {
+  margin: 12px 0 0;
+  color: #56604d;
+  font-size: 18px;
+  line-height: 1.1;
+}
+
+.screen-lab-role-map article,
+.screen-lab-slot-rack article,
+.screen-lab-signal-matrix,
+.screen-lab-signal-matrix article,
+.screen-lab-panel {
+  border-width: 4px;
+  box-shadow:
+    0 0 0 4px #fffbea,
+    7px 7px 0 #0b2e17,
+    inset 0 0 0 2px rgba(78, 89, 43, 0.18);
+}
+
+.screen-lab-role-map p,
+.screen-lab-slot-rack p,
+.screen-lab-slot-rack em,
+.screen-lab-signal-matrix p,
+.screen-lab-frame-meta p,
+.screen-lab-frame-meta dd,
+.screen-lab-screen-brief p {
+  font-size: 18px;
+  line-height: 1.18;
+}
+
+.screen-lab-signal-matrix header strong,
+.screen-lab-slot-rack strong,
+.screen-lab-panel > header h2 {
+  font-family: 'Pixelify Sans', 'JetBrains Mono', monospace;
+  font-weight: 700;
+}
+
+.screen-lab-slot-rack strong {
+  font-size: 25px;
+}
+
+.screen-lab-slot-rack p,
+.screen-lab-slot-rack em {
+  overflow-wrap: anywhere;
+}
+
+.screen-lab-panel > header h2 {
+  font-size: clamp(34px, 2.9vw, 54px);
+}
+
+.screen-lab-monitor,
+.screen-lab-phone-shell {
+  font-family: 'Pixelify Sans', 'JetBrains Mono', monospace;
+}
+
+.screen-lab-prime-card span,
+.screen-lab-current-task span,
+.screen-lab-habitat-stats span,
+.screen-lab-roster span,
+.screen-lab-keyval dt,
+.screen-lab-market-table span,
+.screen-lab-market-table em,
+.screen-lab-positions span,
+.screen-lab-positions em,
+.screen-lab-monitor--policy span,
+.screen-lab-monitor--memory span,
+.screen-lab-monitor--inbox span,
+.screen-lab-monitor--skills span,
+.screen-lab-monitor--lifecycle span,
+.screen-lab-monitor--lifecycle em,
+.screen-lab-companion-list span,
+.screen-lab-companion-list em,
+.screen-lab-monitor--loopr span,
+.screen-lab-monitor--loopr em,
+.screen-lab-phone-shell span,
+.screen-lab-phone-shell em {
+  font-family: 'Press Start 2P', 'Pixelify Sans', monospace;
+  font-size: 7px;
+  line-height: 1.7;
+}
+
+.screen-lab-prime-card p,
+.screen-lab-current-task p,
+.screen-lab-market-table p,
+.screen-lab-positions p,
+.screen-lab-monitor--policy p,
+.screen-lab-monitor--memory p,
+.screen-lab-monitor--inbox p,
+.screen-lab-monitor--skills p,
+.screen-lab-monitor--wallet p,
+.screen-lab-passport-body p,
+.screen-lab-monitor--split p,
+.screen-lab-monitor--terminal p,
+.screen-lab-command-grid p,
+.screen-lab-thought-list p,
+.screen-lab-monitor--loopr p,
+.screen-lab-monitor--lifecycle article p,
+.screen-lab-phone-shell p {
+  font-size: 17px;
+  line-height: 1.18;
+}
+
+.screen-lab-prime-card strong,
+.screen-lab-current-task strong {
+  font-size: 32px;
+}
+
+.screen-lab-habitat-stats strong,
+.screen-lab-keyval dd,
+.screen-lab-money {
+  font-size: 24px;
+}
+
+@media (max-width: 1280px) {
+  .screen-lab-nav,
+  .screen-lab-hero,
+  .screen-lab-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .screen-lab-nav-line,
+  .screen-lab-garden-caption span {
+    text-align: left;
+  }
+
+  .screen-lab-nav-actions,
+  .screen-lab-controls div {
+    justify-content: flex-start;
+  }
+
+  .screen-lab-hero-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 780px) {
+  .screen-lab-shell {
+    width: min(100% - 24px, 1840px);
+  }
+
+  .screen-lab-nav {
+    position: relative;
+    top: auto;
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+
+  .screen-lab-brand strong {
+    font-size: 32px;
+  }
+
+  .screen-lab-nav-actions,
+  .screen-lab-controls div {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .screen-lab-nav-actions button,
+  .screen-lab-nav-actions button:first-child,
+  .screen-lab-controls button {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .screen-lab-hero h1 {
+    font-size: 55px;
+  }
+
+  .screen-lab-intro {
+    font-size: 23px;
+  }
+
+  .screen-lab-garden-scene {
+    min-height: 300px;
+  }
+
+  .screen-lab-garden-pet.is-pet-2,
+  .screen-lab-garden-pet.is-pet-3,
+  .screen-lab-garden-pet.is-pet-4 {
+    display: none;
+  }
+
+  .screen-lab-garden-pet.is-pet-1 {
+    left: 50%;
+    top: 48%;
+  }
+
+  .screen-lab-garden-caption,
+  .screen-lab-hero-stats {
+    grid-template-columns: 1fr;
   }
 }

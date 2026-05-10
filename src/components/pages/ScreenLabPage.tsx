@@ -12,8 +12,12 @@ import {
   Fingerprint,
   HeartPulse,
   Inbox,
+  LogIn,
   MessageSquare,
+  Plus,
   Radio,
+  Search,
+  Settings,
   ShieldCheck,
   Siren,
   TerminalSquare,
@@ -123,6 +127,93 @@ function PixelPet({ pet = 'prime-test', row = 0, frame = 0, size = 72 }: { pet?:
 
 function PriorityPill({ priority }: { priority: RoomScreenPriority }) {
   return <span className={`screen-lab-priority is-${priority}`}>{priorityLabels[priority]}</span>;
+}
+
+function ScreenLabNav() {
+  return (
+    <nav className="screen-lab-nav" aria-label="Screen lab navigation">
+      <a className="screen-lab-brand" href="/room">
+        <PixelPet size={34} row={1} frame={0} />
+        <strong>Looplings</strong>
+      </a>
+      <span className="screen-lab-nav-line">floating survival screens for Prime</span>
+      <div className="screen-lab-nav-actions" aria-label="Screen lab actions">
+        <button type="button">
+          <Plus size={18} />
+          Add Surface
+        </button>
+        <button type="button">
+          <LogIn size={18} />
+          Import Room
+        </button>
+        <button type="button" aria-label="Screen settings">
+          <Settings size={19} />
+        </button>
+      </div>
+    </nav>
+  );
+}
+
+function HeroPetGarden() {
+  return (
+    <div className="screen-lab-pet-showcase" aria-label="Looplings preview habitat">
+      <div className="screen-lab-garden-frame">
+        <div className="screen-lab-garden-scene">
+          <span className="screen-lab-pixel-cloud is-left" />
+          <span className="screen-lab-pixel-cloud is-right" />
+          <span className="screen-lab-pixel-tree is-left" />
+          <span className="screen-lab-pixel-tree is-right" />
+          <span className="screen-lab-garden-path" />
+          {looplings.map((loopling, index) => (
+            <div key={loopling.id} className={`screen-lab-garden-pet is-pet-${index + 1}`}>
+              <PixelPet pet={loopling.pet} row={loopling.row} frame={index} size={index === 0 ? 92 : 72} />
+              <span>{loopling.id}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="screen-lab-garden-caption">
+        <strong>Prime display target</strong>
+        <span>cream UI, living pet scene, readable runtime state</span>
+      </div>
+    </div>
+  );
+}
+
+function ScreenLabControls() {
+  return (
+    <section className="screen-lab-controls" aria-label="Screen design filters">
+      <label>
+        <Search size={28} />
+        <input type="search" placeholder="Search screen, role, or room slot..." />
+      </label>
+      <div>
+        <button type="button">MVP first</button>
+        <button type="button">Main wall</button>
+        <button type="button">Room import</button>
+      </div>
+      <span>{roomScreenSlots.length}/{roomScreenSlots.length}</span>
+    </section>
+  );
+}
+
+function ScreenLabStats() {
+  return (
+    <section className="screen-lab-hero-stats" aria-label="Screen lab status">
+      {[
+        ['Physical slots', `${roomScreenSlots.length}`],
+        ['MVP screens', `${roomScreenSlots.filter((slot) => slot.priority === 'ship').length}`],
+        ['Main surface', 'HTML in Canvas'],
+        ['Next import', 'shared registry'],
+      ].map(([label, value]) => (
+        <article key={label}>
+          <span>{label}</span>
+          <strong>{value}</strong>
+          <p>{label === 'Next import' ? 'One source for lab previews and Three surfaces.' : 'Mapped from the current starter room.'}</p>
+        </article>
+      ))}
+    </section>
+  );
 }
 
 function LabFrame({
@@ -646,31 +737,24 @@ export default function ScreenLabPage() {
   return (
     <main className="screen-lab-page">
       <section className="screen-lab-shell">
+        <ScreenLabNav />
         <header className="screen-lab-hero">
           <div>
             <span className="screen-lab-kicker">Room Screen Studio</span>
-            <h1>Design every Looplings surface before it enters the room.</h1>
+            <h1>
+              Looplings screen garden.
+              <span>Every room surface gets a little soul.</span>
+            </h1>
             <p className="screen-lab-intro">
               The room should not be a collection of random panels. Each screen gets one job in Prime's survival loop:
               identity, thought, command, ledger, social proof, or compute feeding.
             </p>
           </div>
-          <aside>
-            {[
-              ['Physical slots', `${roomScreenSlots.length}`],
-              ['MVP screens', `${roomScreenSlots.filter((slot) => slot.priority === 'ship').length}`],
-              ['Main surface', 'HTML in Canvas'],
-              ['Next import', 'shared registry'],
-            ].map(([label, value]) => (
-              <article key={label}>
-                <span>{label}</span>
-                <strong>{value}</strong>
-                <p>{label === 'Next import' ? 'One source for lab previews and Three surfaces.' : 'Mapped from the current starter room.'}</p>
-              </article>
-            ))}
-          </aside>
+          <HeroPetGarden />
         </header>
 
+        <ScreenLabControls />
+        <ScreenLabStats />
         <ScreenRoleMap />
         <SignalMatrix />
         <SlotRack />
