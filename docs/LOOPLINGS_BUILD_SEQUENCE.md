@@ -8,6 +8,9 @@ other.
 
 Goal: make `main` easy to trust before deeper work starts.
 
+- Keep `main` stable and demo-ready.
+- Use `develop` as the active integration branch.
+- Merge `develop` into `main` only after build and room checks pass.
 - Keep the root app as the Vite/R3F frontend.
 - Keep generated output and local runtime experiments out of commits.
 - Document the runtime lab under `apps/runtime`.
@@ -43,12 +46,14 @@ Initial extraction targets:
 
 Goal: finish the visible 3D room before live runtime wiring.
 
-- Build the room around Prime and the Steam Deck-style device.
+- Build the room around Prime as the public demo surface.
 - Keep Prime's screen HTML/CSS-driven so it can later be fed by runtime state.
 - Preserve this `state → HTML/CSS visual surface` pattern for the future
   media engine described in `docs/LOOPLINGS_MEDIA_ENGINE.md`.
 - Place room props and interaction affordances after the core composition works.
 - Use mocked state until the runtime contract is ready.
+- Keep room cleanup/refactors behavior-preserving unless the task is explicitly
+  visual design work.
 
 ## Phase 3: Prime Runtime Contract
 

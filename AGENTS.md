@@ -29,9 +29,17 @@ living publicly in a 3D scene where viewers can:
 - Donate to Prime's wallet (70% to Prime / 20% to dev / 10% reserve)
 - Interact with the 3D environment (orbit camera, click props)
 
-The 3D scene will eventually render Prime onto a Steam Deck-style device's
-screen surface using the html-in-canvas API (with `three-html-render`
-polyfill for browsers without native support).
+The current room lives at `/room`. It uses html-in-canvas surfaces for the main
+Prime display and wall screens, with mocked runtime data until the adapter is
+ready. Treat the room as the main frontend demo surface.
+
+## Branch workflow
+
+- `main` is stable/demo-ready only.
+- `develop` is the active integration branch for cleanup, room, docs, and runtime work.
+- Use short-lived feature branches only when a change is risky enough to isolate.
+- Push and review work on `develop`; merge to `main` only after `npm run build`
+  passes and `/room` has been checked.
 
 ## Stack
 
@@ -84,10 +92,9 @@ Looplings/
 │   │   │   └── SteamDeck.tsx            (Steam Deck device — placeholder
 │   │   │                                 will be replaced with newer
 │   │   │                                 Steam Deck model when ready)
-│   │   ├── pages/
-│   │   │   └── PrimePage.tsx            (current placeholder Prime page)
-│   │   ├── scenes/                      (3D scenes — empty, populate next)
-│   │   └── ui/                          (overlay UI — empty, populate next)
+│   │   ├── pages/                       (Prime, room, sprite/screen labs)
+│   │   ├── scenes/                      (3D scenes, including StarterRoomScene)
+│   │   └── ui/
 │   ├── types/
 │   │   └── html-in-canvas.d.ts          (TS types for the WICG API)
 │   └── styles/
@@ -263,10 +270,10 @@ See `docs/LOOPLINGS_BUILD_SEQUENCE.md` and
 
 The current sequence:
 
-1. Clean baseline and branch discipline.
-2. Clone Hermes + Conway into ignored `apps/runtime/upstreams/` for research.
-3. Start a gitignored `apps/runtime/looplings-core/` surgery lab.
-4. Finish the 3D Prime room with mocked state.
+1. Keep cleanup and implementation work on `develop`.
+2. Keep generated output, private files, and local upstream/runtime clones out of commits.
+3. Keep improving the 3D Prime room with mocked state until the visual demo is stable.
+4. Split large room modules only when behavior can stay visually identical.
 5. Wire the room to the runtime adapter only after the room is ready.
 
 Stop and ask the user before introducing new dependencies or making

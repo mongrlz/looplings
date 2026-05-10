@@ -11,6 +11,19 @@ cp .env.example .env       # then add your VITE_PRIVY_APP_ID
 npm run dev
 ```
 
+Open the current Prime room at:
+
+```txt
+http://127.0.0.1:5173/room
+```
+
+## Branch workflow
+
+- `main` is the stable demo branch.
+- `develop` is the active integration branch for room, asset, runtime, and docs work.
+- Short-lived feature branches are optional for risky or isolated changes.
+- Promote `develop` into `main` only after `npm run build` passes and the room has been visually checked.
+
 ## Stack
 
 Vite + React 19 + TypeScript + react-three-fiber + drei + three.js +
@@ -30,6 +43,7 @@ Product specs in [docs/](./docs/):
 - [LOOPLINGS_RUNTIME_GAMEPLAN.md](./docs/LOOPLINGS_RUNTIME_GAMEPLAN.md) — Hermes/Conway runtime direction
 - [LOOPLINGS_RUNTIME_RESEARCH.md](./docs/LOOPLINGS_RUNTIME_RESEARCH.md) — local upstream research map
 - [LOOPLINGS_MEDIA_GAMEPLAN.md](./docs/LOOPLINGS_MEDIA_GAMEPLAN.md) — media plan
+- [LOOPLINGS_MEDIA_ENGINE.md](./docs/LOOPLINGS_MEDIA_ENGINE.md) — agent-native media engine notes
 - [LOOPR_DESIGN.md](./docs/LOOPR_DESIGN.md) — Loopr social layer
 
 ## Runtime lab
