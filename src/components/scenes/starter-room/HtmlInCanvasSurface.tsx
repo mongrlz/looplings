@@ -19,6 +19,9 @@ type HtmlInCanvasSurfaceProps = {
   html: string;
 };
 
+const HTML_SURFACE_UPLOAD_FPS = 12;
+const HTML_SURFACE_WARMUP_FRAMES = 18;
+
 export function HtmlInCanvasSurface({ meshRef, width, height, html }: HtmlInCanvasSurfaceProps) {
   const { gl } = useThree();
   const elementRef = useRef<HTMLDivElement | null>(null);
@@ -26,13 +29,17 @@ export function HtmlInCanvasSurface({ meshRef, width, height, html }: HtmlInCanv
   const textureRef = useRef<THREE.Texture | null>(null);
   const glTextureRef = useRef<WebGLTexture | null>(null);
   const dirtyRef = useRef(true);
-  const warmupFramesRef = useRef(90);
+  const warmupFramesRef = useRef(HTML_SURFACE_WARMUP_FRAMES);
   const lastUploadRef = useRef(-Infinity);
 
   useEffect(() => {
     const canvas = gl.domElement;
     const context = gl.getContext() as WebGL2RenderingContext;
     if (typeof context.texElementImage2D !== 'function') return undefined;
+
+    dirtyRef.current = true;
+    warmupFramesRef.current = HTML_SURFACE_WARMUP_FRAMES;
+    lastUploadRef.current = -Infinity;
 
     const element = document.createElement('div');
     element.style.width = `${width}px`;
@@ -129,7 +136,7 @@ export function HtmlInCanvasSurface({ meshRef, width, height, html }: HtmlInCanv
     material.uniforms.u_time.value = elapsed;
 
     if (!dirtyRef.current && warmupFramesRef.current <= 0) return;
-    if (elapsed - lastUploadRef.current < 1 / 24) return;
+    if (elapsed - lastUploadRef.current < 1 / HTML_SURFACE_UPLOAD_FPS) return;
 
     const context = gl.getContext() as WebGL2RenderingContext;
     try {

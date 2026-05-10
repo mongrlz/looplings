@@ -1110,53 +1110,6 @@ function createMainScreenHtml() {
           border-color: rgba(153, 124, 62, 0.5);
         }
 
-        .screen-vine {
-          position: absolute;
-          z-index: 12;
-          pointer-events: none;
-        }
-
-        .screen-vine.top-left {
-          left: 28px;
-          top: 14px;
-          width: 170px;
-          height: 92px;
-          border-top: 10px solid #356231;
-          border-left: 8px solid #356231;
-        }
-
-        .screen-vine.top-right {
-          right: 28px;
-          top: 14px;
-          width: 180px;
-          height: 96px;
-          border-top: 10px solid #356231;
-          border-right: 8px solid #356231;
-        }
-
-        .screen-vine.bottom-right {
-          right: 18px;
-          bottom: 4px;
-          width: 154px;
-          height: 84px;
-          border-right: 8px solid #356231;
-          border-bottom: 10px solid #356231;
-        }
-
-        .screen-vine i {
-          position: absolute;
-          width: 28px;
-          height: 18px;
-          border-radius: 60% 38% 60% 38%;
-          background: #5f9140;
-          box-shadow: inset -5px -4px rgba(30, 66, 29, 0.32);
-        }
-
-        .screen-vine i:nth-child(1) { left: 22px; top: -12px; transform: rotate(-24deg); }
-        .screen-vine i:nth-child(2) { left: 62px; top: -5px; transform: rotate(26deg); background: #7ba24b; }
-        .screen-vine i:nth-child(3) { right: 16px; top: 10px; transform: rotate(-14deg); }
-        .screen-vine i:nth-child(4) { right: -14px; bottom: 18px; transform: rotate(34deg); background: #466f35; }
-
         .main-title {
           position: absolute;
           left: 86px;
@@ -1651,9 +1604,6 @@ function createMainScreenHtml() {
 
       <div class="os-label">Looplings OS</div>
       <div class="main-title">STARTER HABITAT</div>
-      <div class="screen-vine top-left"><i></i><i></i><i></i><i></i></div>
-      <div class="screen-vine top-right"><i></i><i></i><i></i><i></i></div>
-      <div class="screen-vine bottom-right"><i></i><i></i><i></i><i></i></div>
 
       <section class="panel habitat-card">
         <div class="habitat-label">PRIME-00</div>
@@ -3420,7 +3370,7 @@ export default function StarterRoomScene({
   onInspectCameraChange?: (snapshot: RoomInspectionSnapshot) => void;
 }) {
   return (
-    <Canvas className="starter-room-canvas" shadows dpr={[1, 2]} gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}>
+    <Canvas className="starter-room-canvas" shadows dpr={[1, 1.5]} gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}>
       <color attach="background" args={['#07080c']} />
       <PerspectiveCamera makeDefault position={CAMERA_HOME_POSITION} fov={CAMERA_FOV} />
       <StarterRoomContent />
