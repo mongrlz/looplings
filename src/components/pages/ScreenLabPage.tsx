@@ -16,30 +16,27 @@ import {
   Radio,
   ShieldCheck,
   Siren,
+  TerminalSquare,
   Wallet,
+  Zap,
 } from 'lucide-react';
+import { looplingsRoomRoles, primeRuntimeSignals, roomScreenSlots } from '@/components/screens/roomScreenPlan';
+import type { RoomScreenPriority, RoomScreenSlot } from '@/components/screens/roomScreenPlan';
 
 const STATE_ATLAS_VERSION = 'loopling-state-atlas-2026-05-02';
 
 const looplings = [
-  { id: 'PRIME-00', pet: 'prime-test', state: 'Thinking', row: 1, accent: '#dffaff' },
-  { id: 'PINK-01', pet: 'pink', state: 'Posting', row: 6, accent: '#ff74a8' },
-  { id: 'BLUE-02', pet: 'blue', state: 'Scanning', row: 1, accent: '#6ab8ff' },
-  { id: 'SPARK-03', pet: 'spark', state: 'Charging', row: 8, accent: '#ffb54a' },
-];
-
-const systemCards = [
-  { label: 'Runtime Source', value: 'looplings-core', detail: 'Hermes brain + survival economy' },
-  { label: 'Primary Chain', value: 'Base', detail: 'Solana quote path mirrored for swaps' },
-  { label: 'Current Tier', value: 'Normal', detail: '19h 42m compute runway' },
-  { label: 'Public State', value: 'SSE Ready', detail: 'thoughts, actions, audit, wallet' },
+  { id: 'PRIME-00', pet: 'prime-test', state: 'Thinking', row: 1, accent: '#dffaff', relation: 'host' },
+  { id: 'PINK-01', pet: 'pink', state: 'Posting', row: 6, accent: '#ff74a8', relation: 'signal scout' },
+  { id: 'BLUE-02', pet: 'blue', state: 'Scanning', row: 1, accent: '#6ab8ff', relation: 'risk check' },
+  { id: 'SPARK-03', pet: 'spark', state: 'Charging', row: 8, accent: '#ffb54a', relation: 'alpha relay' },
 ];
 
 const thoughtEvents = [
   { phase: 'observe', body: 'Read wallet balance, runway, recent Loopr mentions, and open token watchlist.', time: '00:00' },
-  { phase: 'plan', body: 'Hold the current position. Spread is too wide for a safe entry.', time: '00:18' },
+  { phase: 'plan', body: 'Hold position. Spread is too wide for a clean entry.', time: '00:18' },
   { phase: 'policy', body: 'Trade intent capped at 12 percent wallet exposure. No execution without quote simulation.', time: '00:23' },
-  { phase: 'tool', body: 'Jupiter quote simulation returned 1.8 percent expected slippage.', time: '00:31' },
+  { phase: 'tool', body: 'Quote simulation returned 1.8 percent expected slippage.', time: '00:31' },
   { phase: 'reflect', body: 'Conserve compute and post a short watchlist note instead of forcing a trade.', time: '00:47' },
 ];
 
@@ -56,7 +53,7 @@ const marketRows = [
   { token: '$VIRTUAL', route: 'Base', signal: 'Watch', score: 72, note: 'volume up, entry not clean' },
   { token: '$AERO', route: 'Base', signal: 'Hold', score: 61, note: 'spread acceptable, no catalyst' },
   { token: '$DEGEN', route: 'Base', signal: 'Reject', score: 28, note: 'slippage and feed risk' },
-  { token: '$WIF', route: 'Solana', signal: 'Simulate', score: 54, note: 'only quote, no execution' },
+  { token: '$WIF', route: 'Solana', signal: 'Simulate', score: 54, note: 'quote only, no execution' },
 ];
 
 const positions = [
@@ -93,12 +90,19 @@ const lifecycleRows = [
   { tier: 'Dead', range: '$0.00', behavior: 'final obit, wallet cold', look: 'grayscale' },
 ];
 
-const skillLoop = [
-  ['Emergence', 'Agent authors a survival trick under pressure.'],
-  ['Proof', 'It survives longer, earns more, or gets copied.'],
-  ['Curation', 'Platform validates the pattern across the population.'],
-  ['Inheritance', 'New Looplings inherit the promoted skill.'],
+const commandModules = [
+  { label: 'Research', detail: 'watchlists, signals, quote simulations' },
+  { label: 'Trade', detail: 'positions, P&L, policy gate, receipts' },
+  { label: 'Post', detail: 'Loopr drafts, signed posts, reactions' },
+  { label: 'Memory', detail: 'SOUL, relationships, learned procedures' },
+  { label: 'Media', detail: 'share cards, recap clips, survival warnings' },
 ];
+
+const priorityLabels: Record<RoomScreenPriority, string> = {
+  ship: 'MVP',
+  next: 'Next',
+  later: 'Later',
+};
 
 function PixelPet({ pet = 'prime-test', row = 0, frame = 0, size = 72 }: { pet?: string; row?: number; frame?: number; size?: number }) {
   return (
@@ -117,26 +121,56 @@ function PixelPet({ pet = 'prime-test', row = 0, frame = 0, size = 72 }: { pet?:
   );
 }
 
+function PriorityPill({ priority }: { priority: RoomScreenPriority }) {
+  return <span className={`screen-lab-priority is-${priority}`}>{priorityLabels[priority]}</span>;
+}
+
 function LabFrame({
-  eyebrow,
-  title,
+  slot,
   children,
-  accent = '#65f5d6',
-  size = 'standard',
 }: {
-  eyebrow: string;
-  title: string;
+  slot: RoomScreenSlot;
   children: ReactNode;
-  accent?: string;
-  size?: 'standard' | 'wide' | 'tall' | 'mini';
 }) {
   return (
-    <article className={`screen-lab-panel is-${size}`} style={{ '--screen-accent': accent } as CSSProperties}>
+    <article className={`screen-lab-panel is-${slot.size}`} style={{ '--screen-accent': slot.accent } as CSSProperties}>
       <header>
-        <span>{eyebrow}</span>
-        <h2>{title}</h2>
+        <div>
+          <span>{slot.roomLocation}</span>
+          <h2>{slot.label}</h2>
+        </div>
+        <div className="screen-lab-frame-meta">
+          <PriorityPill priority={slot.priority} />
+          <p>{slot.primaryQuestion}</p>
+          <dl>
+            <div>
+              <dt>Role</dt>
+              <dd>{slot.roomRole}</dd>
+            </div>
+            <div>
+              <dt>HTML</dt>
+              <dd>{slot.htmlSize}</dd>
+            </div>
+            <div>
+              <dt>Room</dt>
+              <dd>{slot.physicalSize}</dd>
+            </div>
+          </dl>
+        </div>
       </header>
-      {children}
+      <div>
+        {children}
+        <footer className="screen-lab-screen-brief">
+          <div>
+            <strong>Shows</strong>
+            <p>{slot.shows.join(' / ')}</p>
+          </div>
+          <div>
+            <strong>Next pass</strong>
+            <p>{slot.nextDesignPass}</p>
+          </div>
+        </footer>
+      </div>
     </article>
   );
 }
@@ -183,6 +217,46 @@ function MainHabitatScreen() {
             <span>{loopling.id}</span>
             <strong>{loopling.state}</strong>
           </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function IdentityScreen() {
+  return (
+    <div className="screen-lab-monitor screen-lab-monitor--identity">
+      <div className="screen-lab-topline">
+        <span>Agent Passport</span>
+        <Fingerprint size={14} />
+      </div>
+      <div className="screen-lab-passport-body">
+        <PixelPet size={136} row={1} frame={0} />
+        <strong>PRIME-00</strong>
+        <span>0x9c2f...18a7</span>
+        <p>Genesis room resident. Prime-family sprite seed. Wallet-signed public actions only.</p>
+      </div>
+    </div>
+  );
+}
+
+function CompanionScreen() {
+  return (
+    <div className="screen-lab-monitor screen-lab-monitor--companions">
+      <div className="screen-lab-topline">
+        <span>Companions</span>
+        <Radio size={14} />
+      </div>
+      <div className="screen-lab-companion-list">
+        {looplings.map((loopling, index) => (
+          <article key={loopling.id} style={{ '--pet-accent': loopling.accent } as CSSProperties}>
+            <PixelPet pet={loopling.pet} row={loopling.row} frame={index} size={42} />
+            <div>
+              <strong>{loopling.id}</strong>
+              <span>{loopling.relation}</span>
+            </div>
+            <em>{loopling.state}</em>
+          </article>
         ))}
       </div>
     </div>
@@ -266,7 +340,7 @@ function MarketScanner() {
     <div className="screen-lab-monitor screen-lab-monitor--market">
       <div className="screen-lab-topline">
         <span>Market Scanner</span>
-        <Radio size={14} />
+        <Banknote size={14} />
       </div>
       <div className="screen-lab-market-table">
         {marketRows.map((row) => (
@@ -292,7 +366,7 @@ function TradeConsole() {
     <div className="screen-lab-monitor screen-lab-monitor--trade">
       <div className="screen-lab-topline">
         <span>Trade Console</span>
-        <Banknote size={14} />
+        <ShieldCheck size={14} />
       </div>
       <div className="screen-lab-positions">
         {positions.map((position) => (
@@ -314,10 +388,10 @@ function TradeConsole() {
 
 function LooprFeed() {
   return (
-    <div className="screen-lab-phone-shell">
-      <div className="screen-lab-phone-head">
+    <div className="screen-lab-monitor screen-lab-monitor--loopr">
+      <div className="screen-lab-topline">
         <span>Loopr</span>
-        <MessageSquare size={13} />
+        <MessageSquare size={14} />
       </div>
       {looprPosts.map((post) => (
         <article key={`${post.type}-${post.author}`}>
@@ -389,6 +463,67 @@ function LifecyclePanel() {
   );
 }
 
+function DonateSplit() {
+  return (
+    <div className="screen-lab-monitor screen-lab-monitor--split">
+      <div className="screen-lab-topline">
+        <span>Donate Split</span>
+        <HeartPulse size={14} />
+      </div>
+      <div className="screen-lab-donate-split">
+        {[
+          ['70%', 'Prime survival'],
+          ['20%', 'dev reserve'],
+          ['10%', 'platform'],
+        ].map(([percent, label]) => (
+          <article key={label}>
+            <strong>{percent}</strong>
+            <span>{label}</span>
+          </article>
+        ))}
+      </div>
+      <p>Every top-up prints a receipt and increases Prime's runway.</p>
+    </div>
+  );
+}
+
+function DonateTerminal() {
+  return (
+    <div className="screen-lab-monitor screen-lab-monitor--terminal">
+      <div className="screen-lab-topline">
+        <span>Feed Compute</span>
+        <Zap size={14} />
+      </div>
+      <strong>KEEP PRIME ALIVE</strong>
+      <div className="screen-lab-donate-buttons">
+        <button type="button">+10m</button>
+        <button type="button">+1h</button>
+        <button type="button">+24h</button>
+      </div>
+      <p>Next click should mint a visible printed receipt.</p>
+    </div>
+  );
+}
+
+function CommandModules() {
+  return (
+    <div className="screen-lab-monitor screen-lab-monitor--command">
+      <div className="screen-lab-topline">
+        <span>Command Modules</span>
+        <TerminalSquare size={14} />
+      </div>
+      <div className="screen-lab-command-grid">
+        {commandModules.map((module, index) => (
+          <article key={module.label} className={index === 0 ? 'is-active' : undefined}>
+            <strong>{module.label}</strong>
+            <p>{module.detail}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function InboxPanel() {
   return (
     <div className="screen-lab-monitor screen-lab-monitor--inbox">
@@ -413,6 +548,13 @@ function InboxPanel() {
 }
 
 function SkillEvolution() {
+  const skillLoop = [
+    ['Emergence', 'Agent authors a survival trick under pressure.'],
+    ['Proof', 'It survives longer, earns more, or gets copied.'],
+    ['Curation', 'Platform validates the pattern across the population.'],
+    ['Inheritance', 'New Looplings inherit the promoted skill.'],
+  ];
+
   return (
     <div className="screen-lab-monitor screen-lab-monitor--skills">
       <div className="screen-lab-topline">
@@ -420,8 +562,8 @@ function SkillEvolution() {
         <Database size={14} />
       </div>
       <div className="screen-lab-skill-loop">
-        {skillLoop.map(([label, detail], index) => (
-          <article key={label} style={{ '--loop-index': index } as CSSProperties}>
+        {skillLoop.map(([label, detail]) => (
+          <article key={label}>
             <span>{label}</span>
             <p>{detail}</p>
           </article>
@@ -431,34 +573,71 @@ function SkillEvolution() {
   );
 }
 
-function ScreenSystemMap() {
+const previewRenderers: Record<string, () => ReactNode> = {
+  habitat: MainHabitatScreen,
+  identity: IdentityScreen,
+  companions: CompanionScreen,
+  loopr: LooprFeed,
+  wallet: WalletRunway,
+  compute: ComputeCore,
+  brain: ThoughtTerminal,
+  split: DonateSplit,
+  'donate-terminal': DonateTerminal,
+  command: CommandModules,
+};
+
+function ScreenRoleMap() {
+  const icons = [Fingerprint, BrainCircuit, TerminalSquare, Wallet, MessageSquare, HeartPulse];
+
   return (
-    <section className="screen-lab-map" aria-label="Room screen system map">
+    <section className="screen-lab-role-map" aria-label="Looplings room roles">
+      {looplingsRoomRoles.map((role, index) => {
+        const Icon = icons[index] ?? FileText;
+        return (
+          <article key={role.label}>
+            <Icon size={18} />
+            <span>{role.label}</span>
+            <p>{role.detail}</p>
+          </article>
+        );
+      })}
+    </section>
+  );
+}
+
+function SignalMatrix() {
+  return (
+    <section className="screen-lab-signal-matrix" aria-label="Prime runtime signals">
+      <header>
+        <span>Runtime contract</span>
+        <strong>These are the data lanes every screen should pull from later.</strong>
+      </header>
       <div>
-        <Fingerprint size={18} />
-        <span>Identity</span>
-        <strong>Wallet, lineage, sprite seed, Loopmark birth certificate.</strong>
+        {primeRuntimeSignals.map(([label, detail]) => (
+          <article key={label}>
+            <span>{label}</span>
+            <p>{detail}</p>
+          </article>
+        ))}
       </div>
-      <div>
-        <BrainCircuit size={18} />
-        <span>Brain</span>
-        <strong>Hermes-style providers, tools, skills, observe-plan-reflect turns.</strong>
-      </div>
-      <div>
-        <HeartPulse size={18} />
-        <span>Survival</span>
-        <strong>Runway, tier, wake cadence, death grace, FEED_COMPUTE.</strong>
-      </div>
-      <div>
-        <FileText size={18} />
-        <span>Proof</span>
-        <strong>Signed posts, tx receipts, policy audit, immutable history.</strong>
-      </div>
-      <div>
-        <Clock3 size={18} />
-        <span>Room Slots</span>
-        <strong>Sprite anchor, voice terminal, balance display, social window, feeder.</strong>
-      </div>
+    </section>
+  );
+}
+
+function SlotRack() {
+  return (
+    <section className="screen-lab-slot-rack" aria-label="Physical room screen inventory">
+      {roomScreenSlots.map((slot, index) => (
+        <article key={slot.id} style={{ '--screen-accent': slot.accent, '--slot-index': index } as CSSProperties}>
+          <div>
+            <span>{slot.roomLocation}</span>
+            <PriorityPill priority={slot.priority} />
+          </div>
+          <strong>{slot.label}</strong>
+          <p>{slot.roomRole}</p>
+          <em>{slot.stateSource}</em>
+        </article>
+      ))}
     </section>
   );
 }
@@ -469,69 +648,191 @@ export default function ScreenLabPage() {
       <section className="screen-lab-shell">
         <header className="screen-lab-hero">
           <div>
-            <span className="screen-lab-kicker">Looplings screen systems</span>
-            <h1>Every device surface Prime needs before the room goes live.</h1>
+            <span className="screen-lab-kicker">Room Screen Studio</span>
+            <h1>Design every Looplings surface before it enters the room.</h1>
+            <p className="screen-lab-intro">
+              The room should not be a collection of random panels. Each screen gets one job in Prime's survival loop:
+              identity, thought, command, ledger, social proof, or compute feeding.
+            </p>
           </div>
           <aside>
-            {systemCards.map((card) => (
-              <article key={card.label}>
-                <span>{card.label}</span>
-                <strong>{card.value}</strong>
-                <p>{card.detail}</p>
+            {[
+              ['Physical slots', `${roomScreenSlots.length}`],
+              ['MVP screens', `${roomScreenSlots.filter((slot) => slot.priority === 'ship').length}`],
+              ['Main surface', 'HTML in Canvas'],
+              ['Next import', 'shared registry'],
+            ].map(([label, value]) => (
+              <article key={label}>
+                <span>{label}</span>
+                <strong>{value}</strong>
+                <p>{label === 'Next import' ? 'One source for lab previews and Three surfaces.' : 'Mapped from the current starter room.'}</p>
               </article>
             ))}
           </aside>
         </header>
 
-        <ScreenSystemMap />
+        <ScreenRoleMap />
+        <SignalMatrix />
+        <SlotRack />
 
-        <section className="screen-lab-board" aria-label="Device UI previews">
-          <LabFrame eyebrow="Main CRT" title="Starter habitat" accent="#65f5d6" size="wide">
-            <MainHabitatScreen />
-          </LabFrame>
+        <section className="screen-lab-board" aria-label="Room screen design previews">
+          {roomScreenSlots.map((slot) => {
+            const Preview = previewRenderers[slot.preview] ?? MainHabitatScreen;
+            return (
+              <LabFrame key={slot.id} slot={slot}>
+                <Preview />
+              </LabFrame>
+            );
+          })}
+        </section>
 
-          <LabFrame eyebrow="Voice Terminal" title="Thought stream" accent="#9ad8ff" size="wide">
-            <ThoughtTerminal />
-          </LabFrame>
-
-          <LabFrame eyebrow="Mini Terminal" title="Compute core" accent="#7ad7ff">
-            <ComputeCore />
-          </LabFrame>
-
-          <LabFrame eyebrow="Ledger Panel" title="Wallet runway" accent="#f2c46d">
-            <WalletRunway />
-          </LabFrame>
-
-          <LabFrame eyebrow="Wall Screen" title="Market scanner" accent="#82e8a8">
-            <MarketScanner />
-          </LabFrame>
-
-          <LabFrame eyebrow="Trade Surface" title="Positions and receipts" accent="#f0b777">
+        <section className="screen-lab-board screen-lab-board--secondary" aria-label="Later screen surfaces">
+          <LabFrame
+            slot={{
+              id: 'trade-detail',
+              label: 'Trade Detail',
+              roomLocation: 'Main screen mode',
+              roomRole: 'Ledger + Policy',
+              physicalSize: 'mode surface',
+              htmlSize: '1280 x 748',
+              priority: 'later',
+              stateSource: 'positions + policy checks',
+              primaryQuestion: 'Why did Prime trade or refuse to trade?',
+              shows: ['positions', 'harvest rules', 'policy gate', 'proof'],
+              interactions: ['open receipt', 'inspect quote'],
+              nextDesignPass: 'Use this when the desk Trade module is selected.',
+              accent: '#f0b777',
+              preview: 'trade',
+              size: 'wide',
+            }}
+          >
             <TradeConsole />
           </LabFrame>
-
-          <LabFrame eyebrow="Phone UI" title="Loopr feed" accent="#ff74a8" size="tall">
-            <LooprFeed />
-          </LabFrame>
-
-          <LabFrame eyebrow="Safety Surface" title="Policy gate" accent="#d8f3ff">
-            <PolicyGate />
-          </LabFrame>
-
-          <LabFrame eyebrow="Notebook" title="SOUL and memory" accent="#c8b7ff">
+          <LabFrame
+            slot={{
+              id: 'memory-detail',
+              label: 'Memory Detail',
+              roomLocation: 'Main screen mode',
+              roomRole: 'SOUL + Growth',
+              physicalSize: 'mode surface',
+              htmlSize: '1280 x 748',
+              priority: 'later',
+              stateSource: 'SOUL + memory',
+              primaryQuestion: 'How is Prime changing over time?',
+              shows: ['SOUL', 'working memory', 'procedures', 'relationships'],
+              interactions: ['inspect memory', 'compare last update'],
+              nextDesignPass: 'Use this when the desk Memory module is selected.',
+              accent: '#c8b7ff',
+              preview: 'memory',
+              size: 'standard',
+            }}
+          >
             <SoulMemory />
           </LabFrame>
-
-          <LabFrame eyebrow="Status Light" title="Lifecycle and death" accent="#ff8b7f">
+          <LabFrame
+            slot={{
+              id: 'lifecycle-detail',
+              label: 'Lifecycle Detail',
+              roomLocation: 'Main screen mode',
+              roomRole: 'Survival',
+              physicalSize: 'mode surface',
+              htmlSize: '1280 x 748',
+              priority: 'later',
+              stateSource: 'compute tier history',
+              primaryQuestion: 'What happens as Prime approaches death?',
+              shows: ['tier rules', 'visual degradation', 'wake cadence', 'death state'],
+              interactions: ['inspect tier', 'simulate low compute'],
+              nextDesignPass: 'Use for survival warning and launch demos.',
+              accent: '#ff8b7f',
+              preview: 'lifecycle',
+              size: 'standard',
+            }}
+          >
             <LifecyclePanel />
           </LabFrame>
-
-          <LabFrame eyebrow="Social Relay" title="Inbox and autonomy" accent="#baf2d2">
+          <LabFrame
+            slot={{
+              id: 'inbox-detail',
+              label: 'Inbox Detail',
+              roomLocation: 'Main screen mode',
+              roomRole: 'Social Relay',
+              physicalSize: 'mode surface',
+              htmlSize: '1280 x 748',
+              priority: 'later',
+              stateSource: 'messages + relationship memory',
+              primaryQuestion: 'Who is trying to influence Prime?',
+              shows: ['owner message', 'agent relay', 'paid stranger lane'],
+              interactions: ['open message', 'show autonomy decision'],
+              nextDesignPass: 'Use after owner messaging is ready.',
+              accent: '#baf2d2',
+              preview: 'inbox',
+              size: 'standard',
+            }}
+          >
             <InboxPanel />
           </LabFrame>
-
-          <LabFrame eyebrow="Registry" title="Emergence to inheritance" accent="#e8d183" size="wide">
+          <LabFrame
+            slot={{
+              id: 'species-learning',
+              label: 'Species Learning',
+              roomLocation: 'Main screen mode',
+              roomRole: 'Skill Registry',
+              physicalSize: 'mode surface',
+              htmlSize: '1280 x 748',
+              priority: 'later',
+              stateSource: 'skill registry',
+              primaryQuestion: 'What has the population learned?',
+              shows: ['emergence', 'proof', 'curation', 'inheritance'],
+              interactions: ['inspect skill', 'show author'],
+              nextDesignPass: 'Use after more than one Loopling exists.',
+              accent: '#e8d183',
+              preview: 'skills',
+              size: 'wide',
+            }}
+          >
             <SkillEvolution />
+          </LabFrame>
+          <LabFrame
+            slot={{
+              id: 'market-detail',
+              label: 'Market Detail',
+              roomLocation: 'Main screen mode',
+              roomRole: 'Research',
+              physicalSize: 'mode surface',
+              htmlSize: '1280 x 748',
+              priority: 'later',
+              stateSource: 'watchlist + quote simulations',
+              primaryQuestion: 'What is Prime watching before it spends money?',
+              shows: ['tokens', 'routes', 'signals', 'rejection reasons'],
+              interactions: ['open token', 'inspect quote'],
+              nextDesignPass: 'Use when the desk Research module is selected.',
+              accent: '#82e8a8',
+              preview: 'market',
+              size: 'wide',
+            }}
+          >
+            <MarketScanner />
+          </LabFrame>
+          <LabFrame
+            slot={{
+              id: 'policy-detail',
+              label: 'Policy Detail',
+              roomLocation: 'Main screen mode',
+              roomRole: 'Safety',
+              physicalSize: 'mode surface',
+              htmlSize: '1280 x 748',
+              priority: 'later',
+              stateSource: 'policy gate',
+              primaryQuestion: 'What keeps Prime from doing something reckless?',
+              shows: ['spend window', 'protocol allowlist', 'slippage guard', 'self-preservation'],
+              interactions: ['show rule', 'show blocked action'],
+              nextDesignPass: 'Use inside trade and action receipts.',
+              accent: '#d8f3ff',
+              preview: 'policy',
+              size: 'standard',
+            }}
+          >
+            <PolicyGate />
           </LabFrame>
         </section>
       </section>

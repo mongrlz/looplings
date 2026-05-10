@@ -48,6 +48,8 @@ Goal: finish the visible 3D room before live runtime wiring.
 
 - Build the room around Prime as the public demo surface.
 - Keep Prime's screen HTML/CSS-driven so it can later be fed by runtime state.
+- Use `/lab/screens` and `docs/LOOPLINGS_ROOM_SCREENS.md` as the source of
+  truth for deciding what belongs on each physical room screen.
 - Preserve this `state → HTML/CSS visual surface` pattern for the future
   media engine described in `docs/LOOPLINGS_MEDIA_ENGINE.md`.
 - Place room props and interaction affordances after the core composition works.

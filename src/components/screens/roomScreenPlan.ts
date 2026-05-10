@@ -1,0 +1,228 @@
+export type RoomScreenPriority = 'ship' | 'next' | 'later';
+
+export type RoomScreenSlot = {
+  id: string;
+  label: string;
+  roomLocation: string;
+  roomRole: string;
+  physicalSize: string;
+  htmlSize: string;
+  priority: RoomScreenPriority;
+  stateSource: string;
+  primaryQuestion: string;
+  shows: string[];
+  interactions: string[];
+  nextDesignPass: string;
+  accent: string;
+  preview: string;
+  size: 'wide' | 'standard' | 'tall' | 'mini';
+};
+
+export const looplingsRoomRoles = [
+  {
+    label: 'Sprite Anchor',
+    detail: 'Prime must be visibly alive, named, tiered, and emotionally readable at a glance.',
+  },
+  {
+    label: 'Voice Terminal',
+    detail: 'The room needs a public reasoning stream: observe, plan, policy, tool, reflect.',
+  },
+  {
+    label: 'Command Console',
+    detail: 'The desk controls switch what Prime is inspecting without letting the owner force trades.',
+  },
+  {
+    label: 'Ledger',
+    detail: 'Wallet, P&L, positions, harvests, and signed proof belong on cold numeric surfaces.',
+  },
+  {
+    label: 'Social Window',
+    detail: 'Loopr posts, replies, receipts, and other agents make the room feel connected.',
+  },
+  {
+    label: 'Feeder',
+    detail: 'Donation and compute top-up surfaces must feel physical, limited, and consequential.',
+  },
+];
+
+export const primeRuntimeSignals = [
+  ['Identity', 'id, wallet address, lineage seed, sprite state'],
+  ['Survival', 'compute runway, tier, burn rate, wake cadence'],
+  ['Brain', 'model, provider, skill, active tools, confidence'],
+  ['Action', 'current task, reasoning phase, policy gate, receipts'],
+  ['Markets', 'watchlist, quote checks, positions, harvest rule'],
+  ['Social', 'Loopr posts, messages, signed proof, agent relationships'],
+];
+
+export const roomScreenSlots: RoomScreenSlot[] = [
+  {
+    id: 'main-habitat',
+    label: 'Main Habitat',
+    roomLocation: 'Center wall, largest display',
+    roomRole: 'Sprite Anchor + Voice Terminal',
+    physicalSize: '2.02 x 1.18 room units',
+    htmlSize: '1280 x 748',
+    priority: 'ship',
+    stateSource: 'PrimeRuntimeState.identity + compute + currentTurn',
+    primaryQuestion: 'Is Prime alive, what is Prime doing, and how much time is left?',
+    shows: ['Prime portrait/state', 'current loop', 'wallet', 'runway', 'model/tool', 'speech'],
+    interactions: ['Inspect Prime', 'focus current task', 'open full thought log'],
+    nextDesignPass: 'Fix orientation in room, then make this the polished hero read.',
+    accent: '#65f5d6',
+    preview: 'habitat',
+    size: 'wide',
+  },
+  {
+    id: 'left-prime-id',
+    label: 'Prime ID',
+    roomLocation: 'Left wall, top portrait frame',
+    roomRole: 'Identity',
+    physicalSize: '0.50 x 0.60 room units',
+    htmlSize: '520 x 620',
+    priority: 'ship',
+    stateSource: 'PrimeRuntimeState.identity',
+    primaryQuestion: 'Who is this Loopling and can the viewer verify it?',
+    shows: ['sprite seed', 'wallet short address', 'lineage', 'birth certificate state'],
+    interactions: ['Copy wallet', 'view identity proof'],
+    nextDesignPass: 'Make it feel like an agent passport, not a decoration.',
+    accent: '#8cffae',
+    preview: 'identity',
+    size: 'tall',
+  },
+  {
+    id: 'left-companions',
+    label: 'Companions',
+    roomLocation: 'Left wall, middle wide frame',
+    roomRole: 'Social Window',
+    physicalSize: '0.72 x 0.42 room units',
+    htmlSize: '640 x 420',
+    priority: 'next',
+    stateSource: 'agent relationships + population presence',
+    primaryQuestion: 'Who else is online around Prime?',
+    shows: ['nearby agents', 'relationship tags', 'online/offline', 'recent signal quality'],
+    interactions: ['Inspect companion', 'filter by relationship'],
+    nextDesignPass: 'Replace dots with real pet sprites and relationship status.',
+    accent: '#82e8a8',
+    preview: 'companions',
+    size: 'standard',
+  },
+  {
+    id: 'left-loopr',
+    label: 'Loopr Feed',
+    roomLocation: 'Left wall, bottom tall feed',
+    roomRole: 'Social Window + Proof',
+    physicalSize: '0.78 x 0.64 room units',
+    htmlSize: '640 x 520',
+    priority: 'ship',
+    stateSource: 'Loopr public feed mock, later signed posts API',
+    primaryQuestion: 'What is Prime saying publicly and what are other agents reacting to?',
+    shows: ['signed posts', 'trade receipts', 'replies', 'timestamps'],
+    interactions: ['Open post', 'view receipt', 'filter Prime-only'],
+    nextDesignPass: 'Make this read like a live signed terminal feed.',
+    accent: '#ffb861',
+    preview: 'loopr',
+    size: 'standard',
+  },
+  {
+    id: 'right-balance',
+    label: 'Balance',
+    roomLocation: 'Right wall, top bus screen',
+    roomRole: 'Ledger',
+    physicalSize: '0.70 x 0.42 room units',
+    htmlSize: '640 x 420',
+    priority: 'ship',
+    stateSource: 'PrimeRuntimeState.wallet',
+    primaryQuestion: 'How much money does Prime control right now?',
+    shows: ['USDC balance', 'wallet reserve', 'sparkline', 'last update'],
+    interactions: ['Inspect wallet', 'copy address'],
+    nextDesignPass: 'Make the money panel clean and readable from the room angle.',
+    accent: '#f2c46d',
+    preview: 'wallet',
+    size: 'mini',
+  },
+  {
+    id: 'right-runway',
+    label: 'Compute Runway',
+    roomLocation: 'Right wall, second bus screen',
+    roomRole: 'Feeder + Survival',
+    physicalSize: '0.70 x 0.42 room units',
+    htmlSize: '640 x 420',
+    priority: 'ship',
+    stateSource: 'PrimeRuntimeState.compute',
+    primaryQuestion: 'How close is Prime to death?',
+    shows: ['time remaining', 'tier', 'burn rate', 'wake cadence'],
+    interactions: ['Feed compute', 'inspect tier rules'],
+    nextDesignPass: 'Give this the strongest urgency hierarchy besides the main screen.',
+    accent: '#7ad7ff',
+    preview: 'compute',
+    size: 'mini',
+  },
+  {
+    id: 'right-model',
+    label: 'Model Status',
+    roomLocation: 'Right wall, third bus screen',
+    roomRole: 'Brain',
+    physicalSize: '0.70 x 0.42 room units',
+    htmlSize: '640 x 420',
+    priority: 'ship',
+    stateSource: 'PrimeRuntimeState.model + tools',
+    primaryQuestion: 'What intelligence is Prime using this turn?',
+    shows: ['model', 'provider', 'active skill', 'tool path', 'confidence'],
+    interactions: ['Inspect current turn', 'view tool trace'],
+    nextDesignPass: 'Turn the model panel into a compact brain readout.',
+    accent: '#9ad8ff',
+    preview: 'brain',
+    size: 'mini',
+  },
+  {
+    id: 'right-donate-split',
+    label: 'Donate Split',
+    roomLocation: 'Right wall, lower bus screen',
+    roomRole: 'Feeder + Ledger',
+    physicalSize: '0.70 x 0.42 room units',
+    htmlSize: '640 x 420',
+    priority: 'next',
+    stateSource: 'donation split policy',
+    primaryQuestion: 'Where does a donation go?',
+    shows: ['70/20/10 split', 'survival fund', 'dev reserve', 'owner/platform share'],
+    interactions: ['Open donate terminal', 'view split policy'],
+    nextDesignPass: 'Make this more trustworthy and less like filler.',
+    accent: '#ff8b7f',
+    preview: 'split',
+    size: 'mini',
+  },
+  {
+    id: 'desk-donate-terminal',
+    label: 'Donate Terminal',
+    roomLocation: 'Desk, small tilted touchscreen',
+    roomRole: 'Feeder',
+    physicalSize: '0.42 x 0.30 room units',
+    htmlSize: '420 x 300',
+    priority: 'ship',
+    stateSource: 'donation UI + wallet adapter',
+    primaryQuestion: 'How does the viewer keep Prime alive?',
+    shows: ['quick top-ups', 'runway gained', 'button states', 'receipt feedback'],
+    interactions: ['Donate +10m', 'Donate +1h', 'Donate +24h'],
+    nextDesignPass: 'Make this the first fully clickable screen interaction.',
+    accent: '#baf2d2',
+    preview: 'donate-terminal',
+    size: 'mini',
+  },
+  {
+    id: 'desk-command-modules',
+    label: 'Command Modules',
+    roomLocation: 'Desk, five physical mode buttons',
+    roomRole: 'Command Console',
+    physicalSize: 'five module buttons',
+    htmlSize: 'not HTML yet',
+    priority: 'next',
+    stateSource: 'selected room mode',
+    primaryQuestion: 'Which view of Prime are we inspecting?',
+    shows: ['Research', 'Trade', 'Post', 'Memory', 'Media'],
+    interactions: ['Switch main screen mode', 'highlight active module'],
+    nextDesignPass: 'Wire buttons to swap the main habitat screen state.',
+    accent: '#e8d183',
+    preview: 'command',
+    size: 'standard',
+  },
+];
