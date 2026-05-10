@@ -3123,6 +3123,10 @@ a:hover {
   counter-reset: skill-step;
 }
 
+body.looplings-room-locked > div:not(#root)[style*="transform-style: preserve-3d"] {
+  pointer-events: none !important;
+}
+
 @media (max-width: 1200px) {
   .screen-lab-hero,
   .screen-lab-panel {

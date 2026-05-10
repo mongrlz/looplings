@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import type { ThreeEvent } from '@react-three/fiber';
 import { ContactShadows, PerspectiveCamera, Text, useGLTF } from '@react-three/drei';
@@ -1888,11 +1888,68 @@ function DeskMouseAsset() {
 function DeskKeyboardAsset() {
   const { scene } = useGLTF(DESK_KEYBOARD_MODEL_PATH);
   const keyboard = usePreparedDeskAsset(scene, true);
+  const groupRef = useRef<THREE.Group>(null);
   const [pressedKey, setPressedKey] = useState<string | null>(null);
+  const keyHitboxes = useMemo(() => {
+    keyboard.updateMatrixWorld(true);
+    const hitboxes: Array<{ name: string; center: THREE.Vector3; size: THREE.Vector3 }> = [];
+
+    keyboard.traverse((object) => {
+      if (!(object instanceof THREE.Mesh) || !object.name.startsWith('Key_')) return;
+      const bounds = new THREE.Box3().setFromObject(object);
+      const size = bounds.getSize(new THREE.Vector3());
+      if (size.lengthSq() < 0.0001) return;
+
+      hitboxes.push({
+        name: object.name,
+        center: bounds.getCenter(new THREE.Vector3()),
+        size,
+      });
+    });
+
+    return hitboxes;
+  }, [keyboard]);
+  const keyboardHitPlate = useMemo(() => {
+    if (keyHitboxes.length === 0) return null;
+    const bounds = new THREE.Box3();
+    keyHitboxes.forEach(({ center, size }) => {
+      bounds.expandByPoint(new THREE.Vector3(center.x - size.x / 2, center.y - size.y / 2, center.z - size.z / 2));
+      bounds.expandByPoint(new THREE.Vector3(center.x + size.x / 2, center.y + size.y / 2, center.z + size.z / 2));
+    });
+
+    return {
+      center: bounds.getCenter(new THREE.Vector3()),
+      size: bounds.getSize(new THREE.Vector3()),
+      top: bounds.max.y,
+    };
+  }, [keyHitboxes]);
+
+  const nearestKeyAtPoint = useCallback(
+    (point: THREE.Vector3) => {
+      const group = groupRef.current;
+      if (!group || keyHitboxes.length === 0) return null;
+      const localPoint = group.worldToLocal(point.clone());
+      let nearestName: string | null = null;
+      let nearestDistance = Infinity;
+
+      keyHitboxes.forEach(({ name, center, size }) => {
+        const dx = Math.max(Math.abs(localPoint.x - center.x) - size.x * 0.5, 0);
+        const dz = Math.max(Math.abs(localPoint.z - center.z) - size.z * 0.5, 0);
+        const distance = dx * dx + dz * dz;
+        if (distance < nearestDistance) {
+          nearestDistance = distance;
+          nearestName = name;
+        }
+      });
+
+      return nearestName;
+    },
+    [keyHitboxes],
+  );
 
   useEffect(() => {
     if (!pressedKey) return undefined;
-    const timeout = window.setTimeout(() => setPressedKey(null), 170);
+    const timeout = window.setTimeout(() => setPressedKey(null), 220);
     return () => window.clearTimeout(timeout);
   }, [pressedKey]);
 
@@ -1903,25 +1960,26 @@ function DeskKeyboardAsset() {
       const isKey = object.name.startsWith('Key_');
       const isActive = isKey && pressedKey === object.name;
       const restY = object.userData.restY as number | undefined;
-      if (isKey && typeof restY === 'number') object.position.y = restY - (isActive ? 0.018 : 0);
+      if (isKey && typeof restY === 'number') object.position.y = restY - (isActive ? 0.055 : 0);
 
       const material = object.material;
       if (isKey && material instanceof THREE.MeshStandardMaterial) {
         material.emissive.set(isActive ? '#8cffae' : '#000000');
-        material.emissiveIntensity = isActive ? 0.38 : 0;
+        material.emissiveIntensity = isActive ? 0.58 : 0;
       }
     });
   }, [keyboard, pressedKey]);
 
-  const handlePointer = (event: ThreeEvent<PointerEvent>) => {
-    const target = event.object;
-    if (!target.name.startsWith('Key_')) return;
+  const handlePointer = (event: ThreeEvent<PointerEvent>, explicitKeyName?: string) => {
+    const targetName = explicitKeyName ?? (event.object.name.startsWith('Key_') ? event.object.name : nearestKeyAtPoint(event.point));
+    if (!targetName?.startsWith('Key_')) return;
     event.stopPropagation();
-    setPressedKey(target.name);
+    setPressedKey(targetName);
   };
 
   return (
     <group
+      ref={groupRef}
       position={[0.14, DESK_SURFACE_Y + 0.018, -0.7 + DESK_WALL_OFFSET_Z]}
       rotation={[0, 0.02, 0]}
       scale={[0.36, 0.36, 0.36]}
@@ -1938,6 +1996,41 @@ function DeskKeyboardAsset() {
           document.body.style.cursor = '';
         }}
       />
+      {keyboardHitPlate ? (
+        <mesh
+          name="Keyboard_KeyBedHitbox"
+          position={[keyboardHitPlate.center.x, keyboardHitPlate.top + 0.04, keyboardHitPlate.center.z]}
+          onPointerDown={handlePointer}
+          onPointerOver={(event: ThreeEvent<PointerEvent>) => {
+            event.stopPropagation();
+            document.body.style.cursor = 'pointer';
+          }}
+          onPointerOut={() => {
+            document.body.style.cursor = '';
+          }}
+        >
+          <boxGeometry args={[keyboardHitPlate.size.x * 1.08, 0.12, keyboardHitPlate.size.z * 1.12]} />
+          <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+        </mesh>
+      ) : null}
+      {keyHitboxes.map(({ name, center, size }) => (
+        <mesh
+          key={name}
+          name={`${name}_Hitbox`}
+          position={center}
+          onPointerDown={(event: ThreeEvent<PointerEvent>) => handlePointer(event, name)}
+          onPointerOver={(event: ThreeEvent<PointerEvent>) => {
+            event.stopPropagation();
+            document.body.style.cursor = 'pointer';
+          }}
+          onPointerOut={() => {
+            document.body.style.cursor = '';
+          }}
+        >
+          <boxGeometry args={[size.x * 1.08, Math.max(size.y, 0.13), size.z * 1.08]} />
+          <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+        </mesh>
+      ))}
     </group>
   );
 }

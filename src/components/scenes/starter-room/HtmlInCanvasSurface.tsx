@@ -40,14 +40,22 @@ export function HtmlInCanvasSurface({ meshRef, width, height, html }: HtmlInCanv
     element.style.position = 'absolute';
     element.style.left = '0';
     element.style.top = '0';
-    element.style.pointerEvents = 'auto';
     element.style.transformOrigin = '0 0';
     element.style.opacity = '0';
     element.innerHTML = html;
+    const syncPointerEvents = () => {
+      if (element.style.pointerEvents !== 'none') {
+        element.style.setProperty('pointer-events', 'none', 'important');
+      }
+    };
+    syncPointerEvents();
 
     canvas.setAttribute('layoutsubtree', '');
     canvas.appendChild(element);
     elementRef.current = element;
+    const pointerObserver = new MutationObserver(syncPointerEvents);
+    pointerObserver.observe(element, { attributes: true, attributeFilter: ['style'] });
+    window.requestAnimationFrame(syncPointerEvents);
 
     const glTexture = context.createTexture();
     if (!glTexture) {
@@ -98,6 +106,7 @@ export function HtmlInCanvasSurface({ meshRef, width, height, html }: HtmlInCanv
 
     return () => {
       window.cancelAnimationFrame(raf);
+      pointerObserver.disconnect();
       canvas.removeEventListener('paint', handlePaint);
       element.remove();
       material.dispose();
