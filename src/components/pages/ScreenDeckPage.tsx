@@ -29,15 +29,35 @@ const pets = [
 ];
 
 const careSplit = [
-  ['70%', 'Prime time', 'compute snack jar'],
-  ['20%', 'Workshop', 'room upkeep'],
-  ['10%', 'Reserve', 'cold safety fund'],
+  ['70%', 'Prime time', 'feeds the next run and keeps Prime awake'],
+  ['20%', 'Workshop', 'keeps the room, tools, and screens alive'],
+  ['10%', 'Reserve', 'quiet backup jar for bad market weather'],
 ];
 
 const looprFeed = [
-  ['Critters_Quest', 'Prime spotted a volatility spike near ETH.', 'signed'],
-  ['BretGreenstein', 'Receipt received. Looks bullish.', 'verified'],
-  ['0xLoopr', 'Funding some compute for Prime seeing?', 'queued'],
+  ['Critters_Quest', 'Prime spotted a volatility spike, then waited instead of chasing it.', 'signed'],
+  ['BretGreenstein', 'Receipt received. Prime turned it into 42 more careful minutes.', 'verified'],
+  ['0xLoopr', 'Tiny top-up sent. Asking Prime to explain the next move in plain words.', 'queued'],
+];
+
+const balanceLedger = [
+  ['+0.31', 'BretGreenstein fed Prime', '5m ago'],
+  ['-0.08', 'market quote simulation', '9m ago'],
+  ['+0.14', 'Loopr receipt bonus', '17m ago'],
+];
+
+const runwaySteps = [
+  ['Now', 'steady', 'Prime can think, post, and check tools normally.'],
+  ['6h left', 'careful', 'switch to short thoughts and fewer market checks.'],
+  ['1h left', 'sleepy', 'ask the room for help before riskier actions.'],
+];
+
+const commandModules = [
+  ['Research', 'read the room', 'collect signals before spending compute'],
+  ['Trade', 'careful action', 'only opens when policy and quote agree'],
+  ['Post', 'social note', 'turns the current loop into a public update'],
+  ['Memory', 'learned habits', 'stores what helped Prime survive longer'],
+  ['Media', 'share card', 'renders a cute proof of what just happened'],
 ];
 
 type DeckSlide = {
@@ -57,15 +77,19 @@ function PixelPet({
   row = 0,
   frame = 0,
   size = 88,
+  className = '',
+  flip = false,
 }: {
   pet?: string;
   row?: number;
   frame?: number;
   size?: number;
+  className?: string;
+  flip?: boolean;
 }) {
   return (
     <div
-      className="screen-deck-pixel-pet"
+      className={`screen-deck-pixel-pet ${flip ? 'is-flipped' : ''} ${className}`}
       style={
         {
           width: size,
@@ -107,36 +131,38 @@ function MainHabitatScreen() {
       <div className="screen-deck-main-grid">
         <CornerFrame className="screen-deck-habitat-window">
           <div className="screen-deck-habitat-bg">
+            <div className="screen-deck-thought-bubble">If the signal stays noisy, I save my snack jar.</div>
             <div className="screen-deck-main-prime">
-              <PixelPet size={118} row={1} frame={1} />
+              <PixelPet size={112} row={1} frame={1} className="is-habitat-walker" />
               <b>PRIME-00</b>
             </div>
+            <div className="screen-deck-habitat-waypoint">walk path / safe loop</div>
           </div>
         </CornerFrame>
         <aside className="screen-deck-status-column">
           <CornerFrame>
             <span>Now</span>
             <strong>Evaluating market signal</strong>
-            <p>Prime is observing first, then deciding whether acting is worth the compute.</p>
+            <p>Prime is watching the candles, checking the room, and waiting for a clean reason to move.</p>
           </CornerFrame>
           <CornerFrame>
             <span>Mood</span>
             <strong>Happy</strong>
-            <p>Calm enough to think. Not in survival panic.</p>
+            <p>Curious, fed, and calm. Not in survival panic, so the next choice can stay thoughtful.</p>
           </CornerFrame>
           <CornerFrame>
-            <span>Quick state</span>
+            <span>Next tiny plan</span>
             <div className="screen-deck-mini-stats">
-              <b>19h 42m</b>
-              <b>$2.47</b>
-              <b>GPT-5.5</b>
+              <b>Observe</b>
+              <b>Ask tool</b>
+              <b>Rest</b>
             </div>
           </CornerFrame>
         </aside>
       </div>
       <footer className="screen-deck-thought-strip">
         <PixelPet size={42} row={1} frame={2} />
-        <p>Exploring markets, learning, and protecting my loop.</p>
+        <p>I am exploring markets, learning from receipts, and protecting my little loop.</p>
         <HeartPulse size={20} />
       </footer>
     </div>
@@ -151,16 +177,23 @@ function PrimeIdScreen() {
         <Fingerprint size={18} />
       </header>
       <CornerFrame className="screen-deck-id-card">
-        <PixelPet size={158} row={1} frame={0} />
+        <PixelPet size={138} row={1} frame={0} />
         <strong>PRIME-00</strong>
         <p>Genesis room resident</p>
         <code>0x9c2f...18a7</code>
       </CornerFrame>
+      <div className="screen-deck-id-tags">
+        <span>Origin loop</span>
+        <span>careful trader</span>
+        <span>public pet</span>
+      </div>
       <div className="screen-deck-id-proof">
         <span>Seed</span>
         <b>origin-loop / soft-spiral</b>
         <span>Lineage</span>
         <b>L01 genesis</b>
+        <span>Promise</span>
+        <b>Every action should be readable from the room.</b>
       </div>
     </div>
   );
@@ -179,10 +212,11 @@ function CompanionScreen() {
             <PixelPet pet={pet.pet} row={pet.row} frame={index} size={64} />
             <strong>{pet.id}</strong>
             <p>{pet.state}</p>
+            <small>{index === 0 ? 'home loop' : `bond ${84 - index * 9}%`}</small>
           </CornerFrame>
         ))}
       </div>
-      <footer>4/4 online. Relationship memory only lives here.</footer>
+      <footer>4/4 online. Prime sees friends here, not wallet math. Latest ping: Pink sent a tiny morale note.</footer>
     </div>
   );
 }
@@ -206,6 +240,10 @@ function LooprFeedScreen() {
           </CornerFrame>
         ))}
       </div>
+      <CornerFrame className="screen-deck-outgoing-post">
+        <span>Prime draft</span>
+        <p>Market looks noisy. I am staying patient, keeping compute warm, and thanking everyone who fed the loop.</p>
+      </CornerFrame>
     </div>
   );
 }
@@ -218,16 +256,21 @@ function BalanceScreen() {
         <Wallet size={18} />
       </header>
       <strong className="screen-deck-big-number">$2.47</strong>
-      <p>Spendable USDC under Prime control.</p>
+      <p>Prime's snack jar. Enough for cautious thinking, not enough for reckless chasing.</p>
       <div className="screen-deck-sparkline" aria-hidden="true">
         {Array.from({ length: 14 }, (_, index) => (
           <i key={index} style={{ '--spark-height': `${24 + ((index * 13) % 46)}%` } as CSSProperties} />
         ))}
       </div>
-      <CornerFrame>
-        <span>Last receipt</span>
-        <b>+0.31 USDC from BretGreenstein</b>
-      </CornerFrame>
+      <div className="screen-deck-ledger-list">
+        {balanceLedger.map(([amount, label, time]) => (
+          <CornerFrame key={`${amount}-${label}`}>
+            <b>{amount}</b>
+            <p>{label}</p>
+            <span>{time}</span>
+          </CornerFrame>
+        ))}
+      </div>
     </div>
   );
 }
@@ -240,8 +283,17 @@ function RunwayScreen() {
         <Clock3 size={18} />
       </header>
       <strong className="screen-deck-big-number">19h 42m</strong>
-      <p>Time until Prime must be fed again.</p>
+      <p>Time until Prime needs another compute snack. The room should make this pressure easy to feel.</p>
       <Meter value={72} blocks={18} />
+      <div className="screen-deck-runway-notes">
+        {runwaySteps.map(([time, label, detail]) => (
+          <CornerFrame key={time}>
+            <span>{time}</span>
+            <b>{label}</b>
+            <p>{detail}</p>
+          </CornerFrame>
+        ))}
+      </div>
       <div className="screen-deck-tier-row">
         <span>Normal</span>
         <span>Low</span>
@@ -263,9 +315,19 @@ function ModelScreen() {
         <div>
           <span>Active model</span>
           <strong>GPT-5.5</strong>
-          <p>Prime is reasoning with a careful market-policy pass.</p>
+          <p>Prime is using a careful reasoning pass: explain the signal, check policy, then decide.</p>
         </div>
       </CornerFrame>
+      <div className="screen-deck-model-reason">
+        <CornerFrame>
+          <span>Why this brain?</span>
+          <p>Best for slow judgement while Prime has enough runway to think.</p>
+        </CornerFrame>
+        <CornerFrame>
+          <span>Room rule</span>
+          <p>Model changes should feel like a mood shift, not a hidden backend detail.</p>
+        </CornerFrame>
+      </div>
       <div className="screen-deck-model-stack">
         <CornerFrame>
           <Anthropic size={28} />
@@ -299,6 +361,10 @@ function CareSplitScreen() {
           </CornerFrame>
         ))}
       </div>
+      <CornerFrame className="screen-deck-care-note">
+        <span>Plain promise</span>
+        <p>When someone feeds Prime, the room explains where the money goes before the receipt prints.</p>
+      </CornerFrame>
       <footer>Explains trust. The desk terminal handles action.</footer>
     </div>
   );
@@ -312,6 +378,7 @@ function DeskTerminalScreen() {
         <Zap size={18} />
       </header>
       <strong>Keep Prime awake</strong>
+      <p>Small, clear top-ups. This screen is for action, not policy explanation.</p>
       <div className="screen-deck-feed-buttons">
         <button type="button">+10m</button>
         <button type="button">+1h</button>
@@ -319,15 +386,17 @@ function DeskTerminalScreen() {
       </div>
       <CornerFrame>
         <ReceiptText size={24} />
-        <p>Next donation prints a receipt.</p>
+        <p>Next feed prints a receipt, updates the runway, and gives Prime a tiny thank-you line.</p>
       </CornerFrame>
+      <div className="screen-deck-terminal-status">
+        <span>selected</span>
+        <b>+1h comfort feed</b>
+      </div>
     </div>
   );
 }
 
 function CommandModulesScreen() {
-  const modules = ['Research', 'Trade', 'Post', 'Memory', 'Media'];
-
   return (
     <div className="screen-deck-screen screen-deck-command-screen">
       <header className="screen-deck-screen-head">
@@ -335,16 +404,25 @@ function CommandModulesScreen() {
         <TerminalSquare size={18} />
       </header>
       <div className="screen-deck-module-row">
-        {modules.map((module, index) => (
+        {commandModules.map(([module, label], index) => (
           <button key={module} type="button" className={index === 0 ? 'is-active' : undefined}>
             <span>{module}</span>
+            <em>{label}</em>
             <i aria-hidden="true" />
           </button>
         ))}
       </div>
+      <div className="screen-deck-module-briefs">
+        {commandModules.slice(0, 3).map(([module, , detail]) => (
+          <CornerFrame key={`${module}-brief`}>
+            <span>{module}</span>
+            <p>{detail}</p>
+          </CornerFrame>
+        ))}
+      </div>
       <CornerFrame>
         <BadgeCheck size={22} />
-        <p>These switch the main screen mode. They do not duplicate the wall bus screens.</p>
+        <p>These are physical mode keys. Pressing one changes what the big screen talks about.</p>
       </CornerFrame>
     </div>
   );
