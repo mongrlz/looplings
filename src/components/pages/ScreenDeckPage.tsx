@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import Anthropic from '@lobehub/icons/es/Anthropic';
 import Claude from '@lobehub/icons/es/Claude';
 import OpenAI from '@lobehub/icons/es/OpenAI';
@@ -63,14 +63,50 @@ const commandModules = [
 type DeckSlide = {
   slotId: string;
   title: string;
+  zone: string;
   roomPlacement: string;
   job: string;
   noDuplicate: string;
   dataLane: string;
-  ratio: string;
+  size: {
+    width: number;
+    height: number;
+  };
   accent: string;
   Component: () => ReactNode;
 };
+
+function useDeckPreviewScale(size: DeckSlide['size']) {
+  const slotRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+
+  useEffect(() => {
+    const slot = slotRef.current;
+    if (!slot) return undefined;
+    const slotElement = slot;
+
+    function updateScale() {
+      const bounds = slotElement.getBoundingClientRect();
+      const widthScale = Math.max(0, bounds.width - 8) / size.width;
+      const heightScale = Math.max(0, bounds.height - 8) / size.height;
+      const nextScale = Math.min(1, widthScale, heightScale);
+      setScale(Number(Math.max(0.24, nextScale).toFixed(4)));
+    }
+
+    updateScale();
+
+    const observer = new ResizeObserver(updateScale);
+    observer.observe(slotElement);
+    window.addEventListener('resize', updateScale);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', updateScale);
+    };
+  }, [size.height, size.width]);
+
+  return { slotRef, scale };
+}
 
 function PixelPet({
   pet = 'prime-test',
@@ -378,19 +414,15 @@ function DeskTerminalScreen() {
         <Zap size={18} />
       </header>
       <strong>Keep Prime awake</strong>
-      <p>Small, clear top-ups. This screen is for action, not policy explanation.</p>
+      <p>Pick one compute snack. Keep the choice simple.</p>
       <div className="screen-deck-feed-buttons">
         <button type="button">+10m</button>
         <button type="button">+1h</button>
         <button type="button">+24h</button>
       </div>
-      <CornerFrame>
-        <ReceiptText size={24} />
-        <p>Next feed prints a receipt, updates the runway, and gives Prime a tiny thank-you line.</p>
-      </CornerFrame>
       <div className="screen-deck-terminal-status">
-        <span>selected</span>
-        <b>+1h comfort feed</b>
+        <ReceiptText size={18} />
+        <b>Receipt prints after feed.</b>
       </div>
     </div>
   );
@@ -432,110 +464,120 @@ const screenDeckSlides: DeckSlide[] = [
   {
     slotId: 'main-habitat',
     title: 'Main Habitat',
+    zone: 'Center wall',
     roomPlacement: 'center wall, largest display',
     job: 'Prime presence, current loop, and emotional read.',
     noDuplicate: 'Only summary chips for wallet, runway, and model. Detail lives on the right wall.',
     dataLane: 'identity + currentTurn',
-    ratio: '1280 / 748',
+    size: { width: 1280, height: 748 },
     accent: '#65f5d6',
     Component: MainHabitatScreen,
   },
   {
     slotId: 'left-prime-id',
     title: 'Prime ID',
+    zone: 'Left wall stack',
     roomPlacement: 'left wall, top portrait',
     job: 'Identity, wallet proof, and lineage.',
     noDuplicate: 'No feed, no compute, no market state.',
     dataLane: 'identity',
-    ratio: '520 / 620',
+    size: { width: 520, height: 620 },
     accent: '#8cffae',
     Component: PrimeIdScreen,
   },
   {
     slotId: 'left-companions',
     title: 'Companions',
+    zone: 'Left wall stack',
     roomPlacement: 'left wall, middle frame',
     job: 'Nearby pets and relationship state.',
     noDuplicate: 'No public posts. This is relationship presence only.',
     dataLane: 'relationships',
-    ratio: '640 / 420',
+    size: { width: 640, height: 420 },
     accent: '#82e8a8',
     Component: CompanionScreen,
   },
   {
     slotId: 'left-loopr',
     title: 'Loopr Feed',
+    zone: 'Left wall stack',
     roomPlacement: 'left wall, bottom frame',
     job: 'Public posts, receipts, and social proof.',
     noDuplicate: 'No companion roster; only signed public activity.',
     dataLane: 'social + receipts',
-    ratio: '640 / 520',
+    size: { width: 640, height: 520 },
     accent: '#ffb861',
     Component: LooprFeedScreen,
   },
   {
     slotId: 'right-balance',
     title: 'Balance',
+    zone: 'Right wall bus',
     roomPlacement: 'right wall, top bus',
     job: 'Wallet balance and latest receipt.',
     noDuplicate: 'No runway countdown; this is the money jar only.',
     dataLane: 'wallet',
-    ratio: '640 / 420',
+    size: { width: 640, height: 420 },
     accent: '#f2c46d',
     Component: BalanceScreen,
   },
   {
     slotId: 'right-runway',
     title: 'Compute Runway',
+    zone: 'Right wall bus',
     roomPlacement: 'right wall, second bus',
     job: 'Time left before Prime needs compute.',
     noDuplicate: 'No wallet ledger; this is mortality pressure.',
     dataLane: 'compute',
-    ratio: '640 / 420',
+    size: { width: 640, height: 420 },
     accent: '#7ad7ff',
     Component: RunwayScreen,
   },
   {
     slotId: 'right-model',
     title: 'Model Status',
+    zone: 'Right wall bus',
     roomPlacement: 'right wall, third bus',
     job: 'Current AI model, provider, and tool path.',
     noDuplicate: 'No task feed; just the brain/tool readout.',
     dataLane: 'model + tools',
-    ratio: '640 / 420',
+    size: { width: 640, height: 420 },
     accent: '#9ad8ff',
     Component: ModelScreen,
   },
   {
     slotId: 'right-donate-split',
     title: 'Care Split',
+    zone: 'Right wall bus',
     roomPlacement: 'right wall, lower bus',
     job: 'Where donations go.',
     noDuplicate: 'No donation buttons; the desk terminal owns the action.',
     dataLane: 'donation policy',
-    ratio: '640 / 420',
+    size: { width: 640, height: 420 },
     accent: '#ff8b7f',
     Component: CareSplitScreen,
   },
   {
     slotId: 'desk-donate-terminal',
     title: 'Desk Terminal',
+    zone: 'Desk devices',
     roomPlacement: 'desk, tilted touchscreen',
     job: 'Clickable feeding action and receipt feedback.',
     noDuplicate: 'No split explanation; only fast top-up choices.',
     dataLane: 'donation action',
-    ratio: '420 / 300',
+    size: { width: 420, height: 300 },
     accent: '#baf2d2',
     Component: DeskTerminalScreen,
   },
   {
     slotId: 'desk-command-modules',
     title: 'Command Modules',
+    zone: 'Desk devices',
     roomPlacement: 'desk, five physical keys',
     job: 'Switch the main display mode.',
     noDuplicate: 'No data readout here. These are control labels.',
     dataLane: 'selectedRoomMode',
-    ratio: '900 / 320',
+    size: { width: 900, height: 320 },
     accent: '#e8d183',
     Component: CommandModulesScreen,
   },
@@ -547,6 +589,7 @@ export default function ScreenDeckPage() {
   const [activeIndex, setActiveIndex] = useState(0);
   const activeSlide = screenDeckSlides[activeIndex] ?? screenDeckSlides[0];
   const ActiveScreen = activeSlide.Component;
+  const { slotRef, scale } = useDeckPreviewScale(activeSlide.size);
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -572,15 +615,16 @@ export default function ScreenDeckPage() {
       <section className="screen-deck-shell">
         <aside className="screen-deck-sidebar">
           <span>Room surface deck</span>
-          <h1>One job per screen.</h1>
+          <h1>Four zones. Ten surfaces.</h1>
           <p>
-            Cycle through the actual room surfaces before we import them into the Three scene. Each display gets a unique
-            role so Prime's room feels intentional instead of repetitive.
+            The room has a few physical screen zones, but each display panel needs one clear job before it goes into the
+            Three scene.
           </p>
           <div className="screen-deck-count">
             <strong>{String(activeIndex + 1).padStart(2, '0')}</strong>
-            <span>/ {String(screenDeckSlides.length).padStart(2, '0')}</span>
+            <span>/ {String(screenDeckSlides.length).padStart(2, '0')} surfaces</span>
           </div>
+          <div className="screen-deck-zone-pill">{activeSlide.zone}</div>
           <div className="screen-deck-thumbs" aria-label="Screen deck slides">
             {screenDeckSlides.map((slide, index) => (
               <button
@@ -590,7 +634,10 @@ export default function ScreenDeckPage() {
                 onClick={() => setActiveIndex(index)}
               >
                 <span>{String(index + 1).padStart(2, '0')}</span>
-                <strong>{slotNames.get(slide.slotId) ?? slide.title}</strong>
+                <div>
+                  <strong>{slotNames.get(slide.slotId) ?? slide.title}</strong>
+                  <em>{slide.zone}</em>
+                </div>
               </button>
             ))}
           </div>
@@ -598,7 +645,7 @@ export default function ScreenDeckPage() {
         <section className="screen-deck-stage">
           <header>
             <div>
-              <span>{activeSlide.roomPlacement}</span>
+              <span>{activeSlide.zone} / {activeSlide.roomPlacement}</span>
               <h2>{activeSlide.title}</h2>
             </div>
             <div className="screen-deck-stage-actions">
@@ -610,16 +657,28 @@ export default function ScreenDeckPage() {
               </button>
             </div>
           </header>
-          <div
-            className={`screen-deck-preview is-${activeSlide.slotId}`}
-            style={
-              {
-                '--deck-accent': activeSlide.accent,
-                '--deck-ratio': activeSlide.ratio,
-              } as CSSProperties
-            }
-          >
-            <ActiveScreen />
+          <div className="screen-deck-preview-slot" ref={slotRef}>
+            <div
+              className="screen-deck-preview-scale"
+              style={{
+                width: activeSlide.size.width * scale,
+                height: activeSlide.size.height * scale,
+              }}
+            >
+              <div
+                className={`screen-deck-preview is-${activeSlide.slotId}`}
+                style={
+                  {
+                    '--deck-accent': activeSlide.accent,
+                    width: activeSlide.size.width,
+                    height: activeSlide.size.height,
+                    transform: `scale(${scale})`,
+                  } as CSSProperties
+                }
+              >
+                <ActiveScreen />
+              </div>
+            </div>
           </div>
           <footer className="screen-deck-brief">
             <article>
