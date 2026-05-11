@@ -5693,6 +5693,15 @@ body.looplings-room-locked > div:not(#root)[style*="transform-style: preserve-3d
     drop-shadow(1px 1px 0 rgba(15, 22, 14, 0.38));
 }
 
+.screen-deck-main-prime .screen-deck-pixel-pet {
+  filter:
+    drop-shadow(1px 0 0 #10170f)
+    drop-shadow(-1px 0 0 #10170f)
+    drop-shadow(0 1px 0 #10170f)
+    drop-shadow(0 -1px 0 #10170f)
+    drop-shadow(1px 1px 0 rgba(15, 22, 14, 0.28));
+}
+
 .screen-deck-pixel-pet.is-flipped img {
   transform: scaleX(-1);
 }
