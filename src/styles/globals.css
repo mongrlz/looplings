@@ -5568,16 +5568,11 @@ body.looplings-room-locked > div:not(#root)[style*="transform-style: preserve-3d
 .screen-deck-main-prime {
   position: absolute;
   left: 50%;
-  top: 48%;
+  top: 54%;
   display: grid;
   justify-items: center;
   gap: 8px;
   transform: translate(-50%, -50%);
-  animation: screen-deck-prime-walk 8.4s steps(48, end) infinite;
-}
-
-.screen-deck-main-prime .is-habitat-walker {
-  animation: screen-deck-prime-turn 8.4s steps(2, end) infinite;
 }
 
 .screen-deck-main-prime b,
@@ -5596,9 +5591,10 @@ body.looplings-room-locked > div:not(#root)[style*="transform-style: preserve-3d
 
 .screen-deck-thought-bubble {
   position: absolute;
-  right: 5%;
-  top: 9%;
-  max-width: 245px;
+  left: 50%;
+  top: -64px;
+  width: 244px;
+  max-width: 244px;
   padding: 8px 10px;
   border: 3px solid #10170f;
   background: #fff8df;
@@ -5606,12 +5602,13 @@ body.looplings-room-locked > div:not(#root)[style*="transform-style: preserve-3d
   font-size: 14px;
   line-height: 1.04;
   box-shadow: 3px 3px 0 rgba(21, 55, 24, 0.42);
+  transform: translateX(-32%);
 }
 
 .screen-deck-thought-bubble::after {
   content: "";
   position: absolute;
-  left: 20px;
+  left: 58px;
   bottom: -12px;
   width: 12px;
   height: 12px;
@@ -6155,41 +6152,6 @@ body.looplings-room-locked > div:not(#root)[style*="transform-style: preserve-3d
   }
   to {
     transform: translateX(calc(-100% + (100% / var(--atlas-cols))));
-  }
-}
-
-@keyframes screen-deck-prime-walk {
-  0%,
-  100% {
-    left: 40%;
-    top: 55%;
-    transform: translate(-50%, -50%);
-  }
-  25% {
-    left: 58%;
-    top: 47%;
-    transform: translate(-50%, -50%);
-  }
-  50% {
-    left: 63%;
-    top: 58%;
-    transform: translate(-50%, -50%);
-  }
-  75% {
-    left: 45%;
-    top: 46%;
-    transform: translate(-50%, -50%);
-  }
-}
-
-@keyframes screen-deck-prime-turn {
-  0%,
-  49% {
-    transform: scaleX(1);
-  }
-  50%,
-  100% {
-    transform: scaleX(-1);
   }
 }
 

@@ -131,12 +131,12 @@ function MainHabitatScreen() {
       <div className="screen-deck-main-grid">
         <CornerFrame className="screen-deck-habitat-window">
           <div className="screen-deck-habitat-bg">
-            <div className="screen-deck-thought-bubble">If the signal stays noisy, I save my snack jar.</div>
             <div className="screen-deck-main-prime">
-              <PixelPet size={112} row={1} frame={1} className="is-habitat-walker" />
+              <div className="screen-deck-thought-bubble">If the signal stays noisy, I save my snack jar.</div>
+              <PixelPet size={112} row={1} frame={1} />
               <b>PRIME-00</b>
             </div>
-            <div className="screen-deck-habitat-waypoint">walk path / safe loop</div>
+            <div className="screen-deck-habitat-waypoint">idle loop / safe thought</div>
           </div>
         </CornerFrame>
         <aside className="screen-deck-status-column">
