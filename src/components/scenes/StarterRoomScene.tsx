@@ -1,8 +1,19 @@
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type ComponentType } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import type { ThreeEvent } from '@react-three/fiber';
 import { ContactShadows, PerspectiveCamera, Text, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
+import {
+  BalanceScreen,
+  CareSplitScreen,
+  DeskTerminalScreen,
+  ModelScreen,
+  RoomCompanionScreen,
+  RoomMainHabitatScreen,
+  RoomLooprFeedScreen,
+  RoomPrimeIdScreen,
+  RunwayScreen,
+} from '@/components/pages/ScreenDeckPage';
 import { HtmlInCanvasSurface, flipPlaneUvY } from '@/components/scenes/starter-room/HtmlInCanvasSurface';
 
 const ROOM = {
@@ -67,6 +78,7 @@ const RECEIPT_TEXTURE_W = 768;
 const RECEIPT_TEXTURE_H = 300;
 const RECEIPT_PRINT_DURATION = 3.8;
 const RECEIPT_EVENT_INTERVAL = 8.2;
+
 const PRINTER_SCALE = 1.8;
 const RECEIPT_PAPER_MAX_LENGTH = 0.25;
 const RECEIPT_PAPER_WIDTH = 0.094;
@@ -1687,15 +1699,22 @@ function createMainScreenHtml() {
 }
 
 function HtmlInCanvasScreen({ meshRef }: { meshRef: { current: THREE.Mesh | null } }) {
-  const html = useMemo(() => createMainScreenHtml(), []);
+  const screenContent = useMemo(() => <RoomMainHabitatScreen />, []);
 
   return (
     <HtmlInCanvasSurface
       meshRef={meshRef}
       width={MAIN_SCREEN_HTML_W}
       height={MAIN_SCREEN_HTML_H}
-      html={html}
-    />
+      animated
+      brightness={1.08}
+      flicker={0}
+      phosphor={0}
+      reflection={0.35}
+      scanlines={0.65}
+    >
+      {screenContent}
+    </HtmlInCanvasSurface>
   );
 }
 
@@ -2151,6 +2170,16 @@ function WallTelemetryPanel({
 
 type WallHtmlScreenKind = 'prime-id' | 'companions' | 'loopr' | 'balance' | 'runway' | 'model' | 'donate';
 
+const wallScreenComponents: Record<WallHtmlScreenKind, ComponentType> = {
+  'prime-id': RoomPrimeIdScreen,
+  companions: RoomCompanionScreen,
+  loopr: RoomLooprFeedScreen,
+  balance: BalanceScreen,
+  runway: RunwayScreen,
+  model: ModelScreen,
+  donate: CareSplitScreen,
+};
+
 function createWallScreenHtml(kind: WallHtmlScreenKind) {
   const primeAtlas = `/pets/prime-test/state-atlas.png?v=${ATLAS_VERSION}`;
   const screenBody = {
@@ -2522,6 +2551,7 @@ function HtmlWallScreen({
   scale = [0.7, 0.46],
   htmlSize = [WALL_SCREEN_HTML_W, WALL_SCREEN_HTML_H],
   accent = '#8cffae',
+  rotateContent = false,
 }: {
   kind: WallHtmlScreenKind;
   position: [number, number, number];
@@ -2529,9 +2559,18 @@ function HtmlWallScreen({
   scale?: [number, number];
   htmlSize?: [number, number];
   accent?: string;
+  rotateContent?: boolean;
 }) {
   const screenRef = useRef<THREE.Mesh>(null);
-  const html = useMemo(() => createWallScreenHtml(kind), [kind]);
+  const ScreenComponent = wallScreenComponents[kind];
+  const screenContent = useMemo(
+    () => (
+      <div className={`room-html-screen-surface ${rotateContent ? 'is-rotated' : ''}`}>
+        <ScreenComponent />
+      </div>
+    ),
+    [ScreenComponent, rotateContent],
+  );
 
   return (
     <group position={position} rotation={rotation}>
@@ -2544,7 +2583,19 @@ function HtmlWallScreen({
         <planeGeometry args={[scale[0], scale[1], 40, 40]} onUpdate={flipPlaneUvY} />
         <meshBasicMaterial color="#111122" toneMapped={false} />
       </mesh>
-      <HtmlInCanvasSurface meshRef={screenRef} width={htmlSize[0]} height={htmlSize[1]} html={html} />
+      <HtmlInCanvasSurface
+        meshRef={screenRef}
+        width={htmlSize[0]}
+        height={htmlSize[1]}
+        animated
+        brightness={1.12}
+        flicker={0}
+        phosphor={0}
+        reflection={0.3}
+        scanlines={0.65}
+      >
+        {screenContent}
+      </HtmlInCanvasSurface>
       <mesh position={[0, 0, 0.026]}>
         <planeGeometry args={scale} />
         <meshBasicMaterial color={accent} transparent opacity={0.035} blending={THREE.AdditiveBlending} depthWrite={false} />
@@ -2625,24 +2676,25 @@ function LeftCommandColumn() {
     <group>
       <HtmlWallScreen
         kind="prime-id"
-        position={[-3.965, 2.42, -2.26]}
+        position={[-3.945, 2.39, -2.26]}
         rotation={leftWallRotation}
-        scale={[0.5, 0.6]}
+        scale={[0.62, 0.66]}
         htmlSize={[520, 620]}
         accent="#8cffae"
+        rotateContent
       />
       <HtmlWallScreen
         kind="companions"
-        position={[-3.965, 1.84, -2.26]}
+        position={[-3.945, 1.73, -2.26]}
         rotation={leftWallRotation}
-        scale={[0.72, 0.42]}
+        scale={[0.88, 0.54]}
         accent="#8cffae"
       />
       <HtmlWallScreen
         kind="loopr"
-        position={[-3.965, 1.18, -2.26]}
+        position={[-3.945, 1.06, -2.26]}
         rotation={leftWallRotation}
-        scale={[0.78, 0.64]}
+        scale={[0.9, 0.68]}
         htmlSize={[640, 520]}
         accent="#ffb861"
       />
@@ -2954,37 +3006,29 @@ function PrimeIdCard() {
 }
 
 function DonateTerminal() {
+  const screenRef = useRef<THREE.Mesh>(null);
+  const terminalContent = useMemo(() => <DeskTerminalScreen />, []);
+
   return (
     <group position={[0.94, DESK_SURFACE_Y + 0.145, -0.92 + DESK_WALL_OFFSET_Z]} rotation={[-0.18, -0.23, 0]} scale={0.62}>
       <Box position={[0, 0, -0.035]} scale={[0.46, 0.36, 0.08]} color="#111417" roughness={0.44} metalness={0.12} castShadow />
-      <mesh position={[0, 0.03, 0.018]} receiveShadow>
-        <planeGeometry args={[0.38, 0.24]} />
+      <mesh ref={screenRef} position={[0, 0.025, 0.018]} receiveShadow>
+        <planeGeometry args={[0.39, 0.28]} onUpdate={flipPlaneUvY} />
         <meshBasicMaterial color="#082116" toneMapped={false} />
       </mesh>
-      <Text position={[0, 0.12, 0.035]} fontSize={0.028} color="#e8d47c" anchorX="center" anchorY="middle">
-        DONATE COMPUTE
-      </Text>
-      <Text position={[0, 0.064, 0.035]} fontSize={0.02} color="#8cffae" anchorX="center" anchorY="middle">
-        KEEP PRIME ALIVE
-      </Text>
-      {['+10m', '+1h', '+24h'].map((label, index) => (
-        <group key={label} position={[-0.128 + index * 0.128, -0.02, 0.037]}>
-          <mesh>
-            <planeGeometry args={[0.09, 0.06]} />
-            <meshBasicMaterial color="#ead8a8" toneMapped={false} />
-          </mesh>
-          <Text position={[0, 0, 0.01]} fontSize={0.017} color="#17120c" anchorX="center" anchorY="middle">
-            {label}
-          </Text>
-        </group>
-      ))}
-      <mesh position={[0, -0.105, 0.038]}>
-        <planeGeometry args={[0.28, 0.052]} />
-        <meshBasicMaterial color="#2f7a3a" toneMapped={false} />
-      </mesh>
-      <Text position={[0, -0.105, 0.05]} fontSize={0.025} color="#f6e7b8" anchorX="center" anchorY="middle">
-        DONATE
-      </Text>
+      <HtmlInCanvasSurface
+        meshRef={screenRef}
+        width={420}
+        height={300}
+        animated
+        brightness={1.12}
+        flicker={0}
+        phosphor={0}
+        reflection={0.25}
+        scanlines={0.6}
+      >
+        {terminalContent}
+      </HtmlInCanvasSurface>
       <pointLight position={[0, 0, 0.22]} intensity={0.42} distance={0.74} color="#8cffae" />
     </group>
   );

@@ -60,7 +60,7 @@ const commandModules = [
   ['Media', 'share card', 'renders a cute proof of what just happened'],
 ];
 
-type DeckSlide = {
+export type DeckSlide = {
   slotId: string;
   title: string;
   zone: string;
@@ -157,7 +157,7 @@ function Meter({ value, blocks = 14 }: { value: number; blocks?: number }) {
   );
 }
 
-function MainHabitatScreen() {
+export function MainHabitatScreen() {
   return (
     <div className="screen-deck-screen screen-deck-main-screen">
       <header className="screen-deck-screen-head">
@@ -208,7 +208,58 @@ function MainHabitatScreen() {
   );
 }
 
-function PrimeIdScreen() {
+export function RoomMainHabitatScreen() {
+  return (
+    <div className="screen-deck-screen screen-deck-room-main-screen">
+      <header className="screen-deck-screen-head">
+        <span>Prime habitat diorama</span>
+        <strong>Live</strong>
+      </header>
+      <div className="screen-deck-room-main-grid">
+        <CornerFrame className="screen-deck-room-habitat-window">
+          <div className="screen-deck-room-habitat-bg">
+            <div className="screen-deck-room-thought-bubble">
+              <span>Prime thinks</span>
+              <p>If the signal stays noisy, I save my snack jar.</p>
+            </div>
+            <div className="screen-deck-room-prime-avatar" aria-hidden="true">
+              <i />
+            </div>
+            <b className="screen-deck-room-prime-label">PRIME-00</b>
+            <div className="screen-deck-habitat-waypoint">idle loop / safe thought</div>
+          </div>
+        </CornerFrame>
+        <aside className="screen-deck-status-column">
+          <CornerFrame>
+            <span>Now</span>
+            <strong>Evaluating market signal</strong>
+            <p>Prime is watching the candles, checking the room, and waiting for a clean reason to move.</p>
+          </CornerFrame>
+          <CornerFrame>
+            <span>Mood</span>
+            <strong>Happy</strong>
+            <p>Curious, fed, and calm. Not in survival panic, so the next choice can stay thoughtful.</p>
+          </CornerFrame>
+          <CornerFrame>
+            <span>Next tiny plan</span>
+            <div className="screen-deck-mini-stats">
+              <b>Observe</b>
+              <b>Ask tool</b>
+              <b>Rest</b>
+            </div>
+          </CornerFrame>
+        </aside>
+      </div>
+      <footer className="screen-deck-thought-strip">
+        <div className="screen-deck-room-mini-prime" aria-hidden="true" />
+        <p>I am exploring markets, learning from receipts, and protecting my little loop.</p>
+        <span>&lt;3</span>
+      </footer>
+    </div>
+  );
+}
+
+export function PrimeIdScreen() {
   return (
     <div className="screen-deck-screen screen-deck-id-screen">
       <header className="screen-deck-screen-head">
@@ -238,7 +289,31 @@ function PrimeIdScreen() {
   );
 }
 
-function CompanionScreen() {
+export function RoomPrimeIdScreen() {
+  return (
+    <div className="screen-deck-screen screen-deck-room-id-screen">
+      <header className="screen-deck-screen-head">
+        <span>Prime passport</span>
+        <b>#00</b>
+      </header>
+      <CornerFrame className="screen-deck-room-id-card">
+        <div className="screen-deck-room-prime-avatar is-card" aria-hidden="true">
+          <i />
+        </div>
+        <strong>PRIME-00</strong>
+        <p>Genesis room resident</p>
+        <code>0x9c2f...18a7</code>
+      </CornerFrame>
+      <div className="screen-deck-id-tags">
+        <span>Origin loop</span>
+        <span>careful trader</span>
+        <span>public pet</span>
+      </div>
+    </div>
+  );
+}
+
+export function CompanionScreen() {
   return (
     <div className="screen-deck-screen screen-deck-companion-screen">
       <header className="screen-deck-screen-head">
@@ -260,7 +335,32 @@ function CompanionScreen() {
   );
 }
 
-function LooprFeedScreen() {
+export function RoomCompanionScreen() {
+  return (
+    <div className="screen-deck-screen screen-deck-room-companion-screen">
+      <header className="screen-deck-screen-head">
+        <span>Nearby companions</span>
+        <Radio size={18} />
+      </header>
+      <div className="screen-deck-room-pet-list">
+        {pets.map((pet, index) => (
+          <CornerFrame key={pet.id}>
+            <span className="screen-deck-room-pet-badge" style={{ '--pet-accent': pet.accent } as CSSProperties}>
+              <i />
+            </span>
+            <div>
+              <strong>{pet.id}</strong>
+              <p>{index === 0 ? 'Prime is home and listening.' : `${pet.state}. Bond ${84 - index * 9}%.`}</p>
+            </div>
+          </CornerFrame>
+        ))}
+      </div>
+      <footer>4/4 online. This wall is for friendship signals, not wallet math.</footer>
+    </div>
+  );
+}
+
+export function LooprFeedScreen() {
   return (
     <div className="screen-deck-screen screen-deck-loopr-screen">
       <header className="screen-deck-screen-head">
@@ -287,7 +387,34 @@ function LooprFeedScreen() {
   );
 }
 
-function BalanceScreen() {
+export function RoomLooprFeedScreen() {
+  return (
+    <div className="screen-deck-screen screen-deck-room-loopr-screen">
+      <header className="screen-deck-screen-head">
+        <span>Loopr feed</span>
+        <MessageSquare size={18} />
+      </header>
+      <div className="screen-deck-room-feed-list">
+        {looprFeed.map(([author, body, proof], index) => (
+          <CornerFrame key={author}>
+            <b>{String(index + 1).padStart(2, '0')}</b>
+            <div>
+              <strong>@{author}</strong>
+              <p>{body}</p>
+            </div>
+            <span>{proof}</span>
+          </CornerFrame>
+        ))}
+      </div>
+      <CornerFrame className="screen-deck-room-feed-draft">
+        <span>Prime draft</span>
+        <p>I am staying patient, saving compute, and thanking everyone who feeds the loop.</p>
+      </CornerFrame>
+    </div>
+  );
+}
+
+export function BalanceScreen() {
   return (
     <div className="screen-deck-screen screen-deck-balance-screen">
       <header className="screen-deck-screen-head">
@@ -314,7 +441,7 @@ function BalanceScreen() {
   );
 }
 
-function RunwayScreen() {
+export function RunwayScreen() {
   return (
     <div className="screen-deck-screen screen-deck-runway-screen">
       <header className="screen-deck-screen-head">
@@ -342,7 +469,7 @@ function RunwayScreen() {
   );
 }
 
-function ModelScreen() {
+export function ModelScreen() {
   return (
     <div className="screen-deck-screen screen-deck-model-screen">
       <header className="screen-deck-screen-head">
@@ -384,7 +511,7 @@ function ModelScreen() {
   );
 }
 
-function CareSplitScreen() {
+export function CareSplitScreen() {
   return (
     <div className="screen-deck-screen screen-deck-care-screen">
       <header className="screen-deck-screen-head">
@@ -409,7 +536,7 @@ function CareSplitScreen() {
   );
 }
 
-function DeskTerminalScreen() {
+export function DeskTerminalScreen() {
   return (
     <div className="screen-deck-screen screen-deck-terminal-screen">
       <header className="screen-deck-screen-head">
@@ -431,7 +558,7 @@ function DeskTerminalScreen() {
   );
 }
 
-function CommandModulesScreen() {
+export function CommandModulesScreen() {
   return (
     <div className="screen-deck-screen screen-deck-command-screen">
       <header className="screen-deck-screen-head">
@@ -463,7 +590,7 @@ function CommandModulesScreen() {
   );
 }
 
-const screenDeckSlides: DeckSlide[] = [
+export const screenDeckSlides: DeckSlide[] = [
   {
     slotId: 'main-habitat',
     title: 'Main Habitat',

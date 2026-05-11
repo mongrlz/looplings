@@ -89,18 +89,30 @@ void main() {
 }
 `;
 
-export function createCRTMaterial(texture: THREE.Texture | null = null): THREE.ShaderMaterial {
+type CRTMaterialOptions = {
+  barrel?: number;
+  brightness?: number;
+  flicker?: number;
+  phosphor?: number;
+  reflection?: number;
+  scanlines?: number;
+};
+
+export function createCRTMaterial(
+  texture: THREE.Texture | null = null,
+  options: CRTMaterialOptions = {},
+): THREE.ShaderMaterial {
   return new THREE.ShaderMaterial({
     uniforms: {
       u_texture: { value: texture ?? new THREE.Texture() },
       u_time: { value: 0 },
       u_resolution: { value: new THREE.Vector2(720, 470) },
-      u_barrel: { value: 1 },
-      u_scanlines: { value: 1 },
-      u_phosphor: { value: 1 },
-      u_flicker: { value: 1 },
-      u_reflection: { value: 1 },
-      u_brightness: { value: 1.92 },
+      u_barrel: { value: options.barrel ?? 1 },
+      u_scanlines: { value: options.scanlines ?? 1 },
+      u_phosphor: { value: options.phosphor ?? 1 },
+      u_flicker: { value: options.flicker ?? 1 },
+      u_reflection: { value: options.reflection ?? 1 },
+      u_brightness: { value: options.brightness ?? 1.92 },
     },
     vertexShader,
     fragmentShader,
