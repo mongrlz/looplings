@@ -5464,12 +5464,15 @@ body.looplings-room-locked > div:not(#root)[style*="transform-style: preserve-3d
 
 .screen-deck-preview-scale {
   display: block;
+  align-self: center;
+  justify-self: center;
+  overflow: visible;
 }
 
 .screen-deck-preview {
-  align-self: center;
   box-sizing: border-box;
-  justify-self: center;
+  align-self: start;
+  justify-self: start;
   min-width: 0;
   padding: 14px;
   border: 5px solid #0f160e;
@@ -5655,26 +5658,47 @@ body.looplings-room-locked > div:not(#root)[style*="transform-style: preserve-3d
 .screen-deck-thought-bubble {
   position: absolute;
   left: 50%;
-  top: -64px;
-  width: 244px;
-  max-width: 244px;
-  padding: 8px 10px;
+  top: -78px;
+  display: grid;
+  width: 286px;
+  max-width: 286px;
+  gap: 4px;
+  padding: 8px 12px 10px;
   border: 3px solid #10170f;
   background: #fff8df;
+  background-image:
+    linear-gradient(rgba(49, 95, 54, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(49, 95, 54, 0.05) 1px, transparent 1px);
+  background-size: 8px 8px;
   color: #1a2417;
+  box-shadow:
+    0 0 0 3px rgba(255, 249, 224, 0.72),
+    5px 5px 0 rgba(21, 55, 24, 0.52);
+  transform: translateX(-38%);
+}
+
+.screen-deck-thought-bubble span {
+  color: #2f743e;
+  font-family: 'Press Start 2P', 'Pixelify Sans', monospace;
+  font-size: 6px;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+.screen-deck-thought-bubble p {
+  margin: 0;
+  color: #172015;
   font-size: 14px;
-  line-height: 1.04;
-  box-shadow: 3px 3px 0 rgba(21, 55, 24, 0.42);
-  transform: translateX(-32%);
+  line-height: 1.06;
 }
 
 .screen-deck-thought-bubble::after {
   content: "";
   position: absolute;
-  left: 58px;
-  bottom: -12px;
-  width: 12px;
-  height: 12px;
+  left: 78px;
+  bottom: -14px;
+  width: 14px;
+  height: 14px;
   border-right: 3px solid #10170f;
   border-bottom: 3px solid #10170f;
   background: #fff8df;

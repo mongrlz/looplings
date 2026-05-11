@@ -168,7 +168,10 @@ function MainHabitatScreen() {
         <CornerFrame className="screen-deck-habitat-window">
           <div className="screen-deck-habitat-bg">
             <div className="screen-deck-main-prime">
-              <div className="screen-deck-thought-bubble">If the signal stays noisy, I save my snack jar.</div>
+              <div className="screen-deck-thought-bubble">
+                <span>Prime thinks</span>
+                <p>If the signal stays noisy, I save my snack jar.</p>
+              </div>
               <PixelPet size={112} row={1} frame={1} />
               <b>PRIME-00</b>
             </div>
