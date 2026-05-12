@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Crosshair, HelpCircle, Maximize2, Minimize2, RotateCcw } from 'lucide-react';
+import { HelpCircle, Maximize2, Minimize2 } from 'lucide-react';
 import StarterRoomScene, {
   type FocusZoneId,
   type RoomInspectionSnapshot,
@@ -110,25 +110,6 @@ export default function StarterRoomPage() {
           title="How Looplings work"
         >
           <HelpCircle size={16} strokeWidth={2.4} aria-hidden />
-        </button>
-        <button
-          type="button"
-          className={`starter-room-control-button${inspectMode ? ' is-active' : ''}`}
-          onClick={() => setInspectMode((enabled) => !enabled)}
-          aria-label="Toggle room inspection mode"
-          aria-pressed={inspectMode}
-          title="Inspect room placement"
-        >
-          <Crosshair size={16} strokeWidth={2.4} aria-hidden />
-        </button>
-        <button
-          type="button"
-          className="starter-room-control-button"
-          onClick={() => setCameraResetTick((tick) => tick + 1)}
-          aria-label="Reset room view"
-          title="Reset room view"
-        >
-          <RotateCcw size={16} strokeWidth={2.4} aria-hidden />
         </button>
         <button
           type="button"

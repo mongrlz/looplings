@@ -3922,6 +3922,28 @@ function StarterRoomContent() {
   );
 }
 
+function AspectAwareFov() {
+  const { camera, size } = useThree();
+  useEffect(() => {
+    if (!(camera instanceof THREE.PerspectiveCamera)) return;
+    const aspect = size.width / size.height;
+    // Hold the horizontal FOV constant so narrower aspects (fullscreen on
+    // 16:10 displays) don't crop the left/right walls. CAMERA_FOV (46°)
+    // was tuned against a windowed ~1.78 aspect — derive the matching
+    // horizontal FOV at that reference and recompute vertical FOV for
+    // the current aspect.
+    const referenceAspect = 1.78;
+    const referenceHfovRad = 2 * Math.atan(Math.tan((CAMERA_FOV * Math.PI) / 360) * referenceAspect);
+    const targetVfovDeg = (2 * Math.atan(Math.tan(referenceHfovRad / 2) / aspect) * 180) / Math.PI;
+    const clamped = Math.max(40, Math.min(70, targetVfovDeg));
+    if (Math.abs(camera.fov - clamped) > 0.05) {
+      camera.fov = clamped;
+      camera.updateProjectionMatrix();
+    }
+  }, [camera, size]);
+  return null;
+}
+
 function StarterRoomScene({
   resetSignal,
   inspectMode = false,
@@ -3951,6 +3973,7 @@ function StarterRoomScene({
       >
         <color attach="background" args={['#07080c']} />
         <PerspectiveCamera makeDefault position={CAMERA_HOME_POSITION} fov={CAMERA_FOV} />
+        <AspectAwareFov />
         <StarterRoomContent />
         {inspectMode ? (
           <InspectionCamera resetSignal={resetSignal} onInspectCameraChange={onInspectCameraChange} />
