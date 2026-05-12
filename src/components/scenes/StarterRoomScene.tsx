@@ -2414,8 +2414,8 @@ function createWallScreenHtml(kind: WallHtmlScreenKind) {
         <div class="portrait-state">ALIVE / WATCHING</div>
       </div>
     `,
-    companions: `
-      <div class="screen-heading">COMPANIONS</div>
+    skills: `
+      <div class="screen-heading">SKILL LIBRARY</div>
       <div class="companion-grid">
         <div class="pet-dot pink"></div>
         <div class="pet-dot blue"></div>
@@ -2789,7 +2789,7 @@ function HtmlWallScreen({
 }) {
   const screenRef = useRef<THREE.Mesh>(null);
   const ScreenComponent = wallScreenComponents[kind];
-  const isLiveSurface = kind === 'prime-id' || kind === 'companions' || kind === 'loopr';
+  const isLiveSurface = kind === 'prime-id' || kind === 'skills' || kind === 'loopr';
   const screenContent = useMemo(
     () => (
       <div className={`room-html-screen-surface ${rotateContent ? 'is-rotated' : ''}`}>
