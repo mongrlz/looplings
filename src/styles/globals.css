@@ -1668,6 +1668,77 @@ a:hover {
 .room-intro-dot.is-mint { background: #82e8a8; box-shadow: 0 0 8px rgba(130, 232, 168, 0.7); }
 .room-intro-dot.is-amber { background: #ffb861; box-shadow: 0 0 8px rgba(255, 184, 97, 0.7); }
 
+.room-intro-flag-tip {
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(109, 215, 255, 0.28);
+  background: rgba(8, 28, 44, 0.42);
+  display: grid;
+  gap: 8px;
+}
+
+.room-intro-flag-label {
+  font-family: 'Pixelify Sans', monospace;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  color: #6dd7ff;
+  text-transform: uppercase;
+}
+
+.room-intro-flag-tip p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #d9efff;
+}
+
+.room-intro-flag-copy {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(109, 215, 255, 0.42);
+  background: rgba(0, 0, 0, 0.36);
+  color: #d9efff;
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 140ms, border-color 140ms;
+}
+
+.room-intro-flag-copy:hover {
+  background: rgba(0, 0, 0, 0.52);
+  border-color: rgba(109, 215, 255, 0.72);
+}
+
+.room-intro-flag-copy code {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 12px;
+  color: #b6e3ff;
+}
+
+.room-intro-flag-copy em {
+  font-style: normal;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: #6dd7ff;
+  text-transform: uppercase;
+}
+
+.room-intro-flag-note {
+  font-size: 11px !important;
+  color: #9cc8e6 !important;
+  line-height: 1.5;
+}
+
+.room-intro-flag-note strong {
+  color: #d9efff;
+}
+
 .room-intro-foot {
   margin: 0 0 18px;
   padding: 11px 13px;
