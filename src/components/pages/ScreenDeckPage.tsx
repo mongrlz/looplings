@@ -270,20 +270,24 @@ function CornerFrame({ children, className = '' }: { children: ReactNode; classN
   return <div className={`screen-deck-inner-frame ${className}`}>{children}</div>;
 }
 
-// Map Prime's currently-active tool to a row in the sprite atlas. Rows come
-// from /pets/prime-test/state-atlas.png — see SCREEN_STATES in
-// StarterRoomScene.tsx for the canonical mapping.
+// Map Prime's live state to a row in the sprite atlas. Atlas has 12
+// labeled rows (see /public/pets/prime-test/state-atlas.json). Tier
+// always wins so Prime visibly distresses when his runway runs out,
+// regardless of which tool he was using when it happened.
 const TOOL_ATLAS_ROW: Record<string, number> = {
-  research: 1, // thinking
-  trade: 3,    // trading
-  post: 6,     // posting
-  memory: 1,   // thinking (internal recall)
-  media: 2,    // acting (creating)
+  research: 1, // thinking focus
+  trade: 3,    // market scan
+  post: 6,     // posting send
+  memory: 7,   // receiving listen (recalling past inputs)
+  media: 2,    // tool action (creating media)
 };
 
-function rowForTool(tool: string | undefined): number {
-  if (!tool) return 1;
-  return TOOL_ATLAS_ROW[tool] ?? 1;
+function rowForState(tool: string | undefined, tier: string | undefined): number {
+  if (tier === 'dead') return 11;       // dead grounded
+  if (tier === 'critical') return 10;   // critical distress
+  if (tier === 'low_compute') return 9; // low compute conserve
+  if (!tool) return 0;                  // idle breathing
+  return TOOL_ATLAS_ROW[tool] ?? 0;
 }
 
 function ModelLogo({ provider, size = 28 }: { provider: LooplingsModel['provider']; size?: number }) {
@@ -354,7 +358,7 @@ export function MainHabitatScreen() {
                 <p>{state.thought.text}</p>
                 <i className="screen-deck-thought-tail" aria-hidden="true" />
               </div>
-              <PixelPet size={112} row={rowForTool(state.activeTool)} frame={1} />
+              <PixelPet size={112} row={rowForState(state.activeTool, state.compute.tier)} frame={1} />
               <b>{state.identity.name}</b>
             </div>
             <div className="screen-deck-habitat-waypoint">
