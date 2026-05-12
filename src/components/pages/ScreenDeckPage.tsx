@@ -270,6 +270,22 @@ function CornerFrame({ children, className = '' }: { children: ReactNode; classN
   return <div className={`screen-deck-inner-frame ${className}`}>{children}</div>;
 }
 
+// Map Prime's currently-active tool to a row in the sprite atlas. Rows come
+// from /pets/prime-test/state-atlas.png — see SCREEN_STATES in
+// StarterRoomScene.tsx for the canonical mapping.
+const TOOL_ATLAS_ROW: Record<string, number> = {
+  research: 1, // thinking
+  trade: 3,    // trading
+  post: 6,     // posting
+  memory: 1,   // thinking (internal recall)
+  media: 2,    // acting (creating)
+};
+
+function rowForTool(tool: string | undefined): number {
+  if (!tool) return 1;
+  return TOOL_ATLAS_ROW[tool] ?? 1;
+}
+
 function ModelLogo({ provider, size = 28 }: { provider: LooplingsModel['provider']; size?: number }) {
   const pickIcon = () => {
     switch (provider) {
@@ -338,7 +354,7 @@ export function MainHabitatScreen() {
                 <p>{state.thought.text}</p>
                 <i className="screen-deck-thought-tail" aria-hidden="true" />
               </div>
-              <PixelPet size={112} row={1} frame={1} />
+              <PixelPet size={112} row={rowForTool(state.activeTool)} frame={1} />
               <b>{state.identity.name}</b>
             </div>
             <div className="screen-deck-habitat-waypoint">
@@ -459,7 +475,7 @@ export function PrimeIdScreen() {
       </header>
       <div className="screen-deck-id-wide-grid">
         <CornerFrame className="screen-deck-id-card screen-deck-id-card-wide">
-          <PixelPet size={132} row={1} frame={0} />
+          <PixelPet size={132} row={0} frame={0} />
           <strong>PRIME-00</strong>
           <code>0x9c2f...18a7</code>
         </CornerFrame>
