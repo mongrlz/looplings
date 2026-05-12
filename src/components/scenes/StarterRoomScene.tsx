@@ -123,8 +123,8 @@ const FOCUS_POSES: Record<FocusZoneId, { position: THREE.Vector3; lookAt: THREE.
     lookAt: new THREE.Vector3(-3.945, 1.08, -1.0),
   },
   'desk-terminal': {
-    position: new THREE.Vector3(0.94, 1.45, -0.42),
-    lookAt: new THREE.Vector3(0.94, 0.96, -1.9),
+    position: new THREE.Vector3(0.28, 1.24, -1.18),
+    lookAt: new THREE.Vector3(0.39, 0.45, -3.01),
   },
   'desk-keys': {
     position: new THREE.Vector3(-0.42, 1.42, -0.32),
@@ -184,9 +184,13 @@ function useFocusZone(zone: FocusZoneId) {
   const onClick = useCallback(
     (event: ThreeEvent<MouseEvent>) => {
       event.stopPropagation();
-      setFocus(zone);
+      if (focus === zone) {
+        setFocus(null);
+      } else {
+        setFocus(zone);
+      }
     },
-    [setFocus, zone],
+    [focus, setFocus, zone],
   );
 
   const onPointerOver = useCallback(
@@ -2930,13 +2934,15 @@ function useLeftWallDrillZone(zone: FocusZoneId) {
   const onClick = useCallback(
     (event: ThreeEvent<MouseEvent>) => {
       event.stopPropagation();
-      if (isInLeftWallContext) {
+      if (focus === zone) {
+        setFocus('left-overview');
+      } else if (isInLeftWallContext) {
         setFocus(zone);
       } else {
         setFocus('left-overview');
       }
     },
-    [setFocus, zone, isInLeftWallContext],
+    [focus, setFocus, zone, isInLeftWallContext],
   );
 
   const onPointerOver = useCallback(
@@ -3437,21 +3443,46 @@ function WalletPuck() {
   );
 }
 
+const COMMAND_KEY_ACCENT: Record<CommandKeyMode, string> = {
+  research: '#78d7ff',
+  trade: '#8cffae',
+  post: '#ff6ea9',
+  memory: '#b792ff',
+  media: '#ffb861',
+};
+
+function CommandKeyScreenFlash({ accent }: { accent: string }) {
+  return (
+    <mesh position={[0, 0.025, 0.0495]}>
+      <planeGeometry args={[0.108, 0.118]} />
+      <meshBasicMaterial
+        color={accent}
+        transparent
+        opacity={0.48}
+        blending={THREE.AdditiveBlending}
+        depthWrite={false}
+        toneMapped={false}
+      />
+    </mesh>
+  );
+}
+
 function CommandKey({ mode, x, active }: { mode: CommandKeyMode; x: number; active: boolean }) {
   const screenRef = useRef<THREE.Mesh>(null);
   const content = useMemo(() => <CommandKeyMiniScreen mode={mode} active={active} />, [mode, active]);
+  const accent = COMMAND_KEY_ACCENT[mode];
 
   return (
     <group position={[x, 0, 0.004]}>
-      <Box position={[0, 0, 0]} scale={[0.13, 0.11, 0.09]} color="#271b12" roughness={0.52} metalness={0.16} castShadow />
-      <mesh ref={screenRef} position={[0, 0.003, 0.048]} receiveShadow>
-        <planeGeometry args={[0.105, 0.085, 8, 8]} onUpdate={flipPlaneUvY} />
+      <Box position={[0, 0.02, 0]} scale={[0.13, 0.15, 0.09]} color="#271b12" roughness={0.52} metalness={0.16} castShadow />
+      <mesh ref={screenRef} position={[0, 0.025, 0.048]} receiveShadow>
+        <planeGeometry args={[0.105, 0.115, 8, 8]} onUpdate={flipPlaneUvY} />
         <meshBasicMaterial color="#111122" toneMapped={false} />
       </mesh>
       <HtmlInCanvasSurface
         meshRef={screenRef}
         width={160}
-        height={130}
+        height={175}
         animated={false}
         brightness={1.0}
         flicker={0}
@@ -3464,10 +3495,7 @@ function CommandKey({ mode, x, active }: { mode: CommandKeyMode; x: number; acti
       >
         {content}
       </HtmlInCanvasSurface>
-      <mesh position={[0, -0.072, 0.052]}>
-        <sphereGeometry args={[0.014, 12, 8]} />
-        <meshBasicMaterial color={active ? '#70ffb0' : '#234a2a'} toneMapped={false} />
-      </mesh>
+      {active ? <CommandKeyScreenFlash accent={accent} /> : null}
     </group>
   );
 }
@@ -3483,7 +3511,7 @@ function ModeDock() {
       scale={isHovered ? 1.04 : 1}
       {...handlers}
     >
-      <Box position={[0, -0.045, -0.01]} scale={[0.86, 0.09, 0.19]} color="#16100b" roughness={0.48} metalness={0.12} castShadow />
+      <Box position={[0, -0.058, -0.01]} scale={[0.86, 0.09, 0.19]} color="#16100b" roughness={0.48} metalness={0.12} castShadow />
       {COMMAND_KEY_ORDER.map((mode, index) => (
         <CommandKey
           key={mode}

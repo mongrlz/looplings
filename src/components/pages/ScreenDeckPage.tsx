@@ -690,37 +690,20 @@ export function BalanceScreen() {
 
 export function RunwayScreen() {
   const state = useLooplingsState();
-  const meterValue = Math.min(100, Math.round((state.compute.runwayHours / 24) * 100));
   const tierLabels: Record<typeof state.compute.tier, string> = {
-    high: 'High',
-    normal: 'Normal',
-    low_compute: 'Low',
-    critical: 'Critical',
-    dead: 'Dead',
+    high: 'HIGH',
+    normal: 'NORMAL',
+    low_compute: 'LOW',
+    critical: 'CRITICAL',
+    dead: 'DEAD',
   };
   return (
     <div className="screen-deck-screen screen-deck-runway-screen">
-      <header className="screen-deck-screen-head">
-        <span>Energy clock</span>
-        <Clock3 size={18} />
-      </header>
-      <strong className="screen-deck-big-number">{state.compute.runwayLabel}</strong>
-      <p>Time until Prime needs another compute snack. The room should make this pressure easy to feel.</p>
-      <Meter value={meterValue} blocks={18} />
-      <div className="screen-deck-runway-notes">
-        {runwaySteps.map(([time, label, detail]) => (
-          <CornerFrame key={time}>
-            <span>{time}</span>
-            <b>{label}</b>
-            <p>{detail}</p>
-          </CornerFrame>
-        ))}
-      </div>
-      <div className="screen-deck-tier-row" data-tier={state.compute.tier}>
-        <span>Normal</span>
-        <span>Low</span>
-        <span>Critical</span>
-        <strong>{tierLabels[state.compute.tier]}</strong>
+      <span className="screen-deck-runway-label">ENERGY CLOCK</span>
+      <strong className="screen-deck-runway-time">{state.compute.runwayLabel}</strong>
+      <div className="screen-deck-runway-status" data-tier={state.compute.tier}>
+        <span>STATUS</span>
+        <b>{tierLabels[state.compute.tier]}</b>
       </div>
     </div>
   );
@@ -800,20 +783,15 @@ export function CareSplitScreen() {
 export function DeskTerminalScreen() {
   return (
     <div className="screen-deck-screen screen-deck-terminal-screen">
-      <header className="screen-deck-screen-head">
-        <span>Feed station</span>
-        <Zap size={18} />
-      </header>
-      <strong>Keep Prime awake</strong>
-      <p>Pick one compute snack. Keep the choice simple.</p>
+      <strong>Feed Prime</strong>
       <div className="screen-deck-feed-buttons">
         <button type="button">+10m</button>
         <button type="button">+1h</button>
         <button type="button">+24h</button>
       </div>
       <div className="screen-deck-terminal-status">
-        <ReceiptText size={18} />
-        <b>Receipt prints after feed.</b>
+        <ReceiptText size={20} />
+        <b>Receipt prints after feed</b>
       </div>
     </div>
   );
