@@ -17,12 +17,12 @@ import { ContactShadows, PerspectiveCamera, Text, useGLTF } from '@react-three/d
 import * as THREE from 'three';
 import {
   BalanceScreen,
-  CareSplitScreen,
   COMMAND_KEY_ORDER,
   CommandKeyMiniScreen,
   DeskTerminalScreen,
   LooprFeedScreen,
   MainHabitatScreen,
+  MarketWatchScreen,
   ModelScreen,
   PrimeIdScreen,
   RunwayScreen,
@@ -2405,7 +2405,7 @@ const wallScreenComponents: Record<WallHtmlScreenKind, ComponentType> = {
   balance: BalanceScreen,
   runway: RunwayScreen,
   model: ModelScreen,
-  donate: CareSplitScreen,
+  donate: MarketWatchScreen,
 };
 
 function createWallScreenHtml(kind: WallHtmlScreenKind) {
@@ -3068,7 +3068,7 @@ function LeftCommandColumn() {
         zone="left-care"
         y={1.08}
         z={frontColumnZ}
-        accent="#ff6e72"
+        accent="#8cffae"
         rotation={leftWallRotation}
         scale={uniformScale}
         htmlSize={uniformHtmlSize}

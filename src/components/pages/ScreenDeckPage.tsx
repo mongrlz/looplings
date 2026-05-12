@@ -36,6 +36,12 @@ import {
   useLooplingsState,
   type LooplingsModel,
 } from '@/lib/looplings-state';
+import {
+  formatJupiterChange,
+  formatJupiterPrice,
+  quoteAgeLabel,
+  useJupiterPrices,
+} from '@/lib/jupiter-prices';
 
 const STATE_ATLAS_VERSION = 'loopling-state-atlas-2026-05-02';
 
@@ -800,6 +806,98 @@ export function CareSplitScreen() {
   );
 }
 
+const HARVEST_THRESHOLD_PCT = 1.8;
+
+const marketSkillPairing: Record<
+  'SOL' | 'JUP' | 'BONK',
+  { skill: string; tool: SkillTool }
+> = {
+  SOL: { skill: 'Trend Scanner', tool: 'research' },
+  JUP: { skill: 'Volatility Mapper', tool: 'trade' },
+  BONK: { skill: 'Sentiment Sifter', tool: 'post' },
+};
+
+export function MarketWatchScreen() {
+  const state = useLooplingsState();
+  const { rows, lastUpdatedMs, live } = useJupiterPrices();
+
+  const focus =
+    [...rows]
+      .filter((row) => row.priceChange24h !== null)
+      .sort(
+        (a, b) =>
+          Math.abs(b.priceChange24h ?? 0) - Math.abs(a.priceChange24h ?? 0),
+      )[0] ?? rows[0];
+  const focusDriftAbs = Math.abs(focus?.priceChange24h ?? 0);
+  const policyReady = focusDriftAbs >= HARVEST_THRESHOLD_PCT;
+  const policyVerb = state.activeTool === 'trade' && policyReady ? 'READY' : 'WAITING';
+  const policyDetail = policyReady
+    ? `drift ${focusDriftAbs.toFixed(2)}% ≥ harvest rule (${HARVEST_THRESHOLD_PCT}%)`
+    : `drift ${focusDriftAbs.toFixed(2)}% < harvest rule (${HARVEST_THRESHOLD_PCT}%)`;
+
+  return (
+    <div className="screen-deck-screen screen-deck-care-screen">
+      <header className="screen-deck-screen-head">
+        <span>Market watch</span>
+        <strong
+          className={`screen-deck-live-indicator${
+            live ? '' : ' screen-deck-live-indicator--demo'
+          }`}
+        >
+          <i aria-hidden="true" />
+          {live ? 'Live · Jupiter' : 'Cached · Jupiter'}
+        </strong>
+      </header>
+      <div
+        className="screen-deck-care-grid"
+        style={{ gridTemplateColumns: '1fr 1fr 1fr' }}
+      >
+        {rows.map((row) => {
+          const skill =
+            marketSkillPairing[row.symbol as keyof typeof marketSkillPairing];
+          const change = row.priceChange24h ?? 0;
+          const positive = change >= 0;
+          return (
+            <CornerFrame key={row.mint}>
+              <strong
+                style={{
+                  fontSize: 28,
+                  lineHeight: 0.95,
+                  letterSpacing: '-0.02em',
+                  fontVariantNumeric: 'tabular-nums',
+                  overflowWrap: 'anywhere',
+                }}
+              >
+                {formatJupiterPrice(row.usdPrice)}
+              </strong>
+              <span>{row.symbol}/USDC</span>
+              <p
+                style={{
+                  color: positive ? '#1f7a3a' : '#a3372f',
+                  overflowWrap: 'anywhere',
+                }}
+              >
+                {formatJupiterChange(row.priceChange24h)}
+                {skill ? ` · ${skill.skill}` : ''}
+              </p>
+            </CornerFrame>
+          );
+        })}
+      </div>
+      <CornerFrame className="screen-deck-care-note">
+        <span>Prime is watching</span>
+        <p>
+          {focus?.symbol ?? '—'}/USDC · quote {quoteAgeLabel(lastUpdatedMs)} ·{' '}
+          {policyVerb} — {policyDetail}
+        </p>
+      </CornerFrame>
+      <footer>
+        Prime only acts when the room can read the reason. The desk terminal shows the receipt.
+      </footer>
+    </div>
+  );
+}
+
 export function DeskTerminalScreen() {
   return (
     <div className="screen-deck-screen screen-deck-terminal-screen">
@@ -936,15 +1034,15 @@ export const screenDeckSlides: DeckSlide[] = [
   },
   {
     slotId: 'right-donate-split',
-    title: 'Care Split',
+    title: 'Market Watch',
     zone: 'Right wall bus',
     roomPlacement: 'right wall, lower bus',
-    job: 'Where donations go.',
-    noDuplicate: 'No donation buttons; the desk terminal owns the action.',
-    dataLane: 'donation policy',
+    job: 'What Prime is watching and why he is waiting.',
+    noDuplicate: 'No donation buttons; the desk terminal owns the action. No price charts; this is watchlist and harvest policy only.',
+    dataLane: 'markets + harvest policy (Jupiter price API)',
     size: { width: 640, height: 420 },
-    accent: '#ff8b7f',
-    Component: CareSplitScreen,
+    accent: '#8cffae',
+    Component: MarketWatchScreen,
   },
   {
     slotId: 'desk-donate-terminal',
