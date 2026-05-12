@@ -55,6 +55,7 @@ void main() {
 
   float overscan = ${CRT_OVERSCAN.toFixed(2)};
   vec2 sampleUv = clamp((uv - 0.5) / overscan + 0.5, 0.0, 1.0);
+  sampleUv.y = 1.0 - sampleUv.y;
   vec3 col = pow(texture2D(u_texture, sampleUv).rgb, vec3(2.2));
 
   if (u_scanlines > 0.5) {

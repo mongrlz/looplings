@@ -1,4 +1,16 @@
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type ComponentType } from 'react';
+import {
+  Suspense,
+  createContext,
+  memo,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ComponentType,
+  type ReactNode,
+} from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import type { ThreeEvent } from '@react-three/fiber';
 import { ContactShadows, PerspectiveCamera, Text, useGLTF } from '@react-three/drei';
@@ -6,14 +18,18 @@ import * as THREE from 'three';
 import {
   BalanceScreen,
   CareSplitScreen,
+  COMMAND_KEY_ORDER,
+  CommandKeyMiniScreen,
   DeskTerminalScreen,
+  LooprFeedScreen,
+  MainHabitatScreen,
   ModelScreen,
-  RoomCompanionScreen,
-  RoomMainHabitatScreen,
-  RoomLooprFeedScreen,
-  RoomPrimeIdScreen,
+  PrimeIdScreen,
   RunwayScreen,
+  SkillLibraryScreen,
+  type CommandKeyMode,
 } from '@/components/pages/ScreenDeckPage';
+import { useLooplingsState } from '@/lib/looplings-state';
 import { HtmlInCanvasSurface, flipPlaneUvY } from '@/components/scenes/starter-room/HtmlInCanvasSurface';
 
 const ROOM = {
@@ -49,6 +65,160 @@ const CAMERA_LIMITS = {
   pitchUp: 0.18,
   pitchDown: -0.16,
 };
+export type FocusZoneId =
+  | 'center'
+  | 'left-overview'
+  | 'left-passport'
+  | 'left-skills'
+  | 'left-loopr'
+  | 'left-balance'
+  | 'left-model'
+  | 'left-care'
+  | 'desk-terminal'
+  | 'desk-keys'
+  | 'desk-compute';
+
+export const FOCUS_ZONE_GROUPS = {
+  left: [
+    'left-passport',
+    'left-skills',
+    'left-loopr',
+    'left-balance',
+    'left-model',
+    'left-care',
+  ] as const,
+};
+
+const FOCUS_POSES: Record<FocusZoneId, { position: THREE.Vector3; lookAt: THREE.Vector3 }> = {
+  center: {
+    position: new THREE.Vector3(-0.33, 2.13, -0.25),
+    lookAt: new THREE.Vector3(-0.33, 2.13, -2.72),
+  },
+  'left-overview': {
+    position: new THREE.Vector3(-1.7, 1.7, -1.63),
+    lookAt: new THREE.Vector3(-3.945, 1.7, -1.63),
+  },
+  'left-passport': {
+    position: new THREE.Vector3(-3.165, 2.32, -2.26),
+    lookAt: new THREE.Vector3(-3.945, 2.32, -2.26),
+  },
+  'left-skills': {
+    position: new THREE.Vector3(-3.165, 1.7, -2.26),
+    lookAt: new THREE.Vector3(-3.945, 1.7, -2.26),
+  },
+  'left-loopr': {
+    position: new THREE.Vector3(-3.165, 1.08, -2.26),
+    lookAt: new THREE.Vector3(-3.945, 1.08, -2.26),
+  },
+  'left-balance': {
+    position: new THREE.Vector3(-3.165, 2.32, -1.0),
+    lookAt: new THREE.Vector3(-3.945, 2.32, -1.0),
+  },
+  'left-model': {
+    position: new THREE.Vector3(-3.165, 1.7, -1.0),
+    lookAt: new THREE.Vector3(-3.945, 1.7, -1.0),
+  },
+  'left-care': {
+    position: new THREE.Vector3(-3.165, 1.08, -1.0),
+    lookAt: new THREE.Vector3(-3.945, 1.08, -1.0),
+  },
+  'desk-terminal': {
+    position: new THREE.Vector3(0.94, 1.45, -0.42),
+    lookAt: new THREE.Vector3(0.94, 0.96, -1.9),
+  },
+  'desk-keys': {
+    position: new THREE.Vector3(-0.42, 1.42, -0.32),
+    lookAt: new THREE.Vector3(-0.42, 0.92, -1.55),
+  },
+  'desk-compute': {
+    position: new THREE.Vector3(-0.75, 1.45, -0.42),
+    lookAt: new THREE.Vector3(-0.75, 0.96, -1.9),
+  },
+};
+
+const LEFT_WALL_ZONE_ORDER: FocusZoneId[] = FOCUS_ZONE_GROUPS.left as unknown as FocusZoneId[];
+
+type RoomFocusContextValue = {
+  focus: FocusZoneId | null;
+  setFocus: (zone: FocusZoneId | null) => void;
+  hovered: FocusZoneId | null;
+  setHovered: (zone: FocusZoneId | null) => void;
+};
+
+const RoomFocusContext = createContext<RoomFocusContextValue>({
+  focus: null,
+  setFocus: () => {},
+  hovered: null,
+  setHovered: () => {},
+});
+
+function useRoomFocusValue(
+  controlledFocus?: FocusZoneId | null,
+  onFocusChange?: (zone: FocusZoneId | null) => void,
+): RoomFocusContextValue {
+  const [internalFocus, setInternalFocus] = useState<FocusZoneId | null>(null);
+  const [hovered, setHovered] = useState<FocusZoneId | null>(null);
+  const isControlled = controlledFocus !== undefined;
+  const focus = isControlled ? controlledFocus : internalFocus;
+  const setFocus = useCallback(
+    (zone: FocusZoneId | null) => {
+      if (isControlled) {
+        onFocusChange?.(zone);
+      } else {
+        setInternalFocus(zone);
+        onFocusChange?.(zone);
+      }
+    },
+    [isControlled, onFocusChange],
+  );
+  return useMemo(
+    () => ({ focus, setFocus, hovered, setHovered }),
+    [focus, setFocus, hovered],
+  );
+}
+
+function useFocusZone(zone: FocusZoneId) {
+  const { focus, setFocus, hovered, setHovered } = useContext(RoomFocusContext);
+  const { gl } = useThree();
+
+  const onClick = useCallback(
+    (event: ThreeEvent<MouseEvent>) => {
+      event.stopPropagation();
+      setFocus(zone);
+    },
+    [setFocus, zone],
+  );
+
+  const onPointerOver = useCallback(
+    (event: ThreeEvent<PointerEvent>) => {
+      event.stopPropagation();
+      gl.domElement.style.cursor = 'pointer';
+      if (hovered !== zone) setHovered(zone);
+    },
+    [gl, hovered, setHovered, zone],
+  );
+
+  const onPointerOut = useCallback(
+    (event: ThreeEvent<PointerEvent>) => {
+      event.stopPropagation();
+      gl.domElement.style.cursor = '';
+      if (hovered === zone) setHovered(null);
+    },
+    [gl, hovered, setHovered, zone],
+  );
+
+  const isFocused = focus === zone;
+  // Disable hover scaling when we're already zoomed into this zone — the camera is
+  // already up close, the scale-up just causes a distracting bounce.
+  const isHovered = hovered === zone && !isFocused;
+
+  return {
+    handlers: { onClick, onPointerOver, onPointerOut },
+    isFocused,
+    isHovered,
+  };
+}
+
 const INSPECT_CAMERA_HOME = new THREE.Vector3(...CAMERA_HOME_POSITION);
 const INSPECT_CAMERA_LIMITS = {
   x: [-3.45, 3.45],
@@ -1699,7 +1869,14 @@ function createMainScreenHtml() {
 }
 
 function HtmlInCanvasScreen({ meshRef }: { meshRef: { current: THREE.Mesh | null } }) {
-  const screenContent = useMemo(() => <RoomMainHabitatScreen />, []);
+  const screenContent = useMemo(
+    () => (
+      <div className="room-html-screen-surface">
+        <MainHabitatScreen />
+      </div>
+    ),
+    [],
+  );
 
   return (
     <HtmlInCanvasSurface
@@ -1712,6 +1889,8 @@ function HtmlInCanvasScreen({ meshRef }: { meshRef: { current: THREE.Mesh | null
       phosphor={0}
       reflection={0.35}
       scanlines={0.65}
+      uploadFps={5}
+      warmupFrames={6}
     >
       {screenContent}
     </HtmlInCanvasSurface>
@@ -1720,13 +1899,19 @@ function HtmlInCanvasScreen({ meshRef }: { meshRef: { current: THREE.Mesh | null
 
 function Casing() {
   const screenRef = useRef<THREE.Mesh>(null);
+  const { handlers, isHovered } = useFocusZone('center');
 
   return (
-    <group position={[0.18, DESK_SURFACE_Y + 1.2, -1.74 + DESK_WALL_OFFSET_Z]} rotation={[0, 0, 0]} scale={[1.28, 1.28, 1]}>
+    <group
+      position={[0.18, DESK_SURFACE_Y + 1.2, -1.74 + DESK_WALL_OFFSET_Z]}
+      rotation={[0, 0, 0]}
+      scale={isHovered ? [1.296, 1.296, 1] : [1.28, 1.28, 1]}
+      {...handlers}
+    >
       <Box position={[0, 0, 0.226]} scale={[2.08, 1.22, 0.04]} color="#050505" roughness={0.6} />
 
       <mesh ref={screenRef} position={[0, 0, 0.285]} castShadow={false} receiveShadow>
-        <planeGeometry args={[2.02, 1.18, 40, 40]} onUpdate={flipPlaneUvY} />
+        <planeGeometry args={[2.02, 1.18]} onUpdate={flipPlaneUvY} />
         <meshBasicMaterial color="#111122" toneMapped={false} />
       </mesh>
       <HtmlInCanvasScreen meshRef={screenRef} />
@@ -1735,25 +1920,6 @@ function Casing() {
         <planeGeometry args={[2.02, 1.18]} />
         <meshBasicMaterial color="#9fffee" transparent opacity={0.025} blending={THREE.AdditiveBlending} depthWrite={false} />
       </mesh>
-      <Text
-        position={[0, -0.88, 0.3]}
-        fontSize={0.045}
-        color="#ba5b7f"
-        anchorX="center"
-        anchorY="middle"
-      >
-        LOOPVISION
-      </Text>
-      <mesh position={[0.9, -0.88, 0.31]}>
-        <boxGeometry args={[0.08, 0.025, 0.01]} />
-        <meshBasicMaterial color="#78ff9c" toneMapped={false} />
-      </mesh>
-      <mesh position={[1.03, -0.88, 0.31]}>
-        <boxGeometry args={[0.08, 0.025, 0.01]} />
-        <meshBasicMaterial color="#ff5d9b" toneMapped={false} />
-      </mesh>
-      <Box position={[-0.68, -0.86, -0.06]} scale={[0.34, 0.08, 0.24]} color={ROOM.monitorEdge} roughness={0.62} />
-      <Box position={[0.68, -0.86, -0.06]} scale={[0.34, 0.08, 0.24]} color={ROOM.monitorEdge} roughness={0.62} />
     </group>
   );
 }
@@ -1791,7 +1957,7 @@ function DeskMatAsset() {
   return (
     <primitive
       object={mat}
-      position={[0.46, DESK_SURFACE_Y + 0.004, -0.78 + DESK_WALL_OFFSET_Z]}
+      position={[0.46, DESK_SURFACE_Y + 0.004, -0.95 + DESK_WALL_OFFSET_Z]}
       rotation={[0, -0.01, 0]}
       scale={[0.88, 0.88, 0.88]}
     />
@@ -1836,9 +2002,9 @@ function DeskMouseAsset() {
   return (
     <primitive
       object={mouse}
-      position={[1.32, DESK_SURFACE_Y + 0.01, -0.64 + DESK_WALL_OFFSET_Z]}
+      position={[1.32, DESK_SURFACE_Y - 0.022, -0.82 + DESK_WALL_OFFSET_Z]}
       rotation={[0, -0.18, 0]}
-      scale={[0.66, 0.66, 0.66]}
+      scale={[0.42, 0.42, 0.42]}
       onPointerDown={(event: ThreeEvent<PointerEvent>) => {
         event.stopPropagation();
         setIsPressed(true);
@@ -1922,6 +2088,64 @@ function DeskKeyboardAsset() {
     return () => window.clearTimeout(timeout);
   }, [pressedKey]);
 
+  // Map a physical keydown to the matching 3D key mesh in the GLB.
+  useEffect(() => {
+    const keyNames = new Set(keyHitboxes.map((h) => h.name));
+    if (keyNames.size === 0) return undefined;
+
+    const mapEventKey = (event: KeyboardEvent): string | null => {
+      const target = event.target;
+      if (
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target instanceof HTMLSelectElement ||
+        (target instanceof HTMLElement && target.isContentEditable)
+      ) {
+        return null;
+      }
+
+      const k = event.key;
+      const candidates: string[] = [];
+      if (/^[a-zA-Z]$/.test(k)) {
+        const upper = k.toUpperCase();
+        candidates.push(`Key_${upper}`, `Key_${k.toLowerCase()}`, `Key${upper}`);
+      } else if (/^[0-9]$/.test(k)) {
+        candidates.push(`Key_${k}`, `Key_Digit${k}`, `Digit${k}`);
+      } else {
+        const specials: Record<string, string[]> = {
+          ' ': ['Key_Space', 'Space'],
+          Enter: ['Key_Enter', 'Enter', 'Key_Return', 'Return'],
+          Backspace: ['Key_Backspace', 'Backspace', 'Key_Delete'],
+          Tab: ['Key_Tab', 'Tab'],
+          Escape: ['Key_Escape', 'Escape'],
+          Shift: ['Key_Shift', 'Key_ShiftLeft', 'Key_ShiftRight'],
+          Control: ['Key_Control', 'Key_Ctrl'],
+          Alt: ['Key_Alt', 'Key_Option'],
+          Meta: ['Key_Meta', 'Key_Cmd'],
+          ',': ['Key_Comma', 'Key_,'],
+          '.': ['Key_Period', 'Key_.'],
+          '/': ['Key_Slash', 'Key_/'],
+          ';': ['Key_Semicolon', 'Key_;'],
+          "'": ['Key_Quote', "Key_'"],
+        };
+        if (specials[k]) candidates.push(...specials[k]);
+      }
+      for (const name of candidates) {
+        if (keyNames.has(name)) return name;
+      }
+      return null;
+    };
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      const name = mapEventKey(event);
+      if (!name) return;
+      setPressedKey(name);
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [keyHitboxes]);
+
   useEffect(() => {
     keyboard.traverse((object) => {
       if (!(object instanceof THREE.Mesh)) return;
@@ -1949,7 +2173,7 @@ function DeskKeyboardAsset() {
   return (
     <group
       ref={groupRef}
-      position={[0.14, DESK_SURFACE_Y + 0.018, -0.7 + DESK_WALL_OFFSET_Z]}
+      position={[0.14, DESK_SURFACE_Y + 0.018, -0.87 + DESK_WALL_OFFSET_Z]}
       rotation={[0, 0.02, 0]}
       scale={[0.36, 0.36, 0.36]}
     >
@@ -2168,12 +2392,12 @@ function WallTelemetryPanel({
   );
 }
 
-type WallHtmlScreenKind = 'prime-id' | 'companions' | 'loopr' | 'balance' | 'runway' | 'model' | 'donate';
+type WallHtmlScreenKind = 'prime-id' | 'skills' | 'loopr' | 'balance' | 'runway' | 'model' | 'donate';
 
 const wallScreenComponents: Record<WallHtmlScreenKind, ComponentType> = {
-  'prime-id': RoomPrimeIdScreen,
-  companions: RoomCompanionScreen,
-  loopr: RoomLooprFeedScreen,
+  'prime-id': PrimeIdScreen,
+  skills: SkillLibraryScreen,
+  loopr: LooprFeedScreen,
   balance: BalanceScreen,
   runway: RunwayScreen,
   model: ModelScreen,
@@ -2552,6 +2776,7 @@ function HtmlWallScreen({
   htmlSize = [WALL_SCREEN_HTML_W, WALL_SCREEN_HTML_H],
   accent = '#8cffae',
   rotateContent = false,
+  highlight = false,
 }: {
   kind: WallHtmlScreenKind;
   position: [number, number, number];
@@ -2560,9 +2785,11 @@ function HtmlWallScreen({
   htmlSize?: [number, number];
   accent?: string;
   rotateContent?: boolean;
+  highlight?: boolean;
 }) {
   const screenRef = useRef<THREE.Mesh>(null);
   const ScreenComponent = wallScreenComponents[kind];
+  const isLiveSurface = kind === 'prime-id' || kind === 'companions' || kind === 'loopr';
   const screenContent = useMemo(
     () => (
       <div className={`room-html-screen-surface ${rotateContent ? 'is-rotated' : ''}`}>
@@ -2580,27 +2807,47 @@ function HtmlWallScreen({
         <meshBasicMaterial color="#ead8a8" toneMapped={false} />
       </mesh>
       <mesh ref={screenRef} position={[0, 0, 0.018]} receiveShadow>
-        <planeGeometry args={[scale[0], scale[1], 40, 40]} onUpdate={flipPlaneUvY} />
+        <planeGeometry args={[scale[0], scale[1]]} onUpdate={flipPlaneUvY} />
         <meshBasicMaterial color="#111122" toneMapped={false} />
       </mesh>
       <HtmlInCanvasSurface
         meshRef={screenRef}
         width={htmlSize[0]}
         height={htmlSize[1]}
-        animated
+        animated={isLiveSurface}
         brightness={1.12}
         flicker={0}
         phosphor={0}
         reflection={0.3}
         scanlines={0.65}
+        uploadFps={isLiveSurface ? 4 : 2}
+        warmupFrames={isLiveSurface ? 4 : 2}
       >
         {screenContent}
       </HtmlInCanvasSurface>
       <mesh position={[0, 0, 0.026]}>
         <planeGeometry args={scale} />
-        <meshBasicMaterial color={accent} transparent opacity={0.035} blending={THREE.AdditiveBlending} depthWrite={false} />
+        <meshBasicMaterial
+          color={accent}
+          transparent
+          opacity={highlight ? 0.22 : 0.035}
+          blending={THREE.AdditiveBlending}
+          depthWrite={false}
+        />
       </mesh>
-      <pointLight position={[0, 0, 0.16]} intensity={0.22} distance={0.82} color={accent} />
+      {highlight ? (
+        <mesh position={[0, 0, 0.012]}>
+          <planeGeometry args={[scale[0] + 0.12, scale[1] + 0.1]} />
+          <meshBasicMaterial
+            color={accent}
+            transparent
+            opacity={0.18}
+            blending={THREE.AdditiveBlending}
+            depthWrite={false}
+          />
+        </mesh>
+      ) : null}
+      <pointLight position={[0, 0, 0.16]} intensity={highlight ? 0.85 : 0.22} distance={highlight ? 1.2 : 0.82} color={accent} />
     </group>
   );
 }
@@ -2669,75 +2916,157 @@ function LeftCommandPanel({
   );
 }
 
-function LeftCommandColumn() {
-  const leftWallRotation: [number, number, number] = [0, Math.PI / 2, 0];
+const LEFT_WALL_FOCUS_SET = new Set<FocusZoneId>([
+  'left-overview',
+  ...FOCUS_ZONE_GROUPS.left,
+]);
 
+function useLeftWallDrillZone(zone: FocusZoneId) {
+  const { focus, setFocus, hovered, setHovered } = useContext(RoomFocusContext);
+  const { gl } = useThree();
+
+  const isInLeftWallContext = focus !== null && LEFT_WALL_FOCUS_SET.has(focus);
+
+  const onClick = useCallback(
+    (event: ThreeEvent<MouseEvent>) => {
+      event.stopPropagation();
+      if (isInLeftWallContext) {
+        setFocus(zone);
+      } else {
+        setFocus('left-overview');
+      }
+    },
+    [setFocus, zone, isInLeftWallContext],
+  );
+
+  const onPointerOver = useCallback(
+    (event: ThreeEvent<PointerEvent>) => {
+      event.stopPropagation();
+      gl.domElement.style.cursor = 'pointer';
+      if (hovered !== zone) setHovered(zone);
+    },
+    [gl, hovered, setHovered, zone],
+  );
+
+  const onPointerOut = useCallback(
+    (event: ThreeEvent<PointerEvent>) => {
+      event.stopPropagation();
+      gl.domElement.style.cursor = '';
+      if (hovered === zone) setHovered(null);
+    },
+    [gl, hovered, setHovered, zone],
+  );
+
+  const isFocused = focus === zone;
+  const isHovered = hovered === zone && !isFocused;
+
+  return { handlers: { onClick, onPointerOver, onPointerOut }, isFocused, isHovered };
+}
+
+function LeftWallScreen({
+  kind,
+  zone,
+  y,
+  z,
+  accent,
+  rotation,
+  scale,
+  htmlSize,
+}: {
+  kind: WallHtmlScreenKind;
+  zone: FocusZoneId;
+  y: number;
+  z: number;
+  accent: string;
+  rotation: [number, number, number];
+  scale: [number, number];
+  htmlSize: [number, number];
+}) {
+  const { handlers, isHovered, isFocused } = useLeftWallDrillZone(zone);
   return (
-    <group>
+    <group {...handlers}>
       <HtmlWallScreen
-        kind="prime-id"
-        position={[-3.945, 2.39, -2.26]}
-        rotation={leftWallRotation}
-        scale={[0.62, 0.66]}
-        htmlSize={[520, 620]}
-        accent="#8cffae"
-        rotateContent
-      />
-      <HtmlWallScreen
-        kind="companions"
-        position={[-3.945, 1.73, -2.26]}
-        rotation={leftWallRotation}
-        scale={[0.88, 0.54]}
-        accent="#8cffae"
-      />
-      <HtmlWallScreen
-        kind="loopr"
-        position={[-3.945, 1.06, -2.26]}
-        rotation={leftWallRotation}
-        scale={[0.9, 0.68]}
-        htmlSize={[640, 520]}
-        accent="#ffb861"
+        kind={kind}
+        position={[-3.945, y, z]}
+        rotation={rotation}
+        scale={scale}
+        htmlSize={htmlSize}
+        accent={accent}
+        highlight={isHovered || isFocused}
       />
     </group>
   );
 }
 
-function LooplingControlWall() {
-  const rightWallRotation: [number, number, number] = [0, -Math.PI / 2, 0];
+function LeftCommandColumn() {
+  const leftWallRotation: [number, number, number] = [0, Math.PI / 2, 0];
+  const uniformScale: [number, number] = [0.92, 0.52];
+  const uniformHtmlSize: [number, number] = [780, 440];
+  const backColumnZ = -2.26;
+  const frontColumnZ = -1.0;
 
   return (
     <group>
-      <HtmlWallScreen
-        kind="balance"
-        position={[3.965, 2.48, -1.34]}
-        rotation={rightWallRotation}
-        scale={[0.7, 0.42]}
+      <LeftWallScreen
+        kind="prime-id"
+        zone="left-passport"
+        y={2.32}
+        z={backColumnZ}
         accent="#8cffae"
+        rotation={leftWallRotation}
+        scale={uniformScale}
+        htmlSize={uniformHtmlSize}
       />
-      <HtmlWallScreen
-        kind="runway"
-        position={[3.965, 1.98, -1.34]}
-        rotation={rightWallRotation}
-        scale={[0.7, 0.42]}
+      <LeftWallScreen
+        kind="skills"
+        zone="left-skills"
+        y={1.7}
+        z={backColumnZ}
         accent="#78d7ff"
+        rotation={leftWallRotation}
+        scale={uniformScale}
+        htmlSize={uniformHtmlSize}
       />
-      <HtmlWallScreen
-        kind="model"
-        position={[3.965, 1.48, -1.34]}
-        rotation={rightWallRotation}
-        scale={[0.7, 0.42]}
+      <LeftWallScreen
+        kind="loopr"
+        zone="left-loopr"
+        y={1.08}
+        z={backColumnZ}
         accent="#ffb861"
+        rotation={leftWallRotation}
+        scale={uniformScale}
+        htmlSize={uniformHtmlSize}
       />
-      <HtmlWallScreen
+      <LeftWallScreen
+        kind="balance"
+        zone="left-balance"
+        y={2.32}
+        z={frontColumnZ}
+        accent="#8cffae"
+        rotation={leftWallRotation}
+        scale={uniformScale}
+        htmlSize={uniformHtmlSize}
+      />
+      <LeftWallScreen
+        kind="model"
+        zone="left-model"
+        y={1.7}
+        z={frontColumnZ}
+        accent="#ffb861"
+        rotation={leftWallRotation}
+        scale={uniformScale}
+        htmlSize={uniformHtmlSize}
+      />
+      <LeftWallScreen
         kind="donate"
-        position={[3.965, 0.98, -1.34]}
-        rotation={rightWallRotation}
-        scale={[0.7, 0.42]}
+        zone="left-care"
+        y={1.08}
+        z={frontColumnZ}
         accent="#ff6e72"
+        rotation={leftWallRotation}
+        scale={uniformScale}
+        htmlSize={uniformHtmlSize}
       />
-      <Text position={[3.94, 2.76, -1.7]} rotation={rightWallRotation} fontSize={0.034} color="#7fffdc" anchorX="left" anchorY="middle">
-        PRIME CONTROL BUS
-      </Text>
     </group>
   );
 }
@@ -2746,7 +3075,6 @@ function WallDecor() {
   return (
     <group>
       <LeftCommandColumn />
-      <LooplingControlWall />
     </group>
   );
 }
@@ -3005,12 +3333,66 @@ function PrimeIdCard() {
   );
 }
 
+function ComputePad() {
+  const screenRef = useRef<THREE.Mesh>(null);
+  const computeContent = useMemo(() => <RunwayScreen />, []);
+  const { handlers, isHovered } = useFocusZone('desk-compute');
+
+  return (
+    <group
+      position={[-0.75, DESK_SURFACE_Y + 0.145, -1.09 + DESK_WALL_OFFSET_Z]}
+      rotation={[-0.18, 0.32, 0]}
+      scale={isHovered ? 0.63 : 0.62}
+      {...handlers}
+    >
+      {/* CRT-style outer bezel — deeper + blue-tinted */}
+      <Box position={[0, 0, -0.05]} scale={[0.5, 0.4, 0.12]} color="#0d1d2a" roughness={0.4} metalness={0.18} castShadow />
+      {/* Side vents */}
+      <Box position={[-0.225, 0, -0.022]} scale={[0.03, 0.32, 0.07]} color="#091420" roughness={0.5} metalness={0.2} />
+      <Box position={[0.225, 0, -0.022]} scale={[0.03, 0.32, 0.07]} color="#091420" roughness={0.5} metalness={0.2} />
+      {/* Base / stand */}
+      <Box position={[0, -0.215, -0.04]} scale={[0.36, 0.045, 0.16]} color="#091420" roughness={0.5} metalness={0.22} castShadow />
+      {/* Tally lamp above bezel */}
+      <mesh position={[0, 0.19, 0.012]}>
+        <boxGeometry args={[0.04, 0.02, 0.012]} />
+        <meshBasicMaterial color="#78d7ff" toneMapped={false} />
+      </mesh>
+      <mesh ref={screenRef} position={[0, 0.025, 0.018]} receiveShadow>
+        <planeGeometry args={[0.39, 0.28]} onUpdate={flipPlaneUvY} />
+        <meshBasicMaterial color="#0a1c2a" toneMapped={false} />
+      </mesh>
+      <HtmlInCanvasSurface
+        meshRef={screenRef}
+        width={420}
+        height={300}
+        animated={false}
+        brightness={1.12}
+        flicker={0}
+        phosphor={0}
+        reflection={0.25}
+        scanlines={0.6}
+        uploadFps={2}
+        warmupFrames={2}
+      >
+        {computeContent}
+      </HtmlInCanvasSurface>
+      <pointLight position={[0, 0, 0.22]} intensity={0.42} distance={0.78} color="#78d7ff" />
+    </group>
+  );
+}
+
 function DonateTerminal() {
   const screenRef = useRef<THREE.Mesh>(null);
   const terminalContent = useMemo(() => <DeskTerminalScreen />, []);
+  const { handlers, isHovered } = useFocusZone('desk-terminal');
 
   return (
-    <group position={[0.94, DESK_SURFACE_Y + 0.145, -0.92 + DESK_WALL_OFFSET_Z]} rotation={[-0.18, -0.23, 0]} scale={0.62}>
+    <group
+      position={[0.94, DESK_SURFACE_Y + 0.145, -1.09 + DESK_WALL_OFFSET_Z]}
+      rotation={[-0.18, -0.23, 0]}
+      scale={isHovered ? 0.63 : 0.62}
+      {...handlers}
+    >
       <Box position={[0, 0, -0.035]} scale={[0.46, 0.36, 0.08]} color="#111417" roughness={0.44} metalness={0.12} castShadow />
       <mesh ref={screenRef} position={[0, 0.025, 0.018]} receiveShadow>
         <planeGeometry args={[0.39, 0.28]} onUpdate={flipPlaneUvY} />
@@ -3020,12 +3402,14 @@ function DonateTerminal() {
         meshRef={screenRef}
         width={420}
         height={300}
-        animated
+        animated={false}
         brightness={1.12}
         flicker={0}
         phosphor={0}
         reflection={0.25}
         scanlines={0.6}
+        uploadFps={2}
+        warmupFrames={2}
       >
         {terminalContent}
       </HtmlInCanvasSurface>
@@ -3053,33 +3437,60 @@ function WalletPuck() {
   );
 }
 
-function ModeDock() {
-  const modes = [
-    ['RESEARCH', '#78d7ff'],
-    ['TRADE', '#8cffae'],
-    ['POST', '#ff6ea9'],
-    ['MEMORY', '#b792ff'],
-    ['MEDIA', '#ffb861'],
-  ];
+function CommandKey({ mode, x, active }: { mode: CommandKeyMode; x: number; active: boolean }) {
+  const screenRef = useRef<THREE.Mesh>(null);
+  const content = useMemo(() => <CommandKeyMiniScreen mode={mode} active={active} />, [mode, active]);
 
   return (
-    <group position={[0.08, DESK_SURFACE_Y + 0.16, -0.98 + DESK_WALL_OFFSET_Z]} rotation={[0, 0.02, 0]}>
+    <group position={[x, 0, 0.004]}>
+      <Box position={[0, 0, 0]} scale={[0.13, 0.11, 0.09]} color="#271b12" roughness={0.52} metalness={0.16} castShadow />
+      <mesh ref={screenRef} position={[0, 0.003, 0.048]} receiveShadow>
+        <planeGeometry args={[0.105, 0.085, 8, 8]} onUpdate={flipPlaneUvY} />
+        <meshBasicMaterial color="#111122" toneMapped={false} />
+      </mesh>
+      <HtmlInCanvasSurface
+        meshRef={screenRef}
+        width={160}
+        height={130}
+        animated={false}
+        brightness={1.0}
+        flicker={0}
+        phosphor={0}
+        reflection={0.1}
+        scanlines={0.3}
+        barrel={0}
+        uploadFps={1}
+        warmupFrames={1}
+      >
+        {content}
+      </HtmlInCanvasSurface>
+      <mesh position={[0, -0.072, 0.052]}>
+        <sphereGeometry args={[0.014, 12, 8]} />
+        <meshBasicMaterial color={active ? '#70ffb0' : '#234a2a'} toneMapped={false} />
+      </mesh>
+    </group>
+  );
+}
+
+function ModeDock() {
+  const { handlers, isHovered } = useFocusZone('desk-keys');
+  const state = useLooplingsState();
+
+  return (
+    <group
+      position={[0.08, DESK_SURFACE_Y + 0.16, -1.15 + DESK_WALL_OFFSET_Z]}
+      rotation={[0, 0.02, 0]}
+      scale={isHovered ? 1.04 : 1}
+      {...handlers}
+    >
       <Box position={[0, -0.045, -0.01]} scale={[0.86, 0.09, 0.19]} color="#16100b" roughness={0.48} metalness={0.12} castShadow />
-      {modes.map(([label, color], index) => (
-        <group key={label} position={[-0.34 + index * 0.17, 0, 0.004]}>
-          <Box position={[0, 0, 0]} scale={[0.13, 0.11, 0.09]} color="#271b12" roughness={0.52} metalness={0.16} castShadow />
-          <mesh position={[0, 0.003, 0.048]}>
-            <planeGeometry args={[0.08, 0.065]} />
-            <meshBasicMaterial color={color} transparent opacity={0.55} toneMapped={false} />
-          </mesh>
-          <Text position={[0, 0.078, 0.054]} rotation={[-0.14, 0, 0]} fontSize={0.018} color="#e8d47c" anchorX="center" anchorY="middle">
-            {label}
-          </Text>
-          <mesh position={[0, -0.072, 0.052]}>
-            <sphereGeometry args={[0.014, 12, 8]} />
-            <meshBasicMaterial color="#70ffb0" toneMapped={false} />
-          </mesh>
-        </group>
+      {COMMAND_KEY_ORDER.map((mode, index) => (
+        <CommandKey
+          key={mode}
+          mode={mode}
+          x={-0.34 + index * 0.17}
+          active={mode === state.activeTool}
+        />
       ))}
     </group>
   );
@@ -3088,11 +3499,12 @@ function ModeDock() {
 function DeskClutter() {
   return (
     <group>
-      <PrimeHabitatDome />
       <ModeDock />
       <DonateTerminal />
+      <ComputePad />
       <WalletPuck />
 
+      {/* I♥LOOPS mug (kept). */}
       <group position={[-2.2, DESK_SURFACE_Y + 0.09, -1.54 + DESK_WALL_OFFSET_Z]} rotation={[0, 0.32, 0]}>
         <mesh receiveShadow>
           <cylinderGeometry args={[0.11, 0.1, 0.18, 24]} />
@@ -3107,40 +3519,92 @@ function DeskClutter() {
           <meshBasicMaterial color="#65f5d6" transparent opacity={0.25} />
         </mesh>
       </group>
-
-      <group position={[-2.16, DESK_SURFACE_Y + 0.17, -0.72 + DESK_WALL_OFFSET_Z]}>
-        <mesh receiveShadow>
-          <cylinderGeometry args={[0.17, 0.15, 0.34, 32]} />
-          <meshStandardMaterial color="#76d2ff" transparent opacity={0.24} roughness={0.08} metalness={0.02} />
-        </mesh>
-        {Array.from({ length: 8 }, (_, index) => (
-          <mesh
-            key={index}
-            position={[
-              -0.07 + (index % 4) * 0.045,
-              -0.13 + Math.floor(index / 4) * 0.055,
-              -0.04 + (index % 3) * 0.04,
-            ]}
-            rotation={[Math.PI / 2, 0, index * 0.2]}
-          >
-            <cylinderGeometry args={[0.035, 0.035, 0.011, 18]} />
-            <meshStandardMaterial color="#ffd45c" emissive="#7a4200" emissiveIntensity={0.42} roughness={0.42} metalness={0.4} />
-          </mesh>
-        ))}
-      </group>
-
-      {[
-        [-0.74, DESK_SURFACE_Y + 0.051, -0.98 + DESK_WALL_OFFSET_Z, '#ff6ea9'],
-        [-0.52, DESK_SURFACE_Y + 0.052, -0.92 + DESK_WALL_OFFSET_Z, '#ffe28f'],
-        [1.02, DESK_SURFACE_Y + 0.052, -1.02 + DESK_WALL_OFFSET_Z, '#7ad7ff'],
-      ].map(([x, y, z, color], index) => (
-        <mesh key={index} position={[x as number, y as number, z as number]} rotation={[-Math.PI / 2, 0, (index - 1) * 0.12]} receiveShadow>
-          <planeGeometry args={[0.18, 0.14]} />
-          <meshStandardMaterial color={color as string} roughness={0.78} side={THREE.DoubleSide} />
-        </mesh>
-      ))}
     </group>
   );
+}
+
+function FocusableCamera({ resetSignal }: { resetSignal: number }) {
+  const { camera } = useThree();
+  const { focus, setFocus, setHovered } = useContext(RoomFocusContext);
+
+  // Whenever focus changes (zoom in or zoom out), clear any stuck hover state.
+  // Without this, the cursor stays "over" a mesh after camera movement and the
+  // hover glow lingers until the user manually moves the mouse.
+  useEffect(() => {
+    setHovered(null);
+    if (typeof document !== 'undefined') {
+      document.body.style.cursor = '';
+    }
+  }, [focus, setHovered]);
+
+  const heroLook = useMemo(() => {
+    const yaw = CAMERA_BASE_YAW;
+    const pitch = CAMERA_BASE_PITCH;
+    const dir = new THREE.Vector3(
+      Math.sin(yaw) * Math.cos(pitch),
+      Math.sin(pitch),
+      -Math.cos(yaw) * Math.cos(pitch),
+    );
+    return new THREE.Vector3(...CAMERA_HOME_POSITION).addScaledVector(dir, 6);
+  }, []);
+
+  const currentPosRef = useRef(new THREE.Vector3(...CAMERA_HOME_POSITION));
+  const currentLookRef = useRef(heroLook.clone());
+
+  useEffect(() => {
+    camera.position.copy(CAMERA_HOME);
+    currentPosRef.current.copy(CAMERA_HOME);
+    currentLookRef.current.copy(heroLook);
+    camera.lookAt(currentLookRef.current);
+    camera.updateProjectionMatrix();
+  }, [camera, heroLook, resetSignal]);
+
+  useEffect(() => {
+    if (resetSignal === 0) return;
+    setFocus(null);
+  }, [resetSignal, setFocus]);
+
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        if (focus && LEFT_WALL_ZONE_ORDER.includes(focus)) {
+          setFocus('left-overview');
+        } else {
+          setFocus(null);
+        }
+        return;
+      }
+      if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
+      if (!focus) return;
+      if (!LEFT_WALL_ZONE_ORDER.includes(focus)) return;
+      const idx = LEFT_WALL_ZONE_ORDER.indexOf(focus);
+      event.preventDefault();
+      const next = event.key === 'ArrowUp' ? idx - 1 : idx + 1;
+      if (next < 0 || next >= LEFT_WALL_ZONE_ORDER.length) return;
+      setFocus(LEFT_WALL_ZONE_ORDER[next]);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [focus, setFocus]);
+
+  useFrame((_, delta) => {
+    const targetPos = focus ? FOCUS_POSES[focus].position : CAMERA_HOME;
+    const targetLook = focus ? FOCUS_POSES[focus].lookAt : heroLook;
+    const damping = 4.4;
+
+    currentPosRef.current.x = THREE.MathUtils.damp(currentPosRef.current.x, targetPos.x, damping, delta);
+    currentPosRef.current.y = THREE.MathUtils.damp(currentPosRef.current.y, targetPos.y, damping, delta);
+    currentPosRef.current.z = THREE.MathUtils.damp(currentPosRef.current.z, targetPos.z, damping, delta);
+
+    currentLookRef.current.x = THREE.MathUtils.damp(currentLookRef.current.x, targetLook.x, damping, delta);
+    currentLookRef.current.y = THREE.MathUtils.damp(currentLookRef.current.y, targetLook.y, damping, delta);
+    currentLookRef.current.z = THREE.MathUtils.damp(currentLookRef.current.z, targetLook.z, damping, delta);
+
+    camera.position.copy(currentPosRef.current);
+    camera.lookAt(currentLookRef.current);
+  });
+
+  return null;
 }
 
 function SeatedLookCamera({ resetSignal }: { resetSignal: number }) {
@@ -3197,6 +3661,7 @@ function InspectionCamera({
   const pitchRef = useRef(CAMERA_BASE_PITCH);
   const keysRef = useRef(new Set<string>());
   const lastReportRef = useRef(0);
+  const lastSnapshotRef = useRef<RoomInspectionSnapshot | null>(null);
   const dragRef = useRef({
     active: false,
     pointerId: -1,
@@ -3206,7 +3671,20 @@ function InspectionCamera({
     pitch: CAMERA_BASE_PITCH,
   });
 
+  const lastResetRef = useRef<number | null>(null);
+
   useEffect(() => {
+    const isResetEvent = lastResetRef.current !== null && lastResetRef.current !== resetSignal;
+    lastResetRef.current = resetSignal;
+
+    if (!isResetEvent) {
+      const dir = new THREE.Vector3();
+      camera.getWorldDirection(dir);
+      yawRef.current = Math.atan2(dir.x, -dir.z);
+      pitchRef.current = Math.asin(THREE.MathUtils.clamp(dir.y, -1, 1));
+      camera.updateProjectionMatrix();
+      return;
+    }
     camera.position.copy(INSPECT_CAMERA_HOME);
     yawRef.current = CAMERA_BASE_YAW;
     pitchRef.current = CAMERA_BASE_PITCH;
@@ -3352,14 +3830,26 @@ function InspectionCamera({
     _lookTarget.copy(camera.position).addScaledVector(_lookDir, 6);
     camera.lookAt(_lookTarget);
 
-    if (onInspectCameraChange && clock.elapsedTime - lastReportRef.current > 0.12) {
-      onInspectCameraChange({
-        x: camera.position.x,
-        y: camera.position.y,
-        z: camera.position.z,
-        yaw: THREE.MathUtils.radToDeg(yaw),
-        pitch: THREE.MathUtils.radToDeg(pitch),
-      });
+    if (onInspectCameraChange && clock.elapsedTime - lastReportRef.current > 0.25) {
+      const snapshot = {
+        x: Math.round(camera.position.x * 100) / 100,
+        y: Math.round(camera.position.y * 100) / 100,
+        z: Math.round(camera.position.z * 100) / 100,
+        yaw: Math.round(THREE.MathUtils.radToDeg(yaw) * 10) / 10,
+        pitch: Math.round(THREE.MathUtils.radToDeg(pitch) * 10) / 10,
+      };
+      const lastSnapshot = lastSnapshotRef.current;
+      if (
+        !lastSnapshot ||
+        lastSnapshot.x !== snapshot.x ||
+        lastSnapshot.y !== snapshot.y ||
+        lastSnapshot.z !== snapshot.z ||
+        lastSnapshot.yaw !== snapshot.yaw ||
+        lastSnapshot.pitch !== snapshot.pitch
+      ) {
+        onInspectCameraChange(snapshot);
+        lastSnapshotRef.current = snapshot;
+      }
       lastReportRef.current = clock.elapsedTime;
     }
   });
@@ -3378,8 +3868,8 @@ function StarterRoomContent() {
         intensity={1.95}
         color="#a9c4ff"
         castShadow
-        shadow-mapSize={[1024, 1024]}
-        shadow-bias={-0.00035}
+        shadow-mapSize={[512, 512]}
+        shadow-bias={-0.0005}
         shadow-camera-left={-4}
         shadow-camera-right={4}
         shadow-camera-top={3}
@@ -3404,28 +3894,47 @@ function StarterRoomContent() {
   );
 }
 
-export default function StarterRoomScene({
+function StarterRoomScene({
   resetSignal,
   inspectMode = false,
   onInspectCameraChange,
+  focus,
+  onFocusChange,
 }: {
   resetSignal: number;
   inspectMode?: boolean;
   onInspectCameraChange?: (snapshot: RoomInspectionSnapshot) => void;
+  focus?: FocusZoneId | null;
+  onFocusChange?: (zone: FocusZoneId | null) => void;
 }) {
+  const focusValue = useRoomFocusValue(focus, onFocusChange);
   return (
-    <Canvas className="starter-room-canvas" shadows dpr={[1, 1.5]} gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}>
-      <color attach="background" args={['#07080c']} />
-      <PerspectiveCamera makeDefault position={CAMERA_HOME_POSITION} fov={CAMERA_FOV} />
-      <StarterRoomContent />
-      {inspectMode ? (
-        <InspectionCamera resetSignal={resetSignal} onInspectCameraChange={onInspectCameraChange} />
-      ) : (
-        <SeatedLookCamera resetSignal={resetSignal} />
-      )}
-    </Canvas>
+    <RoomFocusContext.Provider value={focusValue}>
+      <Canvas
+        className="starter-room-canvas"
+        shadows
+        dpr={[1, 1.25]}
+        gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
+        onCreated={({ gl }) => {
+          gl.shadowMap.autoUpdate = false;
+          gl.shadowMap.needsUpdate = true;
+        }}
+        onPointerMissed={() => focusValue.setFocus(null)}
+      >
+        <color attach="background" args={['#07080c']} />
+        <PerspectiveCamera makeDefault position={CAMERA_HOME_POSITION} fov={CAMERA_FOV} />
+        <StarterRoomContent />
+        {inspectMode ? (
+          <InspectionCamera resetSignal={resetSignal} onInspectCameraChange={onInspectCameraChange} />
+        ) : (
+          <FocusableCamera resetSignal={resetSignal} />
+        )}
+      </Canvas>
+    </RoomFocusContext.Provider>
   );
 }
+
+export default memo(StarterRoomScene);
 
 useGLTF.preload('/models/room/industrial_pipe_lamp/industrial_pipe_lamp_1k.gltf');
 useGLTF.preload('/models/room/antique_wooden_desk/antique_wooden_desk.glb');

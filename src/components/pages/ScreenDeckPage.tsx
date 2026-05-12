@@ -1,15 +1,24 @@
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ComponentType,
+  type CSSProperties,
+  type ReactNode,
+} from 'react';
 import Anthropic from '@lobehub/icons/es/Anthropic';
 import Claude from '@lobehub/icons/es/Claude';
 import OpenAI from '@lobehub/icons/es/OpenAI';
 import {
   BadgeCheck,
   BrainCircuit,
+  Camera,
   ChevronLeft,
   ChevronRight,
   Clock3,
   Fingerprint,
   HeartPulse,
+  LineChart,
   MessageSquare,
   Radio,
   ReceiptText,
@@ -17,7 +26,16 @@ import {
   Wallet,
   Zap,
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import Gemini from '@lobehub/icons/es/Gemini';
+import Google from '@lobehub/icons/es/Google';
 import { roomScreenSlots } from '@/components/screens/roomScreenPlan';
+import { usePetFrame } from '@/lib/pet-ticker';
+import {
+  timeAgo,
+  useLooplingsState,
+  type LooplingsModel,
+} from '@/lib/looplings-state';
 
 const STATE_ATLAS_VERSION = 'loopling-state-atlas-2026-05-02';
 
@@ -59,6 +77,105 @@ const commandModules = [
   ['Memory', 'learned habits', 'stores what helped Prime survive longer'],
   ['Media', 'share card', 'renders a cute proof of what just happened'],
 ];
+
+type SkillTool = 'research' | 'trade' | 'post' | 'memory' | 'media';
+
+interface SkillRecord {
+  id: string;
+  name: string;
+  sub: string;
+  accent: string;
+  IconKey: 'radio' | 'chart' | 'msg' | 'brain' | 'cam';
+  level: number;
+  maxLevel: number;
+  xpPct: number;
+  usageCount: number;
+  equipped: boolean;
+  tool: SkillTool;
+}
+
+const skillLibrary: SkillRecord[] = [
+  {
+    id: 'trend-scanner',
+    name: 'Trend Scanner',
+    sub: 'reads market signals',
+    accent: '#78d7ff',
+    IconKey: 'radio',
+    level: 3,
+    maxLevel: 5,
+    xpPct: 64,
+    usageCount: 12,
+    equipped: true,
+    tool: 'research',
+  },
+  {
+    id: 'volatility-mapper',
+    name: 'Volatility Mapper',
+    sub: 'identifies price spikes',
+    accent: '#8cffae',
+    IconKey: 'chart',
+    level: 2,
+    maxLevel: 5,
+    xpPct: 38,
+    usageCount: 7,
+    equipped: true,
+    tool: 'trade',
+  },
+  {
+    id: 'sentiment-sifter',
+    name: 'Sentiment Sifter',
+    sub: 'reads the room emotion',
+    accent: '#ff6ea9',
+    IconKey: 'msg',
+    level: 1,
+    maxLevel: 5,
+    xpPct: 18,
+    usageCount: 2,
+    equipped: false,
+    tool: 'post',
+  },
+];
+
+function skillIcon(key: SkillRecord['IconKey'], size: number) {
+  switch (key) {
+    case 'radio':
+      return <Radio size={size} strokeWidth={2.4} />;
+    case 'chart':
+      return <LineChart size={size} strokeWidth={2.4} />;
+    case 'msg':
+      return <MessageSquare size={size} strokeWidth={2.4} />;
+    case 'brain':
+      return <BrainCircuit size={size} strokeWidth={2.4} />;
+    case 'cam':
+      return <Camera size={size} strokeWidth={2.4} />;
+  }
+}
+
+export type CommandKeyMode = 'research' | 'trade' | 'post' | 'memory' | 'media';
+
+const commandKeyDetails: Record<CommandKeyMode, { label: string; sub: string; accent: string; Icon: LucideIcon }> = {
+  research: { label: 'RESEARCH', sub: 'read', accent: '#78d7ff', Icon: Radio },
+  trade: { label: 'TRADE', sub: 'act', accent: '#8cffae', Icon: LineChart },
+  post: { label: 'POST', sub: 'share', accent: '#ff6ea9', Icon: MessageSquare },
+  memory: { label: 'MEMORY', sub: 'learn', accent: '#b792ff', Icon: BrainCircuit },
+  media: { label: 'MEDIA', sub: 'frame', accent: '#ffb861', Icon: Camera },
+};
+
+export const COMMAND_KEY_ORDER: CommandKeyMode[] = ['research', 'trade', 'post', 'memory', 'media'];
+
+export function CommandKeyMiniScreen({ mode, active = false }: { mode: CommandKeyMode; active?: boolean }) {
+  const { label, sub, accent, Icon } = commandKeyDetails[mode];
+  return (
+    <div
+      className={`command-key-mini ${active ? 'is-active' : ''}`}
+      style={{ '--key-accent': accent } as CSSProperties}
+    >
+      <Icon size={42} strokeWidth={2.5} />
+      <strong>{label}</strong>
+      <em>{sub}</em>
+    </div>
+  );
+}
 
 export type DeckSlide = {
   slotId: string;
@@ -123,6 +240,8 @@ function PixelPet({
   className?: string;
   flip?: boolean;
 }) {
+  const currentFrame = usePetFrame(frame);
+
   return (
     <div
       className={`screen-deck-pixel-pet ${flip ? 'is-flipped' : ''} ${className}`}
@@ -131,18 +250,51 @@ function PixelPet({
           width: size,
           '--atlas-cols': 8,
           '--atlas-rows': 12,
-          '--pet-delay': `${frame * -0.18}s`,
           '--pet-row': row,
         } as CSSProperties
       }
     >
-      <img src={`/pets/${pet}/state-atlas.png?v=${STATE_ATLAS_VERSION}`} alt="" />
+      <img
+        src={`/pets/${pet}/state-atlas.png?v=${STATE_ATLAS_VERSION}`}
+        alt=""
+        style={{
+          animation: 'none',
+          transform: `translateX(calc(${-currentFrame} * (100% / 8)))`,
+        }}
+      />
     </div>
   );
 }
 
 function CornerFrame({ children, className = '' }: { children: ReactNode; className?: string }) {
   return <div className={`screen-deck-inner-frame ${className}`}>{children}</div>;
+}
+
+function ModelLogo({ provider, size = 28 }: { provider: LooplingsModel['provider']; size?: number }) {
+  const pickIcon = () => {
+    switch (provider) {
+      case 'anthropic':
+        return Anthropic;
+      case 'claude':
+        return Claude;
+      case 'google':
+        return Google;
+      case 'meta':
+      case 'mistral':
+        return Gemini;
+      case 'openai':
+      default:
+        return OpenAI;
+    }
+  };
+  const Icon = pickIcon();
+  // `Icon.Color` is the color variant when available; fall back to the mono icon otherwise.
+  const Render = (Icon as unknown as { Color?: ComponentType<{ size?: number }> }).Color ?? Icon;
+  return <Render size={size} />;
+}
+
+function moodLabel(mood: string): string {
+  return mood.charAt(0).toUpperCase() + mood.slice(1);
 }
 
 function Meter({ value, blocks = 14 }: { value: number; blocks?: number }) {
@@ -158,49 +310,88 @@ function Meter({ value, blocks = 14 }: { value: number; blocks?: number }) {
 }
 
 export function MainHabitatScreen() {
+  const state = useLooplingsState();
+  const lastAction = state.recentActivity[0];
+  const deltaSign = lastAction && lastAction.deltaCents > 0 ? '+' : lastAction && lastAction.deltaCents < 0 ? '-' : '';
+  const deltaAbs = lastAction ? Math.abs(lastAction.deltaCents / 100).toFixed(2) : '0.00';
   return (
     <div className="screen-deck-screen screen-deck-main-screen">
       <header className="screen-deck-screen-head">
         <span>Prime habitat diorama</span>
-        <strong>Live</strong>
+        <strong className="screen-deck-live-indicator screen-deck-live-indicator--demo">
+          <i aria-hidden="true" />
+          Demo loop
+        </strong>
       </header>
       <div className="screen-deck-main-grid">
         <CornerFrame className="screen-deck-habitat-window">
           <div className="screen-deck-habitat-bg">
+            <img
+              className="screen-deck-habitat-bg-img"
+              src="/assets/lab/looplings-habitat-bg-transparent-v2.png"
+              alt=""
+              aria-hidden="true"
+            />
             <div className="screen-deck-main-prime">
-              <div className="screen-deck-thought-bubble">
+              <div className="screen-deck-thought-bubble" key={state.thought.id}>
                 <span>Prime thinks</span>
-                <p>If the signal stays noisy, I save my snack jar.</p>
+                <p>{state.thought.text}</p>
+                <i className="screen-deck-thought-tail" aria-hidden="true" />
               </div>
               <PixelPet size={112} row={1} frame={1} />
-              <b>PRIME-00</b>
+              <b>{state.identity.name}</b>
             </div>
-            <div className="screen-deck-habitat-waypoint">idle loop / safe thought</div>
+            <div className="screen-deck-habitat-waypoint">
+              {state.activeTool} loop / {state.mood} thought
+            </div>
           </div>
         </CornerFrame>
         <aside className="screen-deck-status-column">
-          <CornerFrame>
+          <CornerFrame className="screen-deck-now-card">
             <span>Now</span>
-            <strong>Evaluating market signal</strong>
-            <p>Prime is watching the candles, checking the room, and waiting for a clean reason to move.</p>
-          </CornerFrame>
-          <CornerFrame>
-            <span>Mood</span>
-            <strong>Happy</strong>
-            <p>Curious, fed, and calm. Not in survival panic, so the next choice can stay thoughtful.</p>
-          </CornerFrame>
-          <CornerFrame>
-            <span>Next tiny plan</span>
-            <div className="screen-deck-mini-stats">
-              <b>Observe</b>
-              <b>Ask tool</b>
-              <b>Rest</b>
+            <strong>{state.currentTask}</strong>
+            <div className="screen-deck-progress-rail" aria-hidden="true">
+              <i style={{ width: `${state.taskProgressPct}%` }} />
             </div>
+            <small>
+              wake turn · {state.taskProgressPct}% complete · {moodLabel(state.mood)}
+            </small>
+            <div className="screen-deck-next-pill" data-tool={state.nextPlan.tool}>
+              <em>NEXT</em>
+              <b>{state.nextPlan.tool}</b>
+              <code>{state.nextPlan.label}</code>
+              <span aria-hidden="true">→</span>
+            </div>
+          </CornerFrame>
+          <CornerFrame className="screen-deck-thought-stream">
+            <span>Thought stream</span>
+            <ul>
+              {state.recentThoughts.slice(0, 4).map((thought) => (
+                <li
+                  key={`${thought.id}-${thought.addedAtTick}`}
+                  data-tool={thought.tool}
+                >
+                  <b>{thought.tool}</b>
+                  <p>{thought.text}</p>
+                  <em>{timeAgo(thought.addedAtTick, state.tickIndex)}</em>
+                </li>
+              ))}
+            </ul>
           </CornerFrame>
         </aside>
       </div>
       <footer className="screen-deck-thought-strip">
-        <PixelPet size={42} row={1} frame={2} />
+        <div className="screen-deck-companion-row">
+          <span>Companions</span>
+          <div>
+            {pets.map((pet, index) => (
+              <div key={pet.id} className="screen-deck-companion-chip" style={{ '--pet-accent': pet.accent } as CSSProperties}>
+                <PixelPet pet={pet.pet} row={pet.row} frame={index} size={32} />
+              </div>
+            ))}
+            <div className="screen-deck-companion-chip is-empty" aria-hidden="true"><span>+</span></div>
+          </div>
+        </div>
         <p>I am exploring markets, learning from receipts, and protecting my little loop.</p>
         <HeartPulse size={20} />
       </footer>
@@ -261,29 +452,32 @@ export function RoomMainHabitatScreen() {
 
 export function PrimeIdScreen() {
   return (
-    <div className="screen-deck-screen screen-deck-id-screen">
+    <div className="screen-deck-screen screen-deck-id-screen screen-deck-id-screen-wide">
       <header className="screen-deck-screen-head">
         <span>Prime passport</span>
         <Fingerprint size={18} />
       </header>
-      <CornerFrame className="screen-deck-id-card">
-        <PixelPet size={138} row={1} frame={0} />
-        <strong>PRIME-00</strong>
-        <p>Genesis room resident</p>
-        <code>0x9c2f...18a7</code>
-      </CornerFrame>
-      <div className="screen-deck-id-tags">
-        <span>Origin loop</span>
-        <span>careful trader</span>
-        <span>public pet</span>
-      </div>
-      <div className="screen-deck-id-proof">
-        <span>Seed</span>
-        <b>origin-loop / soft-spiral</b>
-        <span>Lineage</span>
-        <b>L01 genesis</b>
-        <span>Promise</span>
-        <b>Every action should be readable from the room.</b>
+      <div className="screen-deck-id-wide-grid">
+        <CornerFrame className="screen-deck-id-card screen-deck-id-card-wide">
+          <PixelPet size={132} row={1} frame={0} />
+          <strong>PRIME-00</strong>
+          <code>0x9c2f...18a7</code>
+        </CornerFrame>
+        <div className="screen-deck-id-wide-info">
+          <div className="screen-deck-id-tags">
+            <span>Origin loop</span>
+            <span>careful trader</span>
+            <span>public pet</span>
+          </div>
+          <div className="screen-deck-id-proof">
+            <span>Seed</span>
+            <b>origin-loop / soft-spiral</b>
+            <span>Lineage</span>
+            <b>L01 genesis</b>
+            <span>Promise</span>
+            <b>Every action should be readable from the room.</b>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -309,6 +503,51 @@ export function RoomPrimeIdScreen() {
         <span>careful trader</span>
         <span>public pet</span>
       </div>
+    </div>
+  );
+}
+
+export function SkillLibraryScreen() {
+  const state = useLooplingsState();
+  return (
+    <div className="screen-deck-screen screen-deck-skill-screen screen-deck-skill-screen-wide">
+      <header className="screen-deck-screen-head">
+        <span>Skill library</span>
+        <strong className="screen-deck-live-indicator">
+          <i aria-hidden="true" />
+          Loadout
+        </strong>
+      </header>
+      <div className="screen-deck-skill-row">
+        {skillLibrary.map((skill) => {
+          const isActive = skill.tool === state.activeTool;
+          return (
+            <article
+              key={skill.id}
+              className={`screen-deck-skill-tile${isActive ? ' is-active' : ''}${!skill.equipped ? ' is-locked' : ''}`}
+              style={{ '--skill-accent': skill.accent } as CSSProperties}
+            >
+              <div className="screen-deck-skill-icon" aria-hidden="true">
+                {skillIcon(skill.IconKey, 34)}
+              </div>
+              <strong>{skill.name}</strong>
+              <p>{skill.sub}</p>
+              <div className="screen-deck-skill-pips" aria-hidden="true">
+                {Array.from({ length: skill.maxLevel }).map((_, index) => (
+                  <i key={index} className={index < skill.level ? 'is-on' : undefined} />
+                ))}
+              </div>
+              <em>LVL {skill.level} · {skill.usageCount} casts</em>
+              {isActive ? <span className="screen-deck-skill-active">in use</span> : null}
+              {!skill.equipped ? <span className="screen-deck-skill-lock">locked</span> : null}
+            </article>
+          );
+        })}
+      </div>
+      <footer className="screen-deck-skill-footer">
+        <Zap size={14} strokeWidth={2.6} />
+        <p>Skills become tradeable on Loopr post-launch.</p>
+      </footer>
     </div>
   );
 }
@@ -365,7 +604,10 @@ export function LooprFeedScreen() {
     <div className="screen-deck-screen screen-deck-loopr-screen">
       <header className="screen-deck-screen-head">
         <span>Loopr feed</span>
-        <MessageSquare size={18} />
+        <strong className="screen-deck-preview-pill">
+          <i aria-hidden="true" />
+          Preview
+        </strong>
       </header>
       <div className="screen-deck-feed-list">
         {looprFeed.map(([author, body, proof], index) => (
@@ -375,7 +617,7 @@ export function LooprFeedScreen() {
               <strong>{author}</strong>
               <p>{body}</p>
             </div>
-            <span>{proof}</span>
+            <span data-proof={proof}>{proof}</span>
           </CornerFrame>
         ))}
       </div>
@@ -383,6 +625,10 @@ export function LooprFeedScreen() {
         <span>Prime draft</span>
         <p>Market looks noisy. I am staying patient, keeping compute warm, and thanking everyone who fed the loop.</p>
       </CornerFrame>
+      <footer className="screen-deck-loopr-launchline">
+        <ReceiptText size={14} strokeWidth={2.6} />
+        <p>Loopr launches alongside Prime &middot; coming soon</p>
+      </footer>
     </div>
   );
 }
@@ -415,25 +661,26 @@ export function RoomLooprFeedScreen() {
 }
 
 export function BalanceScreen() {
+  const state = useLooplingsState();
   return (
     <div className="screen-deck-screen screen-deck-balance-screen">
       <header className="screen-deck-screen-head">
         <span>Snack jar</span>
         <Wallet size={18} />
       </header>
-      <strong className="screen-deck-big-number">$2.47</strong>
+      <strong className="screen-deck-big-number">{state.compute.creditsUsd}</strong>
       <p>Prime's snack jar. Enough for cautious thinking, not enough for reckless chasing.</p>
       <div className="screen-deck-sparkline" aria-hidden="true">
-        {Array.from({ length: 14 }, (_, index) => (
-          <i key={index} style={{ '--spark-height': `${24 + ((index * 13) % 46)}%` } as CSSProperties} />
+        {state.sparkline.slice(0, 14).map((value, index) => (
+          <i key={index} style={{ '--spark-height': `${Math.round(value * 100)}%` } as CSSProperties} />
         ))}
       </div>
       <div className="screen-deck-ledger-list">
-        {balanceLedger.map(([amount, label, time]) => (
-          <CornerFrame key={`${amount}-${label}`}>
-            <b>{amount}</b>
-            <p>{label}</p>
-            <span>{time}</span>
+        {state.ledger.map((entry, idx) => (
+          <CornerFrame key={`${entry.amount}-${idx}`}>
+            <b>{entry.amount}</b>
+            <p>{entry.reason}</p>
+            <span>{entry.ago}</span>
           </CornerFrame>
         ))}
       </div>
@@ -442,15 +689,24 @@ export function BalanceScreen() {
 }
 
 export function RunwayScreen() {
+  const state = useLooplingsState();
+  const meterValue = Math.min(100, Math.round((state.compute.runwayHours / 24) * 100));
+  const tierLabels: Record<typeof state.compute.tier, string> = {
+    high: 'High',
+    normal: 'Normal',
+    low_compute: 'Low',
+    critical: 'Critical',
+    dead: 'Dead',
+  };
   return (
     <div className="screen-deck-screen screen-deck-runway-screen">
       <header className="screen-deck-screen-head">
         <span>Energy clock</span>
         <Clock3 size={18} />
       </header>
-      <strong className="screen-deck-big-number">19h 42m</strong>
+      <strong className="screen-deck-big-number">{state.compute.runwayLabel}</strong>
       <p>Time until Prime needs another compute snack. The room should make this pressure easy to feel.</p>
-      <Meter value={72} blocks={18} />
+      <Meter value={meterValue} blocks={18} />
       <div className="screen-deck-runway-notes">
         {runwaySteps.map(([time, label, detail]) => (
           <CornerFrame key={time}>
@@ -460,16 +716,18 @@ export function RunwayScreen() {
           </CornerFrame>
         ))}
       </div>
-      <div className="screen-deck-tier-row">
+      <div className="screen-deck-tier-row" data-tier={state.compute.tier}>
         <span>Normal</span>
         <span>Low</span>
         <span>Critical</span>
+        <strong>{tierLabels[state.compute.tier]}</strong>
       </div>
     </div>
   );
 }
 
 export function ModelScreen() {
+  const state = useLooplingsState();
   return (
     <div className="screen-deck-screen screen-deck-model-screen">
       <header className="screen-deck-screen-head">
@@ -477,17 +735,20 @@ export function ModelScreen() {
         <BrainCircuit size={18} />
       </header>
       <CornerFrame className="screen-deck-model-hero">
-        <OpenAI size={58} />
+        <div className="screen-deck-model-logo">
+          <ModelLogo provider={state.model.provider} size={58} />
+        </div>
         <div>
           <span>Active model</span>
-          <strong>GPT-5.5</strong>
+          <strong>{state.model.label}</strong>
           <p>Prime is using a careful reasoning pass: explain the signal, check policy, then decide.</p>
         </div>
       </CornerFrame>
       <div className="screen-deck-model-reason">
         <CornerFrame>
-          <span>Why this brain?</span>
-          <p>Best for slow judgement while Prime has enough runway to think.</p>
+          <span>Confidence</span>
+          <Meter value={state.model.confidencePct} blocks={14} />
+          <p>{state.model.confidencePct}% confident in the current plan.</p>
         </CornerFrame>
         <CornerFrame>
           <span>Room rule</span>

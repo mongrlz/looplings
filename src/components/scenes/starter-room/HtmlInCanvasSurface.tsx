@@ -4,15 +4,9 @@ import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { createCRTMaterial } from '@/lib/crt-material';
 
-export function flipPlaneUvY(geometry: THREE.BufferGeometry) {
-  if (geometry.userData.htmlSurfaceUvYFlipped) return;
-  const uv = geometry.getAttribute('uv');
-  if (!(uv instanceof THREE.BufferAttribute)) return;
-  for (let index = 0; index < uv.count; index += 1) {
-    uv.setY(index, 1 - uv.getY(index));
-  }
-  uv.needsUpdate = true;
-  geometry.userData.htmlSurfaceUvYFlipped = true;
+export function flipPlaneUvY(_geometry: THREE.BufferGeometry) {
+  // No-op: Y flip is now handled inside the CRT shader (single source of truth).
+  // Kept as exported function to preserve call sites that pass it as `onUpdate`.
 }
 
 type HtmlInCanvasSurfaceProps = {
@@ -28,10 +22,14 @@ type HtmlInCanvasSurfaceProps = {
   phosphor?: number;
   reflection?: number;
   scanlines?: number;
+  uploadFps?: number;
+  warmupFrames?: number;
 };
 
-const HTML_SURFACE_UPLOAD_FPS = 12;
-const HTML_SURFACE_WARMUP_FRAMES = 18;
+const HTML_SURFACE_ANIMATED_UPLOAD_FPS = 4;
+const HTML_SURFACE_STATIC_UPLOAD_FPS = 4;
+const HTML_SURFACE_ANIMATED_WARMUP_FRAMES = 6;
+const HTML_SURFACE_STATIC_WARMUP_FRAMES = 16;
 
 export function HtmlInCanvasSurface({
   meshRef,
@@ -46,6 +44,8 @@ export function HtmlInCanvasSurface({
   phosphor,
   reflection,
   scanlines,
+  uploadFps,
+  warmupFrames,
 }: HtmlInCanvasSurfaceProps) {
   const { gl } = useThree();
   const elementRef = useRef<HTMLDivElement | null>(null);
@@ -55,9 +55,11 @@ export function HtmlInCanvasSurface({
   const glTextureRef = useRef<WebGLTexture | null>(null);
   const dirtyRef = useRef(true);
   const frozenRef = useRef(false);
-  const warmupFramesRef = useRef(HTML_SURFACE_WARMUP_FRAMES);
+  const warmupFramesRef = useRef(HTML_SURFACE_STATIC_WARMUP_FRAMES);
   const lastUploadRef = useRef(-Infinity);
   const hasChildren = children !== undefined;
+  const resolvedUploadFps = Math.max(1, uploadFps ?? (animated ? HTML_SURFACE_ANIMATED_UPLOAD_FPS : HTML_SURFACE_STATIC_UPLOAD_FPS));
+  const resolvedWarmupFrames = Math.max(1, warmupFrames ?? (animated ? HTML_SURFACE_ANIMATED_WARMUP_FRAMES : HTML_SURFACE_STATIC_WARMUP_FRAMES));
 
   useEffect(() => {
     const canvas = gl.domElement;
@@ -66,8 +68,11 @@ export function HtmlInCanvasSurface({
 
     dirtyRef.current = true;
     frozenRef.current = false;
-    warmupFramesRef.current = HTML_SURFACE_WARMUP_FRAMES;
-    lastUploadRef.current = -Infinity;
+    warmupFramesRef.current = resolvedWarmupFrames;
+    // Stagger first upload by up to one frame interval so the 4 animated surfaces
+    // don't all upload on the same frame (which causes a visible spike).
+    const interval = 1 / resolvedUploadFps;
+    lastUploadRef.current = -interval + Math.random() * interval;
 
     const element = document.createElement('div');
     element.style.width = `${width}px`;
@@ -156,8 +161,22 @@ export function HtmlInCanvasSurface({
     canvas.addEventListener('paint', handlePaint);
     canvas.requestPaint?.();
 
+    // Force a couple of re-dirty passes after React commits the embedded tree.
+    // Some React roots inside the polyfilled canvas don't fire paint events on initial commit,
+    // which can leave static surfaces frozen on a blank pre-commit snapshot.
+    const repaintDelays = [120, 600];
+    const repaintTimers = repaintDelays.map((ms) =>
+      window.setTimeout(() => {
+        dirtyRef.current = true;
+        frozenRef.current = false;
+        warmupFramesRef.current = Math.max(warmupFramesRef.current, 4);
+        canvas.requestPaint?.();
+      }, ms),
+    );
+
     return () => {
       window.cancelAnimationFrame(raf);
+      repaintTimers.forEach((id) => window.clearTimeout(id));
       pointerObserver.disconnect();
       canvas.removeEventListener('paint', handlePaint);
       root?.unmount();
@@ -171,7 +190,7 @@ export function HtmlInCanvasSurface({
       glTextureRef.current = null;
       rootRef.current = null;
     };
-  }, [barrel, brightness, flicker, gl, hasChildren, height, meshRef, phosphor, reflection, scanlines, width]);
+  }, [barrel, brightness, flicker, gl, hasChildren, height, meshRef, phosphor, reflection, resolvedWarmupFrames, scanlines, width]);
 
   useEffect(() => {
     const element = elementRef.current;
@@ -179,7 +198,7 @@ export function HtmlInCanvasSurface({
 
     dirtyRef.current = true;
     frozenRef.current = false;
-    warmupFramesRef.current = HTML_SURFACE_WARMUP_FRAMES;
+    warmupFramesRef.current = resolvedWarmupFrames;
     lastUploadRef.current = -Infinity;
 
     if (hasChildren) {
@@ -192,23 +211,45 @@ export function HtmlInCanvasSurface({
       dirtyRef.current = true;
       gl.domElement.requestPaint?.();
     });
-  }, [children, gl, hasChildren, html]);
+  }, [children, gl, hasChildren, html, resolvedWarmupFrames]);
 
-  useFrame(({ clock }) => {
+  const frustumRef = useRef(new THREE.Frustum());
+  const projScreenMatrixRef = useRef(new THREE.Matrix4());
+
+  useFrame(({ clock, camera }) => {
     const element = elementRef.current;
     const material = materialRef.current;
     const glTexture = glTextureRef.current;
+    const mesh = meshRef.current;
     if (!element || !material || !glTexture) return;
 
     const elapsed = clock.elapsedTime;
     material.uniforms.u_time.value = elapsed;
 
     if (!animated && frozenRef.current) return;
-    if (!animated && !dirtyRef.current && warmupFramesRef.current <= 0) return;
-    if (elapsed - lastUploadRef.current < 1 / HTML_SURFACE_UPLOAD_FPS) return;
+    const inWarmup = warmupFramesRef.current > 0;
+    if (!dirtyRef.current && !inWarmup) return;
+    if (elapsed - lastUploadRef.current < 1 / resolvedUploadFps) return;
+
+    if (mesh && !inWarmup) {
+      projScreenMatrixRef.current.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+      frustumRef.current.setFromProjectionMatrix(projScreenMatrixRef.current);
+      if (!mesh.geometry.boundingSphere) mesh.geometry.computeBoundingSphere();
+      const sphere = mesh.geometry.boundingSphere;
+      if (sphere) {
+        const worldSphere = sphere.clone();
+        worldSphere.applyMatrix4(mesh.matrixWorld);
+        if (!frustumRef.current.intersectsSphere(worldSphere)) {
+          dirtyRef.current = true;
+          return;
+        }
+      }
+    }
 
     const context = gl.getContext() as WebGL2RenderingContext;
     try {
+      context.pixelStorei(context.UNPACK_FLIP_Y_WEBGL, false);
+      context.pixelStorei(context.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
       context.bindTexture(context.TEXTURE_2D, glTexture);
       context.texElementImage2D(
         context.TEXTURE_2D,
