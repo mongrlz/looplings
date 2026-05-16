@@ -1,0 +1,105 @@
+{
+  "sprite": "lab-ai-cast-lavender-wishstar-l01",
+  "displayName": "Cast Lavender Wishstar",
+  "atlas": "public/pets/lab-ai-cast-lavender-wishstar/state-atlas.png",
+  "source": "random-looplings-12-v2-ai-generated-row-sheets-packed-connected-components",
+  "sourceRows": "public/nft-gen-lab/ai-sources/random-looplings-12-v2/lavender-wishstar/",
+  "rowPacks": "public/nft-gen-lab/row-packs/random-looplings-12-v2/lavender-wishstar/",
+  "cellWidth": 192,
+  "cellHeight": 208,
+  "columns": 8,
+  "rows": [
+    {
+      "id": "idle",
+      "label": "Idle breathing",
+      "row": 0,
+      "frameCount": 8,
+      "fps": 5
+    },
+    {
+      "id": "thinking",
+      "label": "Thinking focus",
+      "row": 1,
+      "frameCount": 8,
+      "fps": 5
+    },
+    {
+      "id": "acting",
+      "label": "Tool action",
+      "row": 2,
+      "frameCount": 8,
+      "fps": 8
+    },
+    {
+      "id": "trading",
+      "label": "Trading workstation",
+      "row": 3,
+      "frameCount": 8,
+      "fps": 9
+    },
+    {
+      "id": "trade_win",
+      "label": "Trade win celebration",
+      "row": 4,
+      "frameCount": 8,
+      "fps": 8
+    },
+    {
+      "id": "trade_loss",
+      "label": "Trade loss reaction",
+      "row": 5,
+      "frameCount": 8,
+      "fps": 5
+    },
+    {
+      "id": "posting",
+      "label": "Posting device loop",
+      "row": 6,
+      "frameCount": 8,
+      "fps": 6
+    },
+    {
+      "id": "receiving",
+      "label": "Receiving signal loop",
+      "row": 7,
+      "frameCount": 8,
+      "fps": 6
+    },
+    {
+      "id": "sleeping",
+      "label": "Sleeping breath",
+      "row": 8,
+      "frameCount": 8,
+      "fps": 2
+    },
+    {
+      "id": "low_compute",
+      "label": "Low compute fade",
+      "row": 9,
+      "frameCount": 8,
+      "fps": 3
+    },
+    {
+      "id": "critical",
+      "label": "Critical alert",
+      "row": 10,
+      "frameCount": 8,
+      "fps": 8
+    },
+    {
+      "id": "dead",
+      "label": "Dead memorial",
+      "row": 11,
+      "frameCount": 8,
+      "fps": 0
+    }
+  ],
+  "repairNotes": [
+    "Regenerated from per-state AI bitmap row sheets to avoid source-atlas grid cropping.",
+    "Packed by connected sprite components, normalized to a stable head/body size, and removed chroma green fringe.",
+    "Eyes were prompted as mostly black cute Loopling eyes with tiny highlights, avoiding excessive white eye area.",
+    "Dead state was prompted as an actual grounded/dead memorial pose rather than a sleepy pose.",
+    "Lavender body, mostly-black violet eyes, connected star-loop antenna, wish/star device personality."
+  ],
+  "note": "Random Looplings first-four v2 row-sheet regeneration."
+}

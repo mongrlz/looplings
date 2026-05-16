@@ -1,0 +1,104 @@
+{
+  "sprite": "lab-ai-ember-kite-l01",
+  "displayName": "Ember Kite",
+  "atlas": "public/pets/lab-ai-ember-kite/state-atlas.png",
+  "source": "fresh-ai-generated-row-sheets-v2-packed-connected-components",
+  "sourceAtlas": "public/pets/lab-ai-ember-kite/state-atlas.png",
+  "sourceRows": "public/nft-gen-lab/ai-sources/ember-kite-v2/",
+  "rowPacks": "public/nft-gen-lab/row-packs/ember-kite-v2/",
+  "cellWidth": 192,
+  "cellHeight": 208,
+  "columns": 8,
+  "rows": [
+    {
+      "id": "idle",
+      "label": "Idle breathing",
+      "row": 0,
+      "frameCount": 8,
+      "fps": 5
+    },
+    {
+      "id": "thinking",
+      "label": "Thinking focus",
+      "row": 1,
+      "frameCount": 8,
+      "fps": 5
+    },
+    {
+      "id": "acting",
+      "label": "Tool action",
+      "row": 2,
+      "frameCount": 8,
+      "fps": 8
+    },
+    {
+      "id": "trading",
+      "label": "Market scan",
+      "row": 3,
+      "frameCount": 8,
+      "fps": 9
+    },
+    {
+      "id": "trade_win",
+      "label": "Trade win bounce",
+      "row": 4,
+      "frameCount": 8,
+      "fps": 8
+    },
+    {
+      "id": "trade_loss",
+      "label": "Trade loss slump",
+      "row": 5,
+      "frameCount": 8,
+      "fps": 5
+    },
+    {
+      "id": "posting",
+      "label": "Posting send",
+      "row": 6,
+      "frameCount": 8,
+      "fps": 6
+    },
+    {
+      "id": "receiving",
+      "label": "Receiving listen",
+      "row": 7,
+      "frameCount": 8,
+      "fps": 6
+    },
+    {
+      "id": "sleeping",
+      "label": "Sleeping breath",
+      "row": 8,
+      "frameCount": 8,
+      "fps": 2
+    },
+    {
+      "id": "low_compute",
+      "label": "Low compute conserve",
+      "row": 9,
+      "frameCount": 8,
+      "fps": 3
+    },
+    {
+      "id": "critical",
+      "label": "Critical distress",
+      "row": 10,
+      "frameCount": 8,
+      "fps": 8
+    },
+    {
+      "id": "dead",
+      "label": "Dead grounded",
+      "row": 11,
+      "frameCount": 8,
+      "fps": 0
+    }
+  ],
+  "repairNotes": [
+    "Fully regenerated Ember Kite from 12 fresh AI bitmap row sheets to replace the motion-review atlas.",
+    "Preserved the ember orange body, bright round eyes, ember diamond forehead glyph, and connected copper kite-loop antenna identity.",
+    "Packed with fixed character target height, removed chroma green and green fringe, dropped loose generated fragments, and baked connected copper kite-loop glints into the sprite frames."
+  ],
+  "note": "Fresh v2 Ember Kite rebuild with real per-state animation and connected-component cleanup."
+}

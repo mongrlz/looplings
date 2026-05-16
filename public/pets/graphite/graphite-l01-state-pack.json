@@ -1,11 +1,11 @@
 {
   "id": "graphite-l01-state-pack",
   "version": "graphite-l01-state-pack.v1",
-  "status": "scaffold_only",
-  "statusReason": "Graphite currently has roster-derived scaffold rows only; it still needs independent Pipeflow-style generated state rows before lab approval.",
+  "status": "atlas_approved",
+  "statusReason": "Graphite was rebuilt from 12 fresh AI-generated bitmap state rows, packed into a connected-component-cleaned production atlas.",
   "rig": "/pets/graphite/graphite-l01-rig.json",
   "prototypeAtlas": "/pets/graphite/state-atlas.png",
-  "productionAtlas": null,
+  "productionAtlas": "/pets/graphite/state-atlas.png",
   "cell": {
     "width": 192,
     "height": 208,
@@ -26,9 +26,9 @@
       "frameCount": 8,
       "fps": 5,
       "loop": "loop",
-      "status": "scaffold_only",
-      "sourceType": "generated_state_row",
-      "currentAsset": "/pets/graphite/rows/idle-row-v1.png"
+      "status": "atlas_approved",
+      "sourceType": "fresh_ai_generated_row_pack",
+      "currentAsset": "/nft-gen-lab/row-packs/graphite-v2/00-idle-row.png"
     },
     {
       "id": "thinking",
@@ -37,9 +37,9 @@
       "frameCount": 8,
       "fps": 5,
       "loop": "loop",
-      "status": "scaffold_only",
-      "sourceType": "generated_state_row",
-      "currentAsset": "/pets/graphite/rows/thinking-row-v1.png"
+      "status": "atlas_approved",
+      "sourceType": "fresh_ai_generated_row_pack",
+      "currentAsset": "/nft-gen-lab/row-packs/graphite-v2/01-thinking-row.png"
     },
     {
       "id": "acting",
@@ -48,9 +48,9 @@
       "frameCount": 8,
       "fps": 8,
       "loop": "loop",
-      "status": "scaffold_only",
-      "sourceType": "generated_state_row",
-      "currentAsset": "/pets/graphite/rows/acting-row-v1.png"
+      "status": "atlas_approved",
+      "sourceType": "fresh_ai_generated_row_pack",
+      "currentAsset": "/nft-gen-lab/row-packs/graphite-v2/02-acting-row.png"
     },
     {
       "id": "trading",
@@ -59,9 +59,9 @@
       "frameCount": 8,
       "fps": 9,
       "loop": "loop",
-      "status": "scaffold_only",
-      "sourceType": "generated_state_row",
-      "currentAsset": "/pets/graphite/rows/trading-row-v1.png"
+      "status": "atlas_approved",
+      "sourceType": "fresh_ai_generated_row_pack",
+      "currentAsset": "/nft-gen-lab/row-packs/graphite-v2/03-trading-row.png"
     },
     {
       "id": "trade_win",
@@ -70,9 +70,9 @@
       "frameCount": 8,
       "fps": 8,
       "loop": "once",
-      "status": "scaffold_only",
-      "sourceType": "generated_state_row",
-      "currentAsset": "/pets/graphite/rows/trade-win-row-v1.png"
+      "status": "atlas_approved",
+      "sourceType": "fresh_ai_generated_row_pack",
+      "currentAsset": "/nft-gen-lab/row-packs/graphite-v2/04-trade_win-row.png"
     },
     {
       "id": "trade_loss",
@@ -81,9 +81,9 @@
       "frameCount": 8,
       "fps": 5,
       "loop": "once",
-      "status": "scaffold_only",
-      "sourceType": "generated_state_row",
-      "currentAsset": "/pets/graphite/rows/trade-loss-row-v1.png"
+      "status": "atlas_approved",
+      "sourceType": "fresh_ai_generated_row_pack",
+      "currentAsset": "/nft-gen-lab/row-packs/graphite-v2/05-trade_loss-row.png"
     },
     {
       "id": "posting",
@@ -92,9 +92,9 @@
       "frameCount": 8,
       "fps": 6,
       "loop": "once",
-      "status": "scaffold_only",
-      "sourceType": "generated_state_row",
-      "currentAsset": "/pets/graphite/rows/posting-row-v1.png"
+      "status": "atlas_approved",
+      "sourceType": "fresh_ai_generated_row_pack",
+      "currentAsset": "/nft-gen-lab/row-packs/graphite-v2/06-posting-row.png"
     },
     {
       "id": "receiving",
@@ -103,9 +103,9 @@
       "frameCount": 8,
       "fps": 6,
       "loop": "once",
-      "status": "scaffold_only",
-      "sourceType": "generated_state_row",
-      "currentAsset": "/pets/graphite/rows/receiving-row-v1.png"
+      "status": "atlas_approved",
+      "sourceType": "fresh_ai_generated_row_pack",
+      "currentAsset": "/nft-gen-lab/row-packs/graphite-v2/07-receiving-row.png"
     },
     {
       "id": "sleeping",
@@ -114,9 +114,9 @@
       "frameCount": 8,
       "fps": 2,
       "loop": "loop",
-      "status": "scaffold_only",
-      "sourceType": "generated_state_row",
-      "currentAsset": "/pets/graphite/rows/sleeping-row-v1.png"
+      "status": "atlas_approved",
+      "sourceType": "fresh_ai_generated_row_pack",
+      "currentAsset": "/nft-gen-lab/row-packs/graphite-v2/08-sleeping-row.png"
     },
     {
       "id": "low_compute",
@@ -125,9 +125,9 @@
       "frameCount": 8,
       "fps": 3,
       "loop": "loop",
-      "status": "scaffold_only",
-      "sourceType": "generated_state_row",
-      "currentAsset": "/pets/graphite/rows/low-compute-row-v1.png"
+      "status": "atlas_approved",
+      "sourceType": "fresh_ai_generated_row_pack",
+      "currentAsset": "/nft-gen-lab/row-packs/graphite-v2/09-low_compute-row.png"
     },
     {
       "id": "critical",
@@ -136,9 +136,9 @@
       "frameCount": 8,
       "fps": 8,
       "loop": "loop",
-      "status": "scaffold_only",
-      "sourceType": "generated_state_row",
-      "currentAsset": "/pets/graphite/rows/critical-row-v1.png"
+      "status": "atlas_approved",
+      "sourceType": "fresh_ai_generated_row_pack",
+      "currentAsset": "/nft-gen-lab/row-packs/graphite-v2/10-critical-row.png"
     },
     {
       "id": "dead",
@@ -147,9 +147,9 @@
       "frameCount": 8,
       "fps": 0,
       "loop": "hold",
-      "status": "scaffold_only",
-      "sourceType": "generated_state_row",
-      "currentAsset": "/pets/graphite/rows/dead-row-v1.png"
+      "status": "atlas_approved",
+      "sourceType": "fresh_ai_generated_row_pack",
+      "currentAsset": "/nft-gen-lab/row-packs/graphite-v2/11-dead-row.png"
     }
   ]
 }

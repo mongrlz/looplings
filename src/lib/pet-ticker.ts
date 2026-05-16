@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-const FRAME_COUNT = 7;
+const FRAME_COUNT = 8;
 const FRAME_MS = 180;
 
 let currentFrame = 0;

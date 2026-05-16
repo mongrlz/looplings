@@ -1,0 +1,112 @@
+{
+  "sprite": "lab-ai-cast-honey-coin-l01",
+  "displayName": "Cast Honey Coin",
+  "atlas": "public/pets/lab-ai-cast-honey-coin/state-atlas.png",
+  "source": "random-looplings-12-v2-global-component-repack",
+  "sourceAtlas": "public/nft-gen-lab/ai-sources/random-looplings-12-v1/honey-coin/source-atlas.png",
+  "sourceComponents": 88,
+  "rowPacks": "public/nft-gen-lab/row-packs/random-looplings-12-v2/honey-coin/",
+  "cellWidth": 192,
+  "cellHeight": 208,
+  "columns": 8,
+  "rows": [
+    {
+      "id": "idle",
+      "label": "Idle breathing",
+      "row": 0,
+      "frameCount": 8,
+      "fps": 5
+    },
+    {
+      "id": "thinking",
+      "label": "Thinking focus",
+      "row": 1,
+      "frameCount": 8,
+      "fps": 5
+    },
+    {
+      "id": "acting",
+      "label": "Tool action",
+      "row": 2,
+      "frameCount": 8,
+      "fps": 8
+    },
+    {
+      "id": "trading",
+      "label": "Trading workstation",
+      "row": 3,
+      "frameCount": 8,
+      "fps": 9
+    },
+    {
+      "id": "trade_win",
+      "label": "Trade win celebration",
+      "row": 4,
+      "frameCount": 8,
+      "fps": 8
+    },
+    {
+      "id": "trade_loss",
+      "label": "Trade loss reaction",
+      "row": 5,
+      "frameCount": 8,
+      "fps": 5
+    },
+    {
+      "id": "posting",
+      "label": "Posting device loop",
+      "row": 6,
+      "frameCount": 8,
+      "fps": 6
+    },
+    {
+      "id": "receiving",
+      "label": "Receiving signal loop",
+      "row": 7,
+      "frameCount": 8,
+      "fps": 6
+    },
+    {
+      "id": "sleeping",
+      "label": "Sleeping breath",
+      "row": 8,
+      "frameCount": 8,
+      "fps": 2
+    },
+    {
+      "id": "low_compute",
+      "label": "Low compute fade",
+      "row": 9,
+      "frameCount": 8,
+      "fps": 3
+    },
+    {
+      "id": "critical",
+      "label": "Critical alert",
+      "row": 10,
+      "frameCount": 8,
+      "fps": 8
+    },
+    {
+      "id": "dead",
+      "label": "Dead memorial",
+      "row": 11,
+      "frameCount": 8,
+      "fps": 0
+    }
+  ],
+  "traits": {
+    "bodyPalette": "Honey Gold",
+    "eyeStyle": "Amber Coin Gloss",
+    "antennaShape": "Coin Ring",
+    "antennaColor": "Gold Edge",
+    "foreheadGlyph": "Honey Diamond"
+  },
+  "repairNotes": [
+    "Repacked from actual sprite connected components instead of slicing the 11-row source atlas into a false 12-row grid.",
+    "Receiving row uses a fresh generated bitmap row so posting and receiving do not recycle the same motion.",
+    "Removed chroma green and isolated the main connected body per frame to avoid green fringe and loose overlay fragments.",
+    "Honey gold body with a coin-ring antenna, amber eyes, and treasurer props."
+  ],
+  "note": "Random Looplings v2 global-component repair for Cast Honey Coin."
+}

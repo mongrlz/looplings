@@ -1,0 +1,223 @@
+{
+  "input": "/Users/jamesfears/Desktop/looplings/public/pets/spark/state-atlas.png",
+  "out": "/Users/jamesfears/Desktop/looplings/public/pets/lab-ai-spark-ring/state-atlas.png",
+  "repairedFrameCount": 36,
+  "detached": [
+    {
+      "row": 0,
+      "column": 0,
+      "removedPixels": 571,
+      "keptPixels": 11125
+    },
+    {
+      "row": 0,
+      "column": 1,
+      "removedPixels": 673,
+      "keptPixels": 11314
+    },
+    {
+      "row": 0,
+      "column": 2,
+      "removedPixels": 726,
+      "keptPixels": 11219
+    },
+    {
+      "row": 0,
+      "column": 3,
+      "removedPixels": 333,
+      "keptPixels": 11398
+    },
+    {
+      "row": 0,
+      "column": 4,
+      "removedPixels": 608,
+      "keptPixels": 11261
+    },
+    {
+      "row": 0,
+      "column": 5,
+      "removedPixels": 644,
+      "keptPixels": 11233
+    },
+    {
+      "row": 0,
+      "column": 6,
+      "removedPixels": 630,
+      "keptPixels": 11278
+    },
+    {
+      "row": 0,
+      "column": 7,
+      "removedPixels": 666,
+      "keptPixels": 11110
+    },
+    {
+      "row": 1,
+      "column": 0,
+      "removedPixels": 747,
+      "keptPixels": 11312
+    },
+    {
+      "row": 1,
+      "column": 1,
+      "removedPixels": 564,
+      "keptPixels": 10891
+    },
+    {
+      "row": 1,
+      "column": 2,
+      "removedPixels": 656,
+      "keptPixels": 10805
+    },
+    {
+      "row": 1,
+      "column": 3,
+      "removedPixels": 710,
+      "keptPixels": 10967
+    },
+    {
+      "row": 1,
+      "column": 4,
+      "removedPixels": 515,
+      "keptPixels": 10838
+    },
+    {
+      "row": 1,
+      "column": 5,
+      "removedPixels": 645,
+      "keptPixels": 11216
+    },
+    {
+      "row": 1,
+      "column": 6,
+      "removedPixels": 594,
+      "keptPixels": 10943
+    },
+    {
+      "row": 1,
+      "column": 7,
+      "removedPixels": 657,
+      "keptPixels": 11276
+    },
+    {
+      "row": 2,
+      "column": 0,
+      "removedPixels": 636,
+      "keptPixels": 10944
+    },
+    {
+      "row": 2,
+      "column": 1,
+      "removedPixels": 621,
+      "keptPixels": 10780
+    },
+    {
+      "row": 2,
+      "column": 2,
+      "removedPixels": 615,
+      "keptPixels": 10963
+    },
+    {
+      "row": 2,
+      "column": 3,
+      "removedPixels": 632,
+      "keptPixels": 10776
+    },
+    {
+      "row": 2,
+      "column": 4,
+      "removedPixels": 602,
+      "keptPixels": 10679
+    },
+    {
+      "row": 2,
+      "column": 5,
+      "removedPixels": 634,
+      "keptPixels": 10598
+    },
+    {
+      "row": 2,
+      "column": 6,
+      "removedPixels": 644,
+      "keptPixels": 10638
+    },
+    {
+      "row": 2,
+      "column": 7,
+      "removedPixels": 602,
+      "keptPixels": 11016
+    },
+    {
+      "row": 3,
+      "column": 0,
+      "removedPixels": 653,
+      "keptPixels": 10256
+    },
+    {
+      "row": 3,
+      "column": 1,
+      "removedPixels": 508,
+      "keptPixels": 9765
+    },
+    {
+      "row": 3,
+      "column": 2,
+      "removedPixels": 517,
+      "keptPixels": 10117
+    },
+    {
+      "row": 3,
+      "column": 3,
+      "removedPixels": 976,
+      "keptPixels": 10156
+    },
+    {
+      "row": 3,
+      "column": 4,
+      "removedPixels": 613,
+      "keptPixels": 9890
+    },
+    {
+      "row": 3,
+      "column": 5,
+      "removedPixels": 629,
+      "keptPixels": 10008
+    },
+    {
+      "row": 3,
+      "column": 6,
+      "removedPixels": 618,
+      "keptPixels": 10234
+    },
+    {
+      "row": 3,
+      "column": 7,
+      "removedPixels": 622,
+      "keptPixels": 10187
+    },
+    {
+      "row": 9,
+      "column": 4,
+      "removedPixels": 1,
+      "keptPixels": 10665
+    },
+    {
+      "row": 10,
+      "column": 5,
+      "removedPixels": 1,
+      "keptPixels": 10446
+    },
+    {
+      "row": 11,
+      "column": 2,
+      "removedPixels": 14,
+      "keptPixels": 6300
+    },
+    {
+      "row": 11,
+      "column": 6,
+      "removedPixels": 36,
+      "keptPixels": 6315
+    }
+  ]
+}

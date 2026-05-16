@@ -1,0 +1,19 @@
+{
+  "asset": "lab-ai-spark-ring",
+  "status": "approved",
+  "generationMethod": "ai-generated-atlas-repaired-connected-components",
+  "sourceAtlas": "public/pets/spark/state-atlas.png",
+  "packedAtlas": "public/pets/lab-ai-spark-ring/state-atlas.png",
+  "notes": [
+    "Full creature pixels come from the AI-generated atlas.",
+    "Connected-component cleanup only removes detached generated fragments; no browser-side overlays, SVG, CSS, recolor, or procedural drawing are used.",
+    "Must pass audit:loopling-atlases and audit:loopling-motion before entering the generator pool.",
+    "Repair uses side-connected components with alpha-threshold 18 to match the atlas audit."
+  ],
+  "audit": {
+    "component": "pass",
+    "motion": "pass",
+    "rowsChecked": 12,
+    "framesChecked": 96
+  }
+}

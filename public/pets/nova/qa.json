@@ -1,0 +1,21 @@
+{
+  "asset": "nova",
+  "status": "rejected",
+  "source": "public/pets/nova/state-atlas-source-chroma.png",
+  "packedAtlas": "public/pets/nova/state-atlas.png",
+  "packing": {
+    "method": "component-detect-and-pack",
+    "sourceSize": "1537x1023",
+    "detectedComponents": 120,
+    "selectedFrames": 96,
+    "detectedSourceColumns": 10,
+    "clippedFrames": 0,
+    "detachedFrameCount": 72
+  },
+  "notes": [
+    "Full creature pixels come from the AI-generated chroma sheet.",
+    "No trait overlays, SVG, canvas drawing, or browser-side recolor are used.",
+    "Rejected from the live wallet picker because disconnected source artifacts read as overlay-like art."
+  ],
+  "rejectionReason": "The strict connected-component audit found detached art in 72 frames."
+}

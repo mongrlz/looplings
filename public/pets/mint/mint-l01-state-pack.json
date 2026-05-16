@@ -1,11 +1,11 @@
 {
   "id": "mint-l01-state-pack",
   "version": "mint-l01-state-pack.v1",
-  "status": "scaffold_only",
-  "statusReason": "Mint currently has roster-derived scaffold rows only; it still needs independent Pipeflow-style generated state rows before lab approval.",
+  "status": "atlas_approved",
+  "statusReason": "Mint was rebuilt from 12 fresh AI-generated bitmap state rows, packed into a connected-component-cleaned production atlas.",
   "rig": "/pets/mint/mint-l01-rig.json",
   "prototypeAtlas": "/pets/mint/state-atlas.png",
-  "productionAtlas": null,
+  "productionAtlas": "/pets/mint/state-atlas.png",
   "cell": {
     "width": 192,
     "height": 208,
@@ -26,9 +26,9 @@
       "frameCount": 8,
       "fps": 5,
       "loop": "loop",
-      "status": "scaffold_only",
-      "sourceType": "generated_state_row",
-      "currentAsset": "/pets/mint/rows/idle-row-v1.png"
+      "status": "atlas_approved",
+      "sourceType": "fresh_ai_generated_row_pack",
+      "currentAsset": "/nft-gen-lab/row-packs/mint-v2/00-idle-row.png"
     },
     {
       "id": "thinking",
@@ -37,9 +37,9 @@
       "frameCount": 8,
       "fps": 5,
       "loop": "loop",
-      "status": "scaffold_only",
-      "sourceType": "generated_state_row",
-      "currentAsset": "/pets/mint/rows/thinking-row-v1.png"
+      "status": "atlas_approved",
+      "sourceType": "fresh_ai_generated_row_pack",
+      "currentAsset": "/nft-gen-lab/row-packs/mint-v2/01-thinking-row.png"
     },
     {
       "id": "acting",
@@ -48,9 +48,9 @@
       "frameCount": 8,
       "fps": 8,
       "loop": "loop",
-      "status": "scaffold_only",
-      "sourceType": "generated_state_row",
-      "currentAsset": "/pets/mint/rows/acting-row-v1.png"
+      "status": "atlas_approved",
+      "sourceType": "fresh_ai_generated_row_pack",
+      "currentAsset": "/nft-gen-lab/row-packs/mint-v2/02-acting-row.png"
     },
     {
       "id": "trading",
@@ -59,9 +59,9 @@
       "frameCount": 8,
       "fps": 9,
       "loop": "loop",
-      "status": "scaffold_only",
-      "sourceType": "generated_state_row",
-      "currentAsset": "/pets/mint/rows/trading-row-v1.png"
+      "status": "atlas_approved",
+      "sourceType": "fresh_ai_generated_row_pack",
+      "currentAsset": "/nft-gen-lab/row-packs/mint-v2/03-trading-row.png"
     },
     {
       "id": "trade_win",
@@ -70,9 +70,9 @@
       "frameCount": 8,
       "fps": 8,
       "loop": "once",
-      "status": "scaffold_only",
-      "sourceType": "generated_state_row",
-      "currentAsset": "/pets/mint/rows/trade-win-row-v1.png"
+      "status": "atlas_approved",
+      "sourceType": "fresh_ai_generated_row_pack",
+      "currentAsset": "/nft-gen-lab/row-packs/mint-v2/04-trade_win-row.png"
     },
     {
       "id": "trade_loss",
@@ -81,9 +81,9 @@
       "frameCount": 8,
       "fps": 5,
       "loop": "once",
-      "status": "scaffold_only",
-      "sourceType": "generated_state_row",
-      "currentAsset": "/pets/mint/rows/trade-loss-row-v1.png"
+      "status": "atlas_approved",
+      "sourceType": "fresh_ai_generated_row_pack",
+      "currentAsset": "/nft-gen-lab/row-packs/mint-v2/05-trade_loss-row.png"
     },
     {
       "id": "posting",
@@ -92,9 +92,9 @@
       "frameCount": 8,
       "fps": 6,
       "loop": "once",
-      "status": "scaffold_only",
-      "sourceType": "generated_state_row",
-      "currentAsset": "/pets/mint/rows/posting-row-v1.png"
+      "status": "atlas_approved",
+      "sourceType": "fresh_ai_generated_row_pack",
+      "currentAsset": "/nft-gen-lab/row-packs/mint-v2/06-posting-row.png"
     },
     {
       "id": "receiving",
@@ -103,9 +103,9 @@
       "frameCount": 8,
       "fps": 6,
       "loop": "once",
-      "status": "scaffold_only",
-      "sourceType": "generated_state_row",
-      "currentAsset": "/pets/mint/rows/receiving-row-v1.png"
+      "status": "atlas_approved",
+      "sourceType": "fresh_ai_generated_row_pack",
+      "currentAsset": "/nft-gen-lab/row-packs/mint-v2/07-receiving-row.png"
     },
     {
       "id": "sleeping",
@@ -114,9 +114,9 @@
       "frameCount": 8,
       "fps": 2,
       "loop": "loop",
-      "status": "scaffold_only",
-      "sourceType": "generated_state_row",
-      "currentAsset": "/pets/mint/rows/sleeping-row-v1.png"
+      "status": "atlas_approved",
+      "sourceType": "fresh_ai_generated_row_pack",
+      "currentAsset": "/nft-gen-lab/row-packs/mint-v2/08-sleeping-row.png"
     },
     {
       "id": "low_compute",
@@ -125,9 +125,9 @@
       "frameCount": 8,
       "fps": 3,
       "loop": "loop",
-      "status": "scaffold_only",
-      "sourceType": "generated_state_row",
-      "currentAsset": "/pets/mint/rows/low-compute-row-v1.png"
+      "status": "atlas_approved",
+      "sourceType": "fresh_ai_generated_row_pack",
+      "currentAsset": "/nft-gen-lab/row-packs/mint-v2/09-low_compute-row.png"
     },
     {
       "id": "critical",
@@ -136,9 +136,9 @@
       "frameCount": 8,
       "fps": 8,
       "loop": "loop",
-      "status": "scaffold_only",
-      "sourceType": "generated_state_row",
-      "currentAsset": "/pets/mint/rows/critical-row-v1.png"
+      "status": "atlas_approved",
+      "sourceType": "fresh_ai_generated_row_pack",
+      "currentAsset": "/nft-gen-lab/row-packs/mint-v2/10-critical-row.png"
     },
     {
       "id": "dead",
@@ -147,9 +147,9 @@
       "frameCount": 8,
       "fps": 0,
       "loop": "hold",
-      "status": "scaffold_only",
-      "sourceType": "generated_state_row",
-      "currentAsset": "/pets/mint/rows/dead-row-v1.png"
+      "status": "atlas_approved",
+      "sourceType": "fresh_ai_generated_row_pack",
+      "currentAsset": "/nft-gen-lab/row-packs/mint-v2/11-dead-row.png"
     }
   ]
 }

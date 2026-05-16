@@ -1,0 +1,7 @@
+{
+  "asset": "lab-pink-violet",
+  "status": "candidate",
+  "sourceAtlas": "public/pets/pink/state-atlas.png",
+  "generationMethod": "approved-atlas-palette-bake",
+  "note": "This is a full monolithic exported PNG atlas generated from an audit-approved atlas source. It is not a runtime overlay."
+}

@@ -6,6 +6,10 @@ import StarterRoomScene, {
 } from '@/components/scenes/StarterRoomScene';
 import { RoomIntro } from '@/components/room/RoomIntro';
 import { RoomAbout } from '@/components/room/RoomAbout';
+import { ActiveCharacterProvider } from '@/data/active-character-context';
+import { DEFAULT_CHARACTER_ID, resolveCharacterId } from '@/data/showcase-roster';
+
+const ACTIVE_CHARACTER_STORAGE_KEY = 'looplings:active-character';
 
 export default function StarterRoomPage() {
   const [cameraResetTick, setCameraResetTick] = useState(0);
@@ -14,6 +18,16 @@ export default function StarterRoomPage() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
   const [focus, setFocus] = useState<FocusZoneId | null>(null);
+  const [activeCharacterId, setActiveCharacterId] = useState<string>(() => {
+    if (typeof window === 'undefined') return DEFAULT_CHARACTER_ID;
+    const saved = window.localStorage.getItem(ACTIVE_CHARACTER_STORAGE_KEY);
+    return resolveCharacterId(saved);
+  });
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(ACTIVE_CHARACTER_STORAGE_KEY, activeCharacterId);
+  }, [activeCharacterId]);
 
   const toggleFullscreen = useCallback(() => {
     if (!document.fullscreenElement) {
@@ -68,6 +82,7 @@ export default function StarterRoomPage() {
   }, [inspectMode]);
 
   return (
+    <ActiveCharacterProvider characterId={activeCharacterId} setCharacterId={setActiveCharacterId}>
     <main className="starter-room-page">
       <StarterRoomScene
         resetSignal={cameraResetTick}
@@ -75,6 +90,8 @@ export default function StarterRoomPage() {
         onInspectCameraChange={setInspectCamera}
         focus={focus}
         onFocusChange={setFocus}
+        characterId={activeCharacterId}
+        onCharacterChange={setActiveCharacterId}
       />
       <div className="starter-room-overlay starter-room-overlay--top">
         <span className="starter-room-mark">LOOPLINGS</span>
@@ -84,7 +101,7 @@ export default function StarterRoomPage() {
           ) : (
             <>
               <i aria-hidden="true" />
-              PREVIEW MODE · PRIME ACTIVATES POST-LAUNCH
+              PREVIEW MODE
             </>
           )}
         </span>
@@ -129,5 +146,6 @@ export default function StarterRoomPage() {
       <RoomIntro onOpenAbout={() => setAboutOpen(true)} />
       <RoomAbout open={aboutOpen} onClose={() => setAboutOpen(false)} />
     </main>
+    </ActiveCharacterProvider>
   );
 }

@@ -15,6 +15,7 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import type { ThreeEvent } from '@react-three/fiber';
 import { ContactShadows, PerspectiveCamera, Text, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
+import { ChevronLeft } from 'lucide-react';
 import {
   BalanceScreen,
   COMMAND_KEY_ORDER,
@@ -31,6 +32,11 @@ import {
 } from '@/components/pages/ScreenDeckPage';
 import { useLooplingsState } from '@/lib/looplings-state';
 import { HtmlInCanvasSurface, flipPlaneUvY } from '@/components/scenes/starter-room/HtmlInCanvasSurface';
+import {
+  ActiveCharacterProvider,
+  useActiveCharacter,
+} from '@/data/active-character-context';
+import { DEFAULT_CHARACTER_ID } from '@/data/showcase-roster';
 
 const ROOM = {
   wall: '#251d27',
@@ -1872,14 +1878,32 @@ function createMainScreenHtml() {
   `;
 }
 
-function HtmlInCanvasScreen({ meshRef }: { meshRef: { current: THREE.Mesh | null } }) {
+function HtmlInCanvasScreen({
+  meshRef,
+  isFocused = false,
+}: {
+  meshRef: { current: THREE.Mesh | null };
+  isFocused?: boolean;
+}) {
+  const { id: activeId, setCharacterId } = useActiveCharacter();
+  const { setFocus } = useContext(RoomFocusContext);
+  const handleReturn = useCallback(
+    () => setFocus(getParentZone('center')),
+    [setFocus],
+  );
   const screenContent = useMemo(
     () => (
-      <div className="room-html-screen-surface">
-        <MainHabitatScreen />
-      </div>
+      <ActiveCharacterProvider characterId={activeId} setCharacterId={setCharacterId}>
+        <div className="room-html-screen-surface">
+          <MainHabitatScreen
+            embedDropdown
+            onReturn={handleReturn}
+            isFocused={isFocused}
+          />
+        </div>
+      </ActiveCharacterProvider>
     ),
-    [],
+    [activeId, setCharacterId, isFocused, handleReturn],
   );
 
   return (
@@ -1895,6 +1919,7 @@ function HtmlInCanvasScreen({ meshRef }: { meshRef: { current: THREE.Mesh | null
       scanlines={0.65}
       uploadFps={5}
       warmupFrames={6}
+      interactive={isFocused}
     >
       {screenContent}
     </HtmlInCanvasSurface>
@@ -1903,14 +1928,18 @@ function HtmlInCanvasScreen({ meshRef }: { meshRef: { current: THREE.Mesh | null
 
 function Casing() {
   const screenRef = useRef<THREE.Mesh>(null);
-  const { handlers, isHovered } = useFocusZone('center');
+  const { handlers, isFocused, isHovered } = useFocusZone('center');
 
+  // Click behavior is state-driven: when NOT focused, the casing intercepts
+  // clicks to trigger camera zoom-in. Once focused, the click handler is
+  // removed so taps fall through to the embedded HTML (dropdown / return
+  // button). The return button inside MainHabitatScreen handles unfocusing.
   return (
     <group
       position={[0.18, DESK_SURFACE_Y + 1.2, -1.74 + DESK_WALL_OFFSET_Z]}
       rotation={[0, 0, 0]}
       scale={isHovered ? [1.296, 1.296, 1] : [1.28, 1.28, 1]}
-      {...handlers}
+      {...(isFocused ? {} : handlers)}
     >
       <Box position={[0, 0, 0.226]} scale={[2.08, 1.22, 0.04]} color="#050505" roughness={0.6} />
 
@@ -1918,7 +1947,7 @@ function Casing() {
         <planeGeometry args={[2.02, 1.18]} onUpdate={flipPlaneUvY} />
         <meshBasicMaterial color="#111122" toneMapped={false} />
       </mesh>
-      <HtmlInCanvasScreen meshRef={screenRef} />
+      <HtmlInCanvasScreen meshRef={screenRef} isFocused={isFocused} />
 
       <mesh position={[0, 0, 0.292]}>
         <planeGeometry args={[2.02, 1.18]} />
@@ -2781,6 +2810,8 @@ function HtmlWallScreen({
   accent = '#8cffae',
   rotateContent = false,
   highlight = false,
+  isFocused = false,
+  zone,
 }: {
   kind: WallHtmlScreenKind;
   position: [number, number, number];
@@ -2790,17 +2821,38 @@ function HtmlWallScreen({
   accent?: string;
   rotateContent?: boolean;
   highlight?: boolean;
+  isFocused?: boolean;
+  zone?: FocusZoneId;
 }) {
   const screenRef = useRef<THREE.Mesh>(null);
   const ScreenComponent = wallScreenComponents[kind];
   const isLiveSurface = kind === 'prime-id' || kind === 'skills' || kind === 'loopr';
+  const { id: activeId, setCharacterId } = useActiveCharacter();
+  const { setFocus } = useContext(RoomFocusContext);
+  const handleReturn = useCallback(
+    () => setFocus(getParentZone(zone)),
+    [setFocus, zone],
+  );
   const screenContent = useMemo(
     () => (
-      <div className={`room-html-screen-surface ${rotateContent ? 'is-rotated' : ''}`}>
-        <ScreenComponent />
-      </div>
+      <ActiveCharacterProvider characterId={activeId} setCharacterId={setCharacterId}>
+        <div className={`room-html-screen-surface ${rotateContent ? 'is-rotated' : ''}`}>
+          <button
+            type="button"
+            className={`screen-deck-return-button room-html-return-button${isFocused ? '' : ' is-passive'}`}
+            onClick={handleReturn}
+            aria-label="Step back"
+            aria-disabled={!isFocused}
+            tabIndex={isFocused ? 0 : -1}
+          >
+            <ChevronLeft size={12} strokeWidth={2.6} aria-hidden />
+            <span>BACK</span>
+          </button>
+          <ScreenComponent />
+        </div>
+      </ActiveCharacterProvider>
     ),
-    [ScreenComponent, rotateContent],
+    [ScreenComponent, rotateContent, activeId, setCharacterId, isFocused, handleReturn],
   );
 
   return (
@@ -2826,6 +2878,7 @@ function HtmlWallScreen({
         scanlines={0.65}
         uploadFps={isLiveSurface ? 4 : 2}
         warmupFrames={isLiveSurface ? 4 : 2}
+        interactive={isFocused}
       >
         {screenContent}
       </HtmlInCanvasSurface>
@@ -2925,6 +2978,23 @@ const LEFT_WALL_FOCUS_SET = new Set<FocusZoneId>([
   ...FOCUS_ZONE_GROUPS.left,
 ]);
 
+// Hierarchical "BACK" routing. Each zone returns to its parent — left-wall
+// screens step back to the wall overview, the wall overview steps back to
+// home. Top-level zones (center, desk-*, left-overview, etc.) return to home.
+const ZONE_PARENT: Partial<Record<FocusZoneId, FocusZoneId | null>> = {
+  'left-passport': 'left-overview',
+  'left-skills': 'left-overview',
+  'left-loopr': 'left-overview',
+  'left-balance': 'left-overview',
+  'left-model': 'left-overview',
+  'left-care': 'left-overview',
+};
+
+function getParentZone(zone: FocusZoneId | null | undefined): FocusZoneId | null {
+  if (!zone) return null;
+  return ZONE_PARENT[zone] ?? null;
+}
+
 function useLeftWallDrillZone(zone: FocusZoneId) {
   const { focus, setFocus, hovered, setHovered } = useContext(RoomFocusContext);
   const { gl } = useThree();
@@ -2999,6 +3069,8 @@ function LeftWallScreen({
         htmlSize={htmlSize}
         accent={accent}
         highlight={isHovered || isFocused}
+        isFocused={isFocused}
+        zone={zone}
       />
     </group>
   );
@@ -3242,6 +3314,7 @@ function LooplingAtlasBillboard({
 }
 
 function PrimeHabitatDome() {
+  const { id: activeId, name: activeName } = useActiveCharacter();
   return (
     <group position={[-2.34, DESK_SURFACE_Y + 0.11, -1.05 + DESK_WALL_OFFSET_Z]} rotation={[0, 0.1, 0]}>
       <mesh position={[0, -0.025, 0]} castShadow receiveShadow>
@@ -3284,9 +3357,9 @@ function PrimeHabitatDome() {
           </mesh>
         );
       })}
-      <LooplingAtlasBillboard position={[-0.02, 0.135, 0.145]} scale={[0.2, 0.217]} />
+      <LooplingAtlasBillboard pet={activeId} position={[-0.02, 0.135, 0.145]} scale={[0.2, 0.217]} />
       <Text position={[0, -0.071, 0.235]} rotation={[-0.16, 0, 0]} fontSize={0.035} color="#e8d47c" anchorX="center" anchorY="middle">
-        PRIME-00
+        {activeName.toUpperCase()}
       </Text>
       <pointLight position={[0, 0.2, 0.18]} intensity={0.58} distance={0.72} color="#8cffae" />
     </group>
@@ -3317,6 +3390,8 @@ function AgentHandbook() {
 }
 
 function PrimeIdCard() {
+  const { id: activeId, name: activeName, character } = useActiveCharacter();
+  const idTag = `${character.lineage.replace(/\s+/g, '')} / ${activeName.toUpperCase()}`;
   return (
     <group position={[-1.68, DESK_SURFACE_Y + 0.064, -0.34 + DESK_WALL_OFFSET_Z]} rotation={[-Math.PI / 2, 0, 0.12]}>
       <mesh receiveShadow>
@@ -3324,12 +3399,12 @@ function PrimeIdCard() {
         <meshStandardMaterial color="#ead8a8" roughness={0.84} side={THREE.DoubleSide} />
       </mesh>
       <Box position={[0, 0.13, 0.012]} scale={[0.38, 0.012, 0.01]} color="#17120c" roughness={0.44} />
-      <LooplingAtlasBillboard position={[-0.1, 0.0, 0.025]} rotation={[0, 0, 0]} scale={[0.13, 0.14]} />
+      <LooplingAtlasBillboard pet={activeId} position={[-0.1, 0.0, 0.025]} rotation={[0, 0, 0]} scale={[0.13, 0.14]} />
       <Text position={[0.08, 0.04, 0.026]} fontSize={0.03} color="#18120b" anchorX="center" anchorY="middle">
-        PRIME-00
+        {activeName.toUpperCase()}
       </Text>
-      <Text position={[0.08, -0.06, 0.026]} fontSize={0.022} color="#2f7a3a" anchorX="center" anchorY="middle">
-        ID: 000-PRIME
+      <Text position={[0.08, -0.06, 0.026]} fontSize={0.018} color="#2f7a3a" anchorX="center" anchorY="middle">
+        {idTag}
       </Text>
       <mesh position={[0.18, -0.095, 0.026]}>
         <planeGeometry args={[0.07, 0.07]} />
@@ -3950,12 +4025,16 @@ function StarterRoomScene({
   onInspectCameraChange,
   focus,
   onFocusChange,
+  characterId = DEFAULT_CHARACTER_ID,
+  onCharacterChange,
 }: {
   resetSignal: number;
   inspectMode?: boolean;
   onInspectCameraChange?: (snapshot: RoomInspectionSnapshot) => void;
   focus?: FocusZoneId | null;
   onFocusChange?: (zone: FocusZoneId | null) => void;
+  characterId?: string;
+  onCharacterChange?: (id: string) => void;
 }) {
   const focusValue = useRoomFocusValue(focus, onFocusChange);
   return (
@@ -3969,17 +4048,30 @@ function StarterRoomScene({
           gl.shadowMap.autoUpdate = false;
           gl.shadowMap.needsUpdate = true;
         }}
-        onPointerMissed={() => focusValue.setFocus(null)}
+        onPointerMissed={(event) => {
+          // If the click landed inside an interactive html-in-canvas wrapper
+          // (the embedded dropdown, BACK button, or any other DOM control
+          // overlaid on the screen via matrix3d projection), don't treat it
+          // as "missed empty 3D space." The wrapper has already handled the
+          // event; unfocusing here would yank the camera back home mid-click.
+          const target = event.target as Element | null;
+          if (target && target.closest && target.closest('[data-html-in-canvas-wrapper]')) {
+            return;
+          }
+          focusValue.setFocus(null);
+        }}
       >
-        <color attach="background" args={['#07080c']} />
-        <PerspectiveCamera makeDefault position={CAMERA_HOME_POSITION} fov={CAMERA_FOV} />
-        <AspectAwareFov />
-        <StarterRoomContent />
-        {inspectMode ? (
-          <InspectionCamera resetSignal={resetSignal} onInspectCameraChange={onInspectCameraChange} />
-        ) : (
-          <FocusableCamera resetSignal={resetSignal} />
-        )}
+        <ActiveCharacterProvider characterId={characterId} setCharacterId={onCharacterChange}>
+          <color attach="background" args={['#07080c']} />
+          <PerspectiveCamera makeDefault position={CAMERA_HOME_POSITION} fov={CAMERA_FOV} />
+          <AspectAwareFov />
+          <StarterRoomContent />
+          {inspectMode ? (
+            <InspectionCamera resetSignal={resetSignal} onInspectCameraChange={onInspectCameraChange} />
+          ) : (
+            <FocusableCamera resetSignal={resetSignal} />
+          )}
+        </ActiveCharacterProvider>
       </Canvas>
     </RoomFocusContext.Provider>
   );

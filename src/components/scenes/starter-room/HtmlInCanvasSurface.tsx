@@ -24,6 +24,7 @@ type HtmlInCanvasSurfaceProps = {
   scanlines?: number;
   uploadFps?: number;
   warmupFrames?: number;
+  interactive?: boolean;
 };
 
 const HTML_SURFACE_ANIMATED_UPLOAD_FPS = 4;
@@ -46,6 +47,7 @@ export function HtmlInCanvasSurface({
   scanlines,
   uploadFps,
   warmupFrames,
+  interactive = false,
 }: HtmlInCanvasSurfaceProps) {
   const { gl } = useThree();
   const elementRef = useRef<HTMLDivElement | null>(null);
@@ -75,6 +77,7 @@ export function HtmlInCanvasSurface({
     lastUploadRef.current = -interval + Math.random() * interval;
 
     const element = document.createElement('div');
+    element.setAttribute('data-html-in-canvas-wrapper', '');
     element.style.width = `${width}px`;
     element.style.height = `${height}px`;
     element.style.position = 'absolute';
@@ -84,6 +87,15 @@ export function HtmlInCanvasSurface({
     element.style.opacity = '1';
     element.style.display = 'block';
     const syncPointerEvents = () => {
+      if (interactive) {
+        // Opt-in: allow taps inside the embedded HTML. Native html-in-canvas
+        // forwards clicks through; polyfilled browsers won't get tap routing,
+        // but the room still works via the top-overlay fallback dropdown.
+        if (element.style.pointerEvents !== 'auto') {
+          element.style.setProperty('pointer-events', 'auto', 'important');
+        }
+        return;
+      }
       if (element.style.pointerEvents !== 'none') {
         element.style.setProperty('pointer-events', 'none', 'important');
       }
@@ -190,7 +202,7 @@ export function HtmlInCanvasSurface({
       glTextureRef.current = null;
       rootRef.current = null;
     };
-  }, [barrel, brightness, flicker, gl, hasChildren, height, meshRef, phosphor, reflection, resolvedWarmupFrames, scanlines, width]);
+  }, [barrel, brightness, flicker, gl, hasChildren, height, interactive, meshRef, phosphor, reflection, resolvedWarmupFrames, scanlines, width]);
 
   useEffect(() => {
     const element = elementRef.current;
@@ -215,6 +227,12 @@ export function HtmlInCanvasSurface({
 
   const frustumRef = useRef(new THREE.Frustum());
   const projScreenMatrixRef = useRef(new THREE.Matrix4());
+  const cornerRef = useRef([
+    new THREE.Vector3(),
+    new THREE.Vector3(),
+    new THREE.Vector3(),
+    new THREE.Vector3(),
+  ]);
 
   useFrame(({ clock, camera }) => {
     const element = elementRef.current;
@@ -225,6 +243,63 @@ export function HtmlInCanvasSurface({
 
     const elapsed = clock.elapsedTime;
     material.uniforms.u_time.value = elapsed;
+
+    // Sawyer Hood's pattern: when the surface is interactive, project the
+    // screen mesh's world-space corners through the camera each frame and
+    // CSS-transform the embedded DOM wrapper to occupy that viewport region.
+    // The wrapper then receives native clicks (no html-in-canvas event
+    // forwarding needed), works in every browser, and texElementImage2D
+    // still reads the wrapper's pre-transform layout so the texture is
+    // unaffected by the transform.
+    if (interactive && mesh && mesh.geometry) {
+      const planeGeom = mesh.geometry as THREE.PlaneGeometry;
+      const w = planeGeom.parameters?.width ?? 1;
+      const h = planeGeom.parameters?.height ?? 1;
+      const corners = cornerRef.current;
+      corners[0].set(-w / 2, -h / 2, 0);
+      corners[1].set(w / 2, -h / 2, 0);
+      corners[2].set(-w / 2, h / 2, 0);
+      corners[3].set(w / 2, h / 2, 0);
+      mesh.updateMatrixWorld();
+      const canvasRect = gl.domElement.getBoundingClientRect();
+      let minX = Infinity;
+      let minY = Infinity;
+      let maxX = -Infinity;
+      let maxY = -Infinity;
+      let behindCamera = false;
+      for (const corner of corners) {
+        corner.applyMatrix4(mesh.matrixWorld);
+        corner.project(camera);
+        if (corner.z > 1) {
+          behindCamera = true;
+          break;
+        }
+        const sx = ((corner.x + 1) / 2) * canvasRect.width;
+        const sy = ((1 - corner.y) / 2) * canvasRect.height;
+        if (sx < minX) minX = sx;
+        if (sy < minY) minY = sy;
+        if (sx > maxX) maxX = sx;
+        if (sy > maxY) maxY = sy;
+      }
+      if (!behindCamera && Number.isFinite(minX)) {
+        const projectedW = Math.max(1, maxX - minX);
+        const projectedH = Math.max(1, maxY - minY);
+        const scaleX = projectedW / width;
+        const scaleY = projectedH / height;
+        const translateX = canvasRect.left + minX;
+        const translateY = canvasRect.top + minY;
+        const transform = `translate(${translateX}px, ${translateY}px) scale(${scaleX}, ${scaleY})`;
+        if (element.style.transform !== transform) {
+          element.style.transformOrigin = '0 0';
+          element.style.transform = transform;
+          element.style.position = 'fixed';
+        }
+      }
+    } else if (element.style.transform) {
+      element.style.transform = '';
+      element.style.transformOrigin = '';
+      element.style.position = 'absolute';
+    }
 
     if (!animated && frozenRef.current) return;
     const inWarmup = warmupFramesRef.current > 0;

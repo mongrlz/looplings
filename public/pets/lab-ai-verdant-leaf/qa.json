@@ -1,0 +1,21 @@
+{
+  "asset": "lab-ai-verdant-leaf",
+  "status": "approved",
+  "generationMethod": "fresh-ai-generated-row-sheets-packed-connected-components",
+  "sourceRows": "public/nft-gen-lab/ai-sources/verdant-leaf-v2/",
+  "rowPacks": "public/nft-gen-lab/row-packs/verdant-leaf-v2/",
+  "packedAtlas": "public/pets/lab-ai-verdant-leaf/state-atlas.png",
+  "notes": [
+    "Full character poses come from fresh AI-generated Verdant Leaf row sheets, not the previous stagnant promoted Verdant atlas.",
+    "Packing selects the 8 full character bodies, cuts chroma-key green, and removes leftover loose generated fragments.",
+    "Connected leaf antenna glints remain baked into the sprite pixels; no browser-side overlays, SVG, CSS, recolor, or procedural drawing are used.",
+    "Must pass audit:loopling-atlases and audit:loopling-motion before entering the generator pool.",
+    "Repair uses side-connected components with alpha-threshold 18 to match the atlas audit."
+  ],
+  "audit": {
+    "component": "pass",
+    "motion": "pass",
+    "rowsChecked": 12,
+    "framesChecked": 96
+  }
+}

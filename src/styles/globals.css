@@ -1524,9 +1524,10 @@ a:hover {
 }
 
 .starter-room-mark {
-  font-size: 16px;
-  font-weight: 800;
-  letter-spacing: 0.28em;
+  font-family: 'Pixelify Sans', 'Courier New', monospace;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.32em;
 }
 
 .starter-room-status {
@@ -1561,6 +1562,301 @@ a:hover {
 @keyframes starter-room-status-pulse {
   0%, 100% { transform: scale(1); opacity: 1; }
   50% { transform: scale(1.25); opacity: 0.7; }
+}
+
+.character-dropdown {
+  position: relative;
+  pointer-events: auto;
+  font-family: 'Pixelify Sans', 'Courier New', monospace;
+}
+
+.character-dropdown-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 6px 11px 6px 10px;
+  border: 1px solid rgba(101, 245, 214, 0.32);
+  border-radius: 999px;
+  background: rgba(5, 9, 12, 0.72);
+  color: rgba(232, 255, 244, 0.92);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
+}
+
+.character-dropdown-trigger:hover,
+.character-dropdown-trigger[aria-expanded="true"] {
+  border-color: rgba(101, 245, 214, 0.6);
+  background: rgba(8, 15, 18, 0.82);
+  color: #f5fffd;
+}
+
+.character-dropdown-trigger:focus-visible {
+  outline: 2px solid rgba(101, 245, 214, 0.72);
+  outline-offset: 3px;
+}
+
+.character-dropdown-trigger-name {
+  white-space: nowrap;
+}
+
+.character-dropdown-caret {
+  transition: transform 160ms ease;
+  opacity: 0.78;
+}
+
+.character-dropdown-caret.is-open {
+  transform: rotate(180deg);
+  opacity: 1;
+}
+
+.character-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 20;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  min-width: 280px;
+  max-height: 60vh;
+  overflow-y: auto;
+  border: 1px solid rgba(101, 245, 214, 0.28);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(8, 14, 18, 0.96), rgba(4, 8, 11, 0.96));
+  box-shadow: 0 22px 48px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(101, 245, 214, 0.08);
+  backdrop-filter: blur(4px);
+  outline: none;
+}
+
+.character-dropdown-option {
+  display: grid;
+  grid-template-columns: 32px 1fr auto;
+  grid-template-areas:
+    "pet name tier"
+    "pet lineage tier";
+  align-items: center;
+  column-gap: 10px;
+  row-gap: 2px;
+  padding: 7px 11px;
+  border-radius: 8px;
+  color: rgba(228, 250, 240, 0.78);
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.character-dropdown-option.is-active {
+  background: rgba(101, 245, 214, 0.12);
+  color: #f5fffd;
+}
+
+.character-dropdown-option.is-selected {
+  background: rgba(101, 245, 214, 0.18);
+  color: #f5fffd;
+}
+
+.character-dropdown-option-name {
+  grid-area: name;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.character-dropdown-option-lineage {
+  grid-area: lineage;
+  font-size: 9.5px;
+  letter-spacing: 0.16em;
+  color: rgba(180, 220, 210, 0.6);
+  text-transform: uppercase;
+}
+
+.character-dropdown-option-tier {
+  grid-area: tier;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: rgba(180, 220, 210, 0.55);
+  text-transform: uppercase;
+}
+
+.character-dropdown-option.is-selected .character-dropdown-option-tier,
+.character-dropdown-option.is-active .character-dropdown-option-tier {
+  color: rgba(220, 250, 240, 0.85);
+}
+
+.character-dropdown-pet {
+  grid-area: pet;
+  display: inline-block;
+  flex-shrink: 0;
+  background-image: var(--atlas);
+  background-size: 800% 1200%;
+  background-position: calc(var(--frame, 0) / 7 * 100%) 0%;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 0 4px rgba(101, 245, 214, 0.25));
+}
+
+.character-dropdown--screen .character-dropdown-trigger {
+  padding: 5px 10px 5px 8px;
+  border: 2px solid #162014;
+  border-radius: 6px;
+  background: #fff9e8;
+  color: #162014;
+  font-family: 'Press Start 2P', 'Pixelify Sans', monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  box-shadow: 2px 2px 0 #0b2e17;
+}
+
+.character-dropdown--screen .character-dropdown-trigger:hover,
+.character-dropdown--screen .character-dropdown-trigger[aria-expanded="true"] {
+  background: #ead8a8;
+  border-color: #0b2e17;
+  color: #0b2e17;
+}
+
+.character-dropdown--screen .character-dropdown-trigger:focus-visible {
+  outline: 2px solid #2f743e;
+  outline-offset: 2px;
+}
+
+.character-dropdown--screen .character-dropdown-caret {
+  color: #2f743e;
+}
+
+.character-dropdown--screen .character-dropdown-pet {
+  filter: none;
+}
+
+.character-dropdown--screen .character-dropdown-menu {
+  min-width: 240px;
+  max-height: 280px;
+  padding: 5px;
+  border: 2px solid #162014;
+  border-radius: 6px;
+  background: #fff9e8;
+  box-shadow: 3px 3px 0 #0b2e17;
+  backdrop-filter: none;
+  font-family: 'Press Start 2P', 'Pixelify Sans', monospace;
+  font-size: 9px;
+  z-index: 100;
+  scrollbar-width: thin;
+  scrollbar-color: #2f743e #ead8a8;
+}
+
+.character-dropdown--screen .character-dropdown-menu::-webkit-scrollbar {
+  width: 10px;
+}
+
+.character-dropdown--screen .character-dropdown-menu::-webkit-scrollbar-track {
+  background: #ead8a8;
+  border-left: 2px solid #162014;
+}
+
+.character-dropdown--screen .character-dropdown-menu::-webkit-scrollbar-thumb {
+  background: #2f743e;
+  border: 2px solid #ead8a8;
+  border-radius: 0;
+}
+
+.character-dropdown--screen .character-dropdown-menu::-webkit-scrollbar-thumb:hover {
+  background: #0b2e17;
+}
+
+.screen-deck-screen > .screen-deck-screen-head {
+  z-index: 10;
+}
+
+.character-dropdown {
+  z-index: 30;
+}
+
+.character-dropdown--screen .character-dropdown-option {
+  color: #162014;
+  grid-template-columns: 36px 1fr auto;
+}
+
+.character-dropdown--screen .character-dropdown-option.is-active {
+  background: #ead8a8;
+  color: #0b2e17;
+}
+
+.character-dropdown--screen .character-dropdown-option.is-selected {
+  background: #d9e9c3;
+  color: #0b2e17;
+}
+
+.character-dropdown--screen .character-dropdown-option-name {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+}
+
+.character-dropdown--screen .character-dropdown-option-lineage,
+.character-dropdown--screen .character-dropdown-option-tier {
+  font-size: 7.5px;
+  color: #2f743e;
+}
+
+.character-dropdown--screen .character-dropdown-option.is-active .character-dropdown-option-lineage,
+.character-dropdown--screen .character-dropdown-option.is-active .character-dropdown-option-tier,
+.character-dropdown--screen .character-dropdown-option.is-selected .character-dropdown-option-lineage,
+.character-dropdown--screen .character-dropdown-option.is-selected .character-dropdown-option-tier {
+  color: #0b2e17;
+}
+
+.screen-deck-screen .screen-deck-return-button,
+.screen-deck-return-button {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 20;
+  align-self: flex-start;
+  flex: 0 0 auto;
+  width: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 11px 6px 8px;
+  border: 2px solid #162014;
+  border-radius: 6px;
+  background: #fff9e8;
+  color: #162014;
+  font-family: 'Press Start 2P', 'Pixelify Sans', monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 #0b2e17;
+  transition: background 120ms ease, transform 120ms ease;
+}
+
+.screen-deck-return-button:hover,
+.screen-deck-return-button:focus-visible {
+  background: #ead8a8;
+  color: #0b2e17;
+  outline: none;
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 #0b2e17;
+}
+
+.screen-deck-return-button:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 #0b2e17;
+}
+
+.screen-deck-return-button.is-passive {
+  cursor: default;
+  pointer-events: none;
+}
+
+.screen-deck-return-button.is-passive:hover,
+.screen-deck-return-button.is-passive:focus-visible {
+  background: #fff9e8;
+  color: #162014;
+  transform: none;
+  box-shadow: 2px 2px 0 #0b2e17;
 }
 
 /* Welcome card (first visit) */
@@ -5919,6 +6215,7 @@ body.looplings-room-locked > div:not(#root)[style*="transform-style: preserve-3d
 }
 
 .room-html-screen-surface {
+  position: relative;
   width: 100%;
   height: 100%;
   overflow: hidden;
@@ -5926,6 +6223,13 @@ body.looplings-room-locked > div:not(#root)[style*="transform-style: preserve-3d
   box-sizing: border-box;
   background: #fff3cf;
   font-family: 'Pixelify Sans', 'Courier New', ui-monospace, monospace;
+}
+
+.room-html-screen-surface > .screen-deck-return-button.room-html-return-button {
+  position: absolute;
+  top: 46px;
+  right: 46px;
+  z-index: 25;
 }
 
 .room-html-screen-surface.is-rotated {

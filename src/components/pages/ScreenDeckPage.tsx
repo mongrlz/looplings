@@ -42,6 +42,8 @@ import {
   quoteAgeLabel,
   useJupiterPrices,
 } from '@/lib/jupiter-prices';
+import { useActiveCharacter } from '@/data/active-character-context';
+import { CharacterDropdown } from '@/components/room/CharacterDropdown';
 
 const STATE_ATLAS_VERSION = 'loopling-state-atlas-2026-05-02';
 
@@ -335,19 +337,52 @@ function Meter({ value, blocks = 14 }: { value: number; blocks?: number }) {
   );
 }
 
-export function MainHabitatScreen() {
+export function MainHabitatScreen({
+  embedDropdown = false,
+  onReturn,
+  isFocused = false,
+}: {
+  embedDropdown?: boolean;
+  onReturn?: () => void;
+  isFocused?: boolean;
+} = {}) {
   const state = useLooplingsState();
+  const active = useActiveCharacter();
+  const isPrime = active.id === 'prime-test';
   const lastAction = state.recentActivity[0];
   const deltaSign = lastAction && lastAction.deltaCents > 0 ? '+' : lastAction && lastAction.deltaCents < 0 ? '-' : '';
   const deltaAbs = lastAction ? Math.abs(lastAction.deltaCents / 100).toFixed(2) : '0.00';
   return (
     <div className="screen-deck-screen screen-deck-main-screen">
+      {onReturn ? (
+        <button
+          type="button"
+          className={`screen-deck-return-button${isFocused ? '' : ' is-passive'}`}
+          onClick={onReturn}
+          aria-label="Step back"
+          aria-disabled={!isFocused}
+          tabIndex={isFocused ? 0 : -1}
+        >
+          <ChevronLeft size={14} strokeWidth={2.6} aria-hidden />
+          <span>BACK</span>
+        </button>
+      ) : null}
       <header className="screen-deck-screen-head">
-        <span>Prime habitat diorama</span>
-        <strong className="screen-deck-live-indicator screen-deck-live-indicator--demo">
-          <i aria-hidden="true" />
-          Demo loop
-        </strong>
+        {embedDropdown ? (
+          <CharacterDropdown
+            value={active.id}
+            onChange={active.setCharacterId}
+            variant="screen"
+          />
+        ) : (
+          <span>{isPrime ? 'Prime habitat diorama' : `${active.name} (UI view)`}</span>
+        )}
+        {onReturn ? null : (
+          <strong className="screen-deck-live-indicator screen-deck-live-indicator--demo">
+            <i aria-hidden="true" />
+            {isPrime ? 'Demo loop' : 'Skin only'}
+          </strong>
+        )}
       </header>
       <div className="screen-deck-main-grid">
         <CornerFrame className="screen-deck-habitat-window">
@@ -360,12 +395,17 @@ export function MainHabitatScreen() {
             />
             <div className="screen-deck-main-prime">
               <div className="screen-deck-thought-bubble" key={state.thought.id}>
-                <span>Prime thinks</span>
+                <span>{isPrime ? 'Prime thinks' : `${active.name} (Prime is running)`}</span>
                 <p>{state.thought.text}</p>
                 <i className="screen-deck-thought-tail" aria-hidden="true" />
               </div>
-              <PixelPet size={112} row={rowForState(state.activeTool, state.compute.tier)} frame={1} />
-              <b>{state.identity.name}</b>
+              <PixelPet
+                pet={active.id}
+                size={112}
+                row={rowForState(state.activeTool, state.compute.tier)}
+                frame={1}
+              />
+              <b>{active.name.toUpperCase()}</b>
             </div>
             <div className="screen-deck-habitat-waypoint">
               {state.activeTool} loop / {state.mood} thought
@@ -426,23 +466,25 @@ export function MainHabitatScreen() {
 }
 
 export function RoomMainHabitatScreen() {
+  const active = useActiveCharacter();
+  const isPrime = active.id === 'prime-test';
   return (
     <div className="screen-deck-screen screen-deck-room-main-screen">
       <header className="screen-deck-screen-head">
-        <span>Prime habitat diorama</span>
-        <strong>Live</strong>
+        <span>{isPrime ? 'Prime habitat diorama' : `${active.name} (UI view)`}</span>
+        <strong>{isPrime ? 'Live' : 'Skin'}</strong>
       </header>
       <div className="screen-deck-room-main-grid">
         <CornerFrame className="screen-deck-room-habitat-window">
           <div className="screen-deck-room-habitat-bg">
             <div className="screen-deck-room-thought-bubble">
-              <span>Prime thinks</span>
+              <span>{isPrime ? 'Prime thinks' : `${active.name} (Prime is running)`}</span>
               <p>If the signal stays noisy, I save my snack jar.</p>
             </div>
             <div className="screen-deck-room-prime-avatar" aria-hidden="true">
               <i />
             </div>
-            <b className="screen-deck-room-prime-label">PRIME-00</b>
+            <b className="screen-deck-room-prime-label">{active.name.toUpperCase()}</b>
             <div className="screen-deck-habitat-waypoint">idle loop / safe thought</div>
           </div>
         </CornerFrame>
@@ -477,29 +519,31 @@ export function RoomMainHabitatScreen() {
 }
 
 export function PrimeIdScreen() {
+  const active = useActiveCharacter();
+  const isPrime = active.id === 'prime-test';
   return (
     <div className="screen-deck-screen screen-deck-id-screen screen-deck-id-screen-wide">
       <header className="screen-deck-screen-head">
-        <span>Prime passport</span>
+        <span>{isPrime ? 'Prime passport' : `${active.name} passport`}</span>
         <Fingerprint size={18} />
       </header>
       <div className="screen-deck-id-wide-grid">
         <CornerFrame className="screen-deck-id-card screen-deck-id-card-wide">
-          <PixelPet size={132} row={0} frame={0} />
-          <strong>PRIME-00</strong>
-          <code>0x9c2f...18a7</code>
+          <PixelPet pet={active.id} size={132} row={0} frame={0} />
+          <strong>{active.name.toUpperCase()}</strong>
+          <code>{isPrime ? '0x9c2f...18a7' : 'UI view / no wallet'}</code>
         </CornerFrame>
         <div className="screen-deck-id-wide-info">
           <div className="screen-deck-id-tags">
-            <span>Origin loop</span>
-            <span>careful trader</span>
-            <span>public pet</span>
+            <span>{active.character.lineage}</span>
+            <span>{isPrime ? 'careful trader' : 'skin only'}</span>
+            <span>{isPrime ? 'public pet' : 'preview character'}</span>
           </div>
           <div className="screen-deck-id-proof">
             <span>Seed</span>
-            <b>origin-loop / soft-spiral</b>
+            <b>{isPrime ? 'origin-loop / soft-spiral' : `${active.character.lineage.toLowerCase()}`}</b>
             <span>Lineage</span>
-            <b>L01 genesis</b>
+            <b>{active.character.lineage}</b>
             <span>Promise</span>
             <b>Every action should be readable from the room.</b>
           </div>
@@ -510,24 +554,26 @@ export function PrimeIdScreen() {
 }
 
 export function RoomPrimeIdScreen() {
+  const active = useActiveCharacter();
+  const isPrime = active.id === 'prime-test';
   return (
     <div className="screen-deck-screen screen-deck-room-id-screen">
       <header className="screen-deck-screen-head">
-        <span>Prime passport</span>
-        <b>#00</b>
+        <span>{isPrime ? 'Prime passport' : `${active.name} passport`}</span>
+        <b>{isPrime ? '#00' : 'UI'}</b>
       </header>
       <CornerFrame className="screen-deck-room-id-card">
         <div className="screen-deck-room-prime-avatar is-card" aria-hidden="true">
           <i />
         </div>
-        <strong>PRIME-00</strong>
-        <p>Genesis room resident</p>
-        <code>0x9c2f...18a7</code>
+        <strong>{active.name.toUpperCase()}</strong>
+        <p>{isPrime ? 'Genesis room resident' : `${active.character.lineage} skin`}</p>
+        <code>{isPrime ? '0x9c2f...18a7' : 'UI view'}</code>
       </CornerFrame>
       <div className="screen-deck-id-tags">
-        <span>Origin loop</span>
-        <span>careful trader</span>
-        <span>public pet</span>
+        <span>{active.character.lineage}</span>
+        <span>{isPrime ? 'careful trader' : 'skin only'}</span>
+        <span>{isPrime ? 'public pet' : 'preview'}</span>
       </div>
     </div>
   );

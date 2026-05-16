@@ -1,6 +1,15 @@
 {
   "sprite": "mint-l01",
+  "displayName": "Mint",
   "atlas": "public/pets/mint/state-atlas.png",
+  "source": "fresh-ai-generated-row-sheets-packed-connected-components",
+  "sourceRows": "public/nft-gen-lab/ai-sources/mint-v2/",
+  "rowPacks": "public/nft-gen-lab/row-packs/mint-v2/",
+  "repairNotes": [
+    "Rebuilt from 12 fresh AI-generated state rows to replace the recycled scaffold/CSS-era atlas.",
+    "Packed with connected-component extraction, chroma-key cleanup, and baked connected mint halo sparks.",
+    "Detached component repair removed only tiny loose fragments after packing."
+  ],
   "cellWidth": 192,
   "cellHeight": 208,
   "columns": 8,

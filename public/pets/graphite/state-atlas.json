@@ -1,6 +1,15 @@
 {
   "sprite": "graphite-l01",
+  "displayName": "Graphite",
   "atlas": "public/pets/graphite/state-atlas.png",
+  "source": "fresh-ai-generated-row-sheets-packed-connected-components",
+  "sourceRows": "public/nft-gen-lab/ai-sources/graphite-v2/",
+  "rowPacks": "public/nft-gen-lab/row-packs/graphite-v2/",
+  "repairNotes": [
+    "Rebuilt from 12 fresh AI-generated state rows to replace the recycled scaffold/CSS-era atlas.",
+    "Packed with connected-component extraction, aggressive chroma-key cleanup, and baked connected cool-blue halo glints.",
+    "Detached component repair removed only loose generated fragments after packing."
+  ],
   "cellWidth": 192,
   "cellHeight": 208,
   "columns": 8,

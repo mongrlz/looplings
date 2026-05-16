@@ -47,6 +47,11 @@ const PET_OPTIONS = {
     spritesheet: '/pets/spark/spritesheet.webp',
     stateAtlas: 'spark',
   },
+  receiptKeeper: {
+    label: 'Receipt Keeper',
+    spritesheet: '/pets/path-d-receipt-keeper/state-atlas.png',
+    stateAtlas: 'receiptKeeper',
+  },
 } as const;
 
 type PetOptionId = keyof typeof PET_OPTIONS;
@@ -102,6 +107,10 @@ const LOOPLING_STATE_ATLASES = {
   },
   spark: {
     spritesheet: `/pets/spark/state-atlas.png?v=${LOOPLING_STATE_ATLAS_VERSION}`,
+    states: LOOPLING_STATE_ATLAS_STATES,
+  },
+  receiptKeeper: {
+    spritesheet: `/pets/path-d-receipt-keeper/state-atlas.png?v=${LOOPLING_STATE_ATLAS_VERSION}`,
     states: LOOPLING_STATE_ATLAS_STATES,
   },
 } as const;

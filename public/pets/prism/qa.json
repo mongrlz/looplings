@@ -1,0 +1,15 @@
+{
+  "asset": "prism",
+  "status": "rejected",
+  "source": "public/pets/prism/state-atlas-source-chroma.png",
+  "packedAtlas": "public/pets/prism/state-atlas.png",
+  "packing": {
+    "method": "component-detect-and-pack",
+    "sourceSize": "1016x1548",
+    "detectedComponents": 88,
+    "selectedFrames": 88,
+    "requiredFrames": 96,
+    "clippedFrames": 0
+  },
+  "rejectionReason": "The generated source sheet did not contain 96 complete isolated sprite components."
+}

@@ -1,0 +1,15 @@
+{
+  "asset": "lab-ai-ember-kite",
+  "status": "candidate",
+  "generationMethod": "ai-generated-atlas-repaired-connected-components",
+  "sourceAtlas": "public/pets/ember/state-atlas.png",
+  "packedAtlas": "public/pets/lab-ai-ember-kite/state-atlas.png",
+  "repair": {
+    "repairedFrameCount": 10
+  },
+  "notes": [
+    "Full creature pixels come from the AI-generated atlas.",
+    "Connected-component cleanup only removes detached generated fragments; no browser-side overlays, SVG, CSS, recolor, or procedural drawing are used.",
+    "Must pass audit:loopling-atlases and audit:loopling-motion before entering the generator pool."
+  ]
+}
