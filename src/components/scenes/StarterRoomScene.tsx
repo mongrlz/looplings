@@ -3059,8 +3059,15 @@ function LeftWallScreen({
   htmlSize: [number, number];
 }) {
   const { handlers, isHovered, isFocused } = useLeftWallDrillZone(zone);
+  // When the wall screen is focused, the embedded html-in-canvas wrapper
+  // covers the mesh visually and handles clicks via the real DOM. R3F's
+  // raycaster still detects the mesh underneath, so leaving the click
+  // handler attached double-fires every interaction (the toggle-back-up
+  // path), causing the screen to retreat to the wall overview every time
+  // the user taps a button inside it. Strip handlers when focused — the
+  // BACK button is the explicit exit.
   return (
-    <group {...handlers}>
+    <group {...(isFocused ? {} : handlers)}>
       <HtmlWallScreen
         kind={kind}
         position={[-3.945, y, z]}

@@ -6992,6 +6992,107 @@ body.looplings-room-locked > div:not(#root)[style*="transform-style: preserve-3d
   line-height: 1.18;
 }
 
+.screen-deck-id-state-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.screen-deck-id-state-section > header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 4px;
+  border-bottom: 2px solid rgba(28, 38, 21, 0.18);
+}
+
+.screen-deck-id-state-section > header span {
+  font-family: 'Press Start 2P', 'Pixelify Sans', monospace;
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  color: #2f743e;
+  text-transform: uppercase;
+}
+
+.screen-deck-id-state-section > header strong {
+  font-family: 'Pixelify Sans', 'Press Start 2P', monospace;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  color: #0b2e17;
+  text-transform: uppercase;
+}
+
+.screen-deck-id-state-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.screen-deck-id-state-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  padding: 6px 4px 5px;
+  border: 2px solid #162014;
+  border-radius: 5px;
+  background: #fff9e8;
+  color: #162014;
+  font-family: 'Press Start 2P', 'Pixelify Sans', monospace;
+  font-size: 6.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 #0b2e17;
+  transition: background 100ms ease, transform 100ms ease, box-shadow 100ms ease;
+  min-width: 0;
+}
+
+.screen-deck-id-state-button:hover,
+.screen-deck-id-state-button:focus-visible {
+  background: #ead8a8;
+  outline: none;
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 #0b2e17;
+}
+
+.screen-deck-id-state-button:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 #0b2e17;
+}
+
+.screen-deck-id-state-button.is-active {
+  background: #d9e9c3;
+  color: #0b2e17;
+  border-color: #0b2e17;
+}
+
+.screen-deck-id-state-button.is-active:hover {
+  background: #c8dfa6;
+}
+
+.screen-deck-id-state-thumb {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 34px;
+  overflow: hidden;
+  background: rgba(101, 245, 214, 0.05);
+  border-radius: 3px;
+}
+
+.screen-deck-id-state-label {
+  display: block;
+  width: 100%;
+  text-align: center;
+  word-break: break-word;
+  line-height: 1.1;
+}
+
 /* Skill Library — landscape 3-tile row */
 .screen-deck-skill-screen-wide {
   display: flex;

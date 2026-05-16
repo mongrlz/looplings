@@ -54,6 +54,21 @@ const pets = [
   { id: 'SPARK-03', pet: 'spark', row: 8, state: 'scouting', accent: '#ffb54a' },
 ];
 
+const ANIMATION_STATES: ReadonlyArray<{ id: string; label: string; row: number }> = [
+  { id: 'idle',        label: 'Idle breathing',       row: 0 },
+  { id: 'thinking',    label: 'Thinking focus',       row: 1 },
+  { id: 'acting',      label: 'Tool action',          row: 2 },
+  { id: 'trading',     label: 'Market scan',          row: 3 },
+  { id: 'trade_win',   label: 'Trade win bounce',     row: 4 },
+  { id: 'trade_loss',  label: 'Trade loss slump',     row: 5 },
+  { id: 'posting',     label: 'Posting send',         row: 6 },
+  { id: 'receiving',   label: 'Receiving listen',     row: 7 },
+  { id: 'sleeping',    label: 'Sleeping breath',      row: 8 },
+  { id: 'low_compute', label: 'Low compute conserve', row: 9 },
+  { id: 'critical',    label: 'Critical distress',    row: 10 },
+  { id: 'dead',        label: 'Dead grounded',        row: 11 },
+];
+
 const careSplit = [
   ['70%', 'Prime time', 'feeds the next run and keeps Prime awake'],
   ['20%', 'Workshop', 'keeps the room, tools, and screens alive'],
@@ -521,6 +536,14 @@ export function RoomMainHabitatScreen() {
 export function PrimeIdScreen() {
   const active = useActiveCharacter();
   const isPrime = active.id === 'prime-test';
+  const [activeStateIndex, setActiveStateIndex] = useState(0);
+
+  useEffect(() => {
+    setActiveStateIndex(0);
+  }, [active.id]);
+
+  const activeState = ANIMATION_STATES[activeStateIndex] ?? ANIMATION_STATES[0];
+
   return (
     <div className="screen-deck-screen screen-deck-id-screen screen-deck-id-screen-wide">
       <header className="screen-deck-screen-head">
@@ -529,7 +552,7 @@ export function PrimeIdScreen() {
       </header>
       <div className="screen-deck-id-wide-grid">
         <CornerFrame className="screen-deck-id-card screen-deck-id-card-wide">
-          <PixelPet pet={active.id} size={132} row={0} frame={0} />
+          <PixelPet pet={active.id} size={132} row={activeState.row} frame={0} />
           <strong>{active.name.toUpperCase()}</strong>
           <code>{isPrime ? '0x9c2f...18a7' : 'UI view / no wallet'}</code>
         </CornerFrame>
@@ -539,13 +562,28 @@ export function PrimeIdScreen() {
             <span>{isPrime ? 'careful trader' : 'skin only'}</span>
             <span>{isPrime ? 'public pet' : 'preview character'}</span>
           </div>
-          <div className="screen-deck-id-proof">
-            <span>Seed</span>
-            <b>{isPrime ? 'origin-loop / soft-spiral' : `${active.character.lineage.toLowerCase()}`}</b>
-            <span>Lineage</span>
-            <b>{active.character.lineage}</b>
-            <span>Promise</span>
-            <b>Every action should be readable from the room.</b>
+          <div className="screen-deck-id-state-section">
+            <header>
+              <span>Animation</span>
+              <strong>{activeState.label}</strong>
+            </header>
+            <div className="screen-deck-id-state-grid">
+              {ANIMATION_STATES.map((state, index) => (
+                <button
+                  key={state.id}
+                  type="button"
+                  className={`screen-deck-id-state-button${index === activeStateIndex ? ' is-active' : ''}`}
+                  onClick={() => setActiveStateIndex(index)}
+                  title={state.label}
+                  aria-label={state.label}
+                >
+                  <span className="screen-deck-id-state-thumb">
+                    <PixelPet pet={active.id} size={28} row={state.row} frame={index} />
+                  </span>
+                  <span className="screen-deck-id-state-label">{state.id.replace(/_/g, ' ')}</span>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
