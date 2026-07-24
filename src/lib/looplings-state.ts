@@ -32,6 +32,7 @@ export interface LooplingsActivity {
   label: string;
   status: 'succeeded' | 'running' | 'failed';
   deltaCents: number;
+  amountLabel?: string;
   addedAtTick: number;
 }
 
@@ -173,6 +174,11 @@ const INITIAL_LEDGER: LooplingsLedgerEntry[] = [
 
 const recentThoughtsBuffer: LooplingsThoughtEntry[] = [];
 const recentActivityBuffer: LooplingsActivity[] = [];
+let latestSupportReceipt: {
+  signature: string;
+  lamports: bigint;
+  addedAtTick: number;
+} | null = null;
 
 function pushThought(thought: LooplingsThought, tick: number) {
   recentThoughtsBuffer.unshift({ ...thought, addedAtTick: tick });
@@ -222,7 +228,7 @@ function buildState(tickIndex: number): LooplingsState {
   const model = MODELS[Math.floor(tickIndex / 7) % MODELS.length];
   const taskProgressPct = 38 + ((tickIndex * 11) % 60);
 
-  return {
+  const state: LooplingsState = {
     identity: {
       name: 'PRIME-00',
       walletAddress: '0x9c2f...18a7',
@@ -268,6 +274,50 @@ function buildState(tickIndex: number): LooplingsState {
       return { tool: next.tool, label: labels[next.tool] };
     })(),
   };
+
+  if (latestSupportReceipt) {
+    const supportAgeTicks = Math.max(0, tickIndex - latestSupportReceipt.addedAtTick);
+    const amountSol = Number(latestSupportReceipt.lamports) / 1_000_000_000;
+    const amountLabel = `+${amountSol.toFixed(amountSol < 0.1 ? 2 : 1)} SOL`;
+    state.ledger = [
+      {
+        amount: amountLabel,
+        delta: 0,
+        reason: 'confirmed devnet support',
+        ago: supportAgeTicks === 0 ? 'just now' : `${supportAgeTicks * 6}s ago`,
+      },
+      ...state.ledger.slice(0, 2),
+    ];
+    state.recentActivity = [
+      {
+        id: -latestSupportReceipt.addedAtTick - 1,
+        tool: 'memory',
+        label: 'support_received',
+        status: 'succeeded',
+        deltaCents: 0,
+        amountLabel,
+        addedAtTick: latestSupportReceipt.addedAtTick,
+      },
+      ...state.recentActivity.filter((entry) => entry.label !== 'support_received').slice(0, 3),
+    ];
+
+    if (supportAgeTicks < 5) {
+      state.activeTool = 'memory';
+      state.currentTask = 'Confirming onchain support receipt';
+      state.taskProgressPct = 100;
+      state.mood = 'happy';
+      state.moodDetail = 'Support confirmed on Solana devnet. Prime is filing the public receipt.';
+      state.thought = {
+        id: -latestSupportReceipt.addedAtTick - 1,
+        text: 'Support landed. Saving the signature so the room can prove it.',
+        mood: 'happy',
+        task: state.currentTask,
+        tool: 'memory',
+      };
+    }
+  }
+
+  return state;
 }
 
 const TICK_SECONDS = 6;
@@ -295,6 +345,13 @@ function ensureRunning() {
 
 export function getLooplingsState(): LooplingsState {
   return currentState;
+}
+
+export function recordPrimeSupport(lamports: bigint, signature: string): void {
+  if (latestSupportReceipt?.signature === signature) return;
+  latestSupportReceipt = { signature, lamports, addedAtTick: tickIndex };
+  currentState = buildState(tickIndex);
+  for (const cb of subscribers) cb();
 }
 
 export function useLooplingsState(): LooplingsState {

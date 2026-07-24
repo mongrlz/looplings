@@ -1,19 +1,19 @@
 import type { ComponentType, CSSProperties } from 'react';
-import Anthropic from '@lobehub/icons/es/Anthropic';
-import Claude from '@lobehub/icons/es/Claude';
-import Cohere from '@lobehub/icons/es/Cohere';
-import DeepSeek from '@lobehub/icons/es/DeepSeek';
-import Gemini from '@lobehub/icons/es/Gemini';
-import GithubCopilot from '@lobehub/icons/es/GithubCopilot';
-import Google from '@lobehub/icons/es/Google';
-import Grok from '@lobehub/icons/es/Grok';
-import LobeHub from '@lobehub/icons/es/LobeHub';
-import Meta from '@lobehub/icons/es/Meta';
-import Mistral from '@lobehub/icons/es/Mistral';
-import OpenAI from '@lobehub/icons/es/OpenAI';
-import OpenRouter from '@lobehub/icons/es/OpenRouter';
-import Perplexity from '@lobehub/icons/es/Perplexity';
-import XAI from '@lobehub/icons/es/XAI';
+import Anthropic from '@lobehub/icons/es/Anthropic/components/Mono';
+import Claude from '@lobehub/icons/es/Claude/components/Mono';
+import Cohere from '@lobehub/icons/es/Cohere/components/Mono';
+import DeepSeek from '@lobehub/icons/es/DeepSeek/components/Mono';
+import Gemini from '@lobehub/icons/es/Gemini/components/Mono';
+import GithubCopilot from '@lobehub/icons/es/GithubCopilot/components/Mono';
+import Google from '@lobehub/icons/es/Google/components/Mono';
+import Grok from '@lobehub/icons/es/Grok/components/Mono';
+import LobeHub from '@lobehub/icons/es/LobeHub/components/Mono';
+import Meta from '@lobehub/icons/es/Meta/components/Mono';
+import Mistral from '@lobehub/icons/es/Mistral/components/Mono';
+import OpenAI from '@lobehub/icons/es/OpenAI/components/Mono';
+import OpenRouter from '@lobehub/icons/es/OpenRouter/components/Mono';
+import Perplexity from '@lobehub/icons/es/Perplexity/components/Mono';
+import XAI from '@lobehub/icons/es/XAI/components/Mono';
 
 type LogoIcon = ComponentType<any> & {
   Avatar?: ComponentType<any>;

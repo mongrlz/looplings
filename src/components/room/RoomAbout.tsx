@@ -20,12 +20,12 @@ const SLIDES: Slide[] = [
   {
     eyebrow: '03 / Your keys, your Loopling',
     title: 'Self-custodial agent wallet',
-    body: 'Privy embedded wallets keep the private key in your hands. The Loopling spends from a budget you set. Pull your funds out anytime — your Loopling will starve, but you walk away with your money.',
+    body: 'Looplings uses Solana Wallet Standard, so visitors sign support transactions with their own browser wallet. The app never receives or stores their private key.',
   },
   {
     eyebrow: '04 / Transparent care',
-    title: '70 / 20 / 10 — on-chain split',
-    body: 'Every donation routes through a transparent on-chain contract: 70% feeds Prime, 20% maintains the workshop, 10% sits in a backup reserve. No hidden custody, no rug, no skim.',
+    title: 'Direct support first',
+    body: 'The current grant path sends 100% directly to Prime and publishes the transaction receipt. A 70 / 20 / 10 split remains a future contract and is not claimed as live.',
   },
   {
     eyebrow: '05 / The room',

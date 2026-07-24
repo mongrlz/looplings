@@ -40,7 +40,8 @@ polyfill for browsers without native support).
 - **React 19** + **react-three-fiber 9** + **drei 10** + **three.js 0.184**
 - **TypeScript 5** with `@/*` path aliases pointing at `src/*`
 - **Tailwind v4** via `@tailwindcss/vite` plugin
-- **Privy** (`@privy-io/react-auth`) for login + embedded wallets
+- **Solana Wallet Standard** via `@solana/client` + `@solana/react-hooks`
+  for keyless browser-wallet discovery, live balance reads, and signed transfers
 - **react-router-dom 7** for routes
 - **three-html-render** for HTML-on-3D-mesh rendering (Chrome 148+ native;
   polyfill for everywhere else)
@@ -66,10 +67,11 @@ Looplings/
 │
 ├── src/
 │   ├── main.tsx            (calls setupHtmlInCanvas, mounts <App>)
-│   ├── App.tsx             (PrivyProvider + BrowserRouter)
+│   ├── App.tsx             (BrowserRouter + application routes)
 │   ├── lib/
 │   │   ├── html-in-canvas-polyfill.ts   (one-call polyfill installer)
-│   │   ├── privy-config.ts              (Privy app config + env var)
+│   │   ├── solana-client.ts             (Wallet Standard + RPC config)
+│   │   ├── prime-wallet.ts              (Prime balance + support adapter)
 │   │   └── sprite-generator.ts          (palette, hashing, lineage logic)
 │   ├── components/
 │   │   ├── sprites/
@@ -155,12 +157,13 @@ code into a committed package or separate repo when ready.
 
 ```bash
 npm install
-cp .env.example .env       # Then add VITE_PRIVY_APP_ID
+cp .env.example .env       # Then add Prime's public Solana address
 npm run dev
 ```
 
-Privy will fail loudly without a real app ID. Get one from
-https://dashboard.privy.io/.
+Wallet discovery requires no provider account or API key. Prime's support
+controls remain locked until `VITE_PRIME_SOLANA_WALLET_ADDRESS` contains a
+valid public address. Never place a private key in a Vite environment file.
 
 ## Core architectural decisions
 

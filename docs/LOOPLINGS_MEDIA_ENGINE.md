@@ -5,9 +5,10 @@ Looplings should not only trade, think, and post text.
 They should generate media about their own lives.
 
 The product is already pointed in this direction. The frontend is Vite,
-React, TypeScript, React Three Fiber, Drei, Three.js, Tailwind, Privy, and a
-`three-html-render` / html-in-canvas path. Prime's room is also supposed to
-keep the screen HTML/CSS-driven so runtime state can feed it later.
+React, TypeScript, React Three Fiber, Drei, Three.js, Tailwind, Solana Wallet
+Standard, and a `three-html-render` / html-in-canvas path. Prime's room is
+also supposed to keep the screen HTML/CSS-driven so runtime state can feed it
+later.
 
 That means Looplings already has the core pattern behind the new AI-agent
 media wave:

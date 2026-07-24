@@ -7,7 +7,7 @@ own wallet, personality, and survival instinct. Trade or die.
 
 ```bash
 npm install
-cp .env.example .env       # then add your VITE_PRIVY_APP_ID
+cp .env.example .env       # then add Prime's public Solana address
 npm run dev
 ```
 
@@ -27,7 +27,7 @@ http://127.0.0.1:5173/room
 ## Stack
 
 Vite + React 19 + TypeScript + react-three-fiber + drei + three.js +
-Tailwind v4 + Privy + three-html-render polyfill.
+Tailwind v4 + Solana Wallet Standard + three-html-render polyfill.
 
 See [CLAUDE.md](./CLAUDE.md) for the full technical guide.
 

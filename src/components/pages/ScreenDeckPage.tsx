@@ -6,9 +6,9 @@ import {
   type CSSProperties,
   type ReactNode,
 } from 'react';
-import Anthropic from '@lobehub/icons/es/Anthropic';
-import Claude from '@lobehub/icons/es/Claude';
-import OpenAI from '@lobehub/icons/es/OpenAI';
+import Anthropic from '@lobehub/icons/es/Anthropic/components/Mono';
+import Claude from '@lobehub/icons/es/Claude/components/Mono';
+import OpenAI from '@lobehub/icons/es/OpenAI/components/Mono';
 import {
   BadgeCheck,
   BrainCircuit,
@@ -27,8 +27,8 @@ import {
   Zap,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import Gemini from '@lobehub/icons/es/Gemini';
-import Google from '@lobehub/icons/es/Google';
+import Gemini from '@lobehub/icons/es/Gemini/components/Mono';
+import Google from '@lobehub/icons/es/Google/components/Mono';
 import { roomScreenSlots } from '@/components/screens/roomScreenPlan';
 import { usePetFrame } from '@/lib/pet-ticker';
 import {

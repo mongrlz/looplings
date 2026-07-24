@@ -1,7 +1,7 @@
 import type { CSSProperties, ReactNode } from 'react';
-import Anthropic from '@lobehub/icons/es/Anthropic';
-import Claude from '@lobehub/icons/es/Claude';
-import OpenAI from '@lobehub/icons/es/OpenAI';
+import Anthropic from '@lobehub/icons/es/Anthropic/components/Mono';
+import Claude from '@lobehub/icons/es/Claude/components/Mono';
+import OpenAI from '@lobehub/icons/es/OpenAI/components/Mono';
 import {
   Activity,
   BadgeCheck,

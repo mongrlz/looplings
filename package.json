@@ -13,10 +13,11 @@
   },
   "dependencies": {
     "@lobehub/icons": "^5.8.0",
-    "@privy-io/react-auth": "^2.0.0",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.6.0",
     "@react-three/rapier": "^2.2.0",
+    "@solana/client": "^1.7.0",
+    "@solana/react-hooks": "^1.4.1",
     "@types/three": "^0.184.0",
     "lucide-react": "^0.577.0",
     "minidenticons": "^4.2.1",
@@ -28,6 +29,7 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.0.0",
+    "@types/node": "^26.1.1",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.3.0",

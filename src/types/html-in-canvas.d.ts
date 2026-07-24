@@ -18,6 +18,8 @@ interface CanvasPaintEvent extends Event {
 
 interface HTMLCanvasElement {
   requestPaint(): void;
+  captureElementImage(element: HTMLElement): HTMLCanvasElement;
+  onpaint: ((event: CanvasPaintEvent) => void) | null;
   addEventListener(
     type: 'paint',
     listener: (ev: CanvasPaintEvent) => void,
