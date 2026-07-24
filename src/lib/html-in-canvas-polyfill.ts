@@ -3,21 +3,20 @@ import { installHtmlInCanvasPolyfill } from 'three-html-render/polyfill';
 const TAG = '[looplings:html-in-canvas]';
 
 /**
- * Install the HTML-in-Canvas polyfill.
+ * Install the HTML-in-Canvas compatibility renderer.
  *
- * Auto-detects whether the browser already supports the native API
- * (Chrome 148+ / Chrome Canary). When native is available, the polyfill
- * defers to the fast path. When it isn't, the polyfill emulates
- * texElementImage2D / requestPaint / paint events so the same code works
- * in any modern browser.
+ * Chrome can expose the draft 2D paint API before the WebGL upload path is
+ * complete. That partial API passes three-html-render's native feature check,
+ * skips its fallback, and leaves our WebGL screen without a texture source.
+ * Force the compatibility path until the native API is complete and stable.
  *
  * Call exactly once at app boot, before any 3D scene mounts.
  */
 export function setupHtmlInCanvas(): void {
   try {
-    installHtmlInCanvasPolyfill();
-    console.log(TAG, 'polyfill installed');
+    installHtmlInCanvasPolyfill({ force: true });
+    console.log(TAG, 'compatibility renderer installed');
   } catch (err) {
-    console.warn(TAG, 'polyfill install failed', err);
+    console.warn(TAG, 'compatibility renderer install failed', err);
   }
 }
