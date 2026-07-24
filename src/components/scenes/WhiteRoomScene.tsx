@@ -270,7 +270,7 @@ function PrimeScreen() {
         phosphor={0}
         reflection={0.2}
         scanlines={0.48}
-        uploadFps={5}
+        uploadFps={10}
         warmupFrames={6}
       >
         {screenContent}

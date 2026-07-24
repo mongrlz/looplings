@@ -77,7 +77,7 @@ function HabitatView({ state }: { state: LooplingsState }) {
       <div className="prime-terminal-stage">
         <img
           className="prime-terminal-landscape"
-          src="/assets/lab/looplings-habitat-bg-transparent-v2.png"
+          src="/assets/lab/looplings-habitat-bg-transparent-v2.webp"
           alt=""
           aria-hidden="true"
         />
